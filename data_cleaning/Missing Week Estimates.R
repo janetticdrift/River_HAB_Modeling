@@ -1,3 +1,5 @@
+Missing week estimates
+
 #Packages----
 library(rstan)
 library(tidyverse)
@@ -19,7 +21,7 @@ weekdata <- cover_indexweek %>%
   mutate(reach = as.numeric(factor(reach))) %>% 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
   mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
-  
+
 # Eventually I should log-transform data here first, when cleaning up code
 #Fills in missing weeks for years that sampled bimonthly, and sets missing entries to -99
 
@@ -36,7 +38,7 @@ yeardata <- cover_indexweek %>%
 #SINGLE SPECIES - Gather data into STAN list format
 
 #This dataframe uses HAB_two_species.stan!
-  
+
 #Change formatting of only green algae to start
 green_algae <- weekdata %>% 
   dplyr::select(reach, green_algae) %>% 
@@ -63,7 +65,7 @@ green_micro <- weekdata %>%
   mutate_if(is.numeric, log) %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%
   select(-week) 
-  #mutate(across(1:5, round, 0)) #green_algae:microcoleus to pull out, comment out if logging
+#mutate(across(1:5, round, 0)) #green_algae:microcoleus to pull out, comment out if logging
 
 
 model.2 <- list("Nweeks" = nrow(green_micro), 
@@ -79,8 +81,8 @@ library(abind)
 temp.spreach <- weekdata %>% 
   select(-c(1:3, 5, 8:10)) %>% 
   mutate(across(green_algae:microcoleus, round, 0)) 
-  # mutate(across(.cols = c("green_algae":3), .fns = log)) %>%  #logtransform
-  # mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) #reset the -99s
+# mutate(across(.cols = c("green_algae":3), .fns = log)) %>%  #logtransform
+# mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) #reset the -99s
 
 #Split data into an array by reach, then drop the reach column
 spreach.array <- abind(split(temp.spreach[, -1], temp.spreach$reach), along = 3)
@@ -138,8 +140,8 @@ options(mc.cores = parallel::detectCores())
 #One year, two species, averaged reach
 fit.m2 <-  stan(file = "HAB_two_species.stan", data = model.2, chains = 3, iter = 10000,
                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
-                                                            stepsize = 0.001,
-                                                            max_treedepth = 20))
+                                                           stepsize = 0.001,
+                                                           max_treedepth = 20))
 
 #One year, two species, 3 reaches
 fit.m3 <-  stan(file = c("HAB_spreach.stan"), data = model.3, chains = 3, iter = 10000,

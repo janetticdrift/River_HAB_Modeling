@@ -125,7 +125,7 @@ stand_nut <- nutrients %>%
 nutrients_avg <- nutrients %>% 
   group_by(model_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-            ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C))
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C))
 
 #Prelim plot: Nitrate
 ggplot(nutrients, aes(x = model_date, y = nitrate_mg_N_L, colour = reach)) +
@@ -215,7 +215,7 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
   mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   mutate(log_discharge = log(discharge)) %>% 
   mutate(stand_discharge = c(scale(discharge)))
-  
+
 
 #Quick plot of discharge data
 ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
