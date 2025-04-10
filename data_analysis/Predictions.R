@@ -1,10 +1,23 @@
-#Historical Predictions
+#Historical Predictions, 2022
 
 #Pull out starting abundances 
 x <- rstan::extract(fit.m4)
-abundances <- as.data.frame(x[c("n","b")]) %>% 
-  select(1:12) %>% #initiate model with first 3 weeks
-  head(100) #Don't commit to all 15k iterations yet
-alphas <- x[["Alpha"]]
+abundances <- x[["n"]][c(1:100),,1]
+alphas <- x[["Alpha"]][c(1:100),]
 betas <- as.array(x[["Beta"]]) %>% 
   head(100)
+
+#inputs
+runs <- nrow(abundances)
+time <- 13 #number of weeks in 2022
+
+for(z in 1:runs){
+  #Set parameters
+  Alpha <- alphas[z,]
+  Beta <- betas[z,,]
+  n <- abundances[z,]
+  
+  for(t in 2:time){ 
+      n[,t] ~ multi_normal(Alpha + Beta*n[,t-1], ID)
+  }
+}

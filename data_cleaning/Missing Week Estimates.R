@@ -1,4 +1,4 @@
-Missing week estimates
+#Missing week estimates
 
 #Packages----
 library(rstan)
@@ -138,16 +138,16 @@ options(mc.cores = parallel::detectCores())
 #                                                           max_treedepth = 20))
 
 #One year, two species, averaged reach
-fit.m2 <-  stan(file = "HAB_two_species.stan", data = model.2, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
-                                                           stepsize = 0.001,
-                                                           max_treedepth = 20))
-
-#One year, two species, 3 reaches
-fit.m3 <-  stan(file = c("HAB_spreach.stan"), data = model.3, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
-                                                           stepsize = 0.001,
-                                                           max_treedepth = 20))
+# fit.m2 <-  stan(file = "HAB_two_species.stan", data = model.2, chains = 3, iter = 10000,
+#                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+#                                                            stepsize = 0.001,
+#                                                            max_treedepth = 20))
+# 
+# #One year, two species, 3 reaches
+# fit.m3 <-  stan(file = c("HAB_spreach.stan"), data = model.3, chains = 3, iter = 10000,
+#                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+#                                                            stepsize = 0.001,
+#                                                            max_treedepth = 20))
 
 #All years, all species, averaged reach
 fit.m4 <-  stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
