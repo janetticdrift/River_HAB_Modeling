@@ -1,31 +1,34 @@
 #Historical Predictions, 2022
 library(ggplot2)
 
-#Pull out starting abundances 
+#Pull out community abundances and demographics 
 x <- rstan::extract(fit.m4)
 abundances <- x[["n"]][c(1:10),,1]
 alphas <- x[["Alpha"]][c(1:10),]
-betas <- as.array(x[["Beta"]])[c(1:10),,] #%>% 
-  #head(10)
+betas <- as.array(x[["Beta"]])[c(1:10),,] 
 
 #inputs
 runs <- nrow(abundances)
 time <- 13 #number of weeks in 2022
 n <- array(NA, dim = c(time, 4, runs))
 
+#Pull out environmental effects
+dis <- discharge$stand_discharge[1:time]
+
 for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[1,]
   Beta <- betas[1,,]
   n[1,,z] <- abundances[1,]
-  sigma <- diag(rnorm(4, mean = 0, sd = 1))
+  sigma <- Matrix::nearPD(diag(rnorm(4, mean = 0, sd = 1)))[["mat"]]
+  #sigmareal <- apply(x[["n"]], c(2,3), var) #help idk how to use apply. middle = 2:3
   
   for(t in 2:time){
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta*n[t-1,,z], Sigma = sigma[z])
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
   }
 }
 
-n[2,,] <- MASS::mvrnorm(n = 15, mu = matrix(c(1:4, 5:8), nrow = 4, ncol = 4), Sigma = sigma)
+n[2,,1] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[1,,1], Sigma = sigma)
 n[2,,1] <- Rfast::mvnorm.mle(Alpha + Beta*n[1,,1])
 
 print(n)
