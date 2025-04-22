@@ -3,10 +3,10 @@ library(ggplot2)
 
 #Pull out community abundances and demographics 
 x <- rstan::extract(fit.m4)
-abundances <- x[["n"]][c(1:10),,1]
-alphas <- x[["Alpha"]][c(1:10),]
-betas <- as.array(x[["Beta"]])[c(1:10),,] 
-sigmas <- x[["sigma_p"]][c(1:10),]
+abundances <- x[["n"]][,,1]
+alphas <- x[["Alpha"]][,]
+betas <- as.array(x[["Beta"]])[,,] 
+sigmas <- x[["sigma_p"]][,]
 
 #inputs
 runs <- nrow(abundances)
@@ -14,19 +14,19 @@ time <- 13 #number of weeks in 2022
 n <- array(NA, dim = c(time, 4, runs))
 
 #Pull out environmental effects
-Ntheta <- x[["Ntheta"]][c(1:10),]
+Ntheta <- x[["Ntheta"]][,]
 nitrate <- stand_nut$nitrate_mg_N_L[1:time]
 
-Ptheta <- x[["Ptheta"]][c(1:10),]
+Ptheta <- x[["Ptheta"]][,]
 phos <- stand_nut$oPhos_ug_P_L[1:time]
 
-Atheta <- x[["Atheta"]][c(1:10),]
+Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-Dtheta <- x[["Dtheta"]][c(1:10),]
+Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
 
-Ttheta <- x[["Ttheta"]][c(1:10),]
+Ttheta <- x[["Ttheta"]][,]
 temp <- stand_nut$temp_C[1:time]
 
 
@@ -67,5 +67,6 @@ sims <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 ggplot(sims, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line() +
-  scale_y_continuous(breaks=c(seq(0,100,5)))
+  scale_y_continuous(breaks=c(seq(0,100,5))) +
+  labs(x = "Date", y = "Percent Cover (%)", title = "15,000 iterations used") 
   
