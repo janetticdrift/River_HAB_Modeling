@@ -132,19 +132,19 @@ params2_all <- as.data.frame(params1_all) %>%
 
  #FIGURES--------------------------------------------------------------------------------
 
-#Single year
-ggplot(params2, aes(x = week, y = mean)) + 
-  geom_point(aes(colour = Species), size = 4) + 
-  geom_line(aes(colour = Species), size = 2, alpha = .7) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
-                  fill = Species), alpha = 0.3) +
-  #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
-  geom_point(data = obs_data, aes(x = week, y = obs_mean, shape = Species), size = 2.5) +
-  geom_line(data = obs_data, aes(x = week, y = obs_mean, group = Species),
-            size = .5) +
-  scale_x_continuous(breaks=c(seq(1,13,2))) +
-  labs(x = "Week", y = "Percent Cover (%)", title = "Modeled vs. Observed Abundances, 2022") +
-  labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
+# #Single year
+# ggplot(params2, aes(x = week, y = mean)) + 
+#   geom_point(aes(colour = Species), size = 4) + 
+#   geom_line(aes(colour = Species), size = 2, alpha = .7) +
+#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
+#                   fill = Species), alpha = 0.3) +
+#   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
+#   geom_point(data = obs_data, aes(x = week, y = obs_mean, shape = Species), size = 2.5) +
+#   geom_line(data = obs_data, aes(x = week, y = obs_mean, group = Species),
+#             size = .5) +
+#   scale_x_continuous(breaks=c(seq(1,13,2))) +
+#   labs(x = "Week", y = "Percent Cover (%)", title = "Modeled vs. Observed Abundances, 2022") +
+#   labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
   
 #All years
 ggplot(params2_all, aes(x = model_date, y = mean)) + 
@@ -172,7 +172,8 @@ ggplot(obs_data_all, aes(x = model_date, y = obs_mean, fill = Species)) +
   geom_col(position = "fill", width = 5) #+
   #scale_x_continuous(breaks=c(seq(1,17,2))) This was when x = week
 
-subsetallyears <- subset(params2_all, year == 2022)
+#Look at a single year, compare with predictions for that year
+subsetallyears <- subset(params2_all, year == 2024)
 
 ggplot(subsetallyears, aes(x = model_date, y = mean)) + 
   geom_point(aes(colour = Species), size = 3) + 
@@ -180,11 +181,11 @@ ggplot(subsetallyears, aes(x = model_date, y = mean)) +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
                   fill = Species), alpha = 0.3) +
   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
-  geom_point(data = subset(obs_data_all, year == 2022), aes(x = model_date, y = obs_mean, shape = Species), size = 2.5) +
-  geom_line(data = subset(obs_data_all, year == 2022), aes(x = model_date, y = obs_mean, group = Species),
+  geom_point(data = subset(obs_data_all, year == 2024), aes(x = model_date, y = obs_mean, shape = Species), size = 2.5) +
+  geom_line(data = subset(obs_data_all, year == 2024), aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
-  #scale_x_continuous(breaks=c(seq(1,17,2))) +
-  scale_y_continuous(breaks=c(seq(0,100,10))) +
+  scale_y_continuous(breaks=c(seq(0,100,5))) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Modeled vs. Observed Abundances") +
+  coord_cartesian(ylim = c(0,30)) +
   labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
 
