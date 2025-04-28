@@ -83,12 +83,12 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 
 
 #Plot
-ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
+p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
   #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
-  coord_cartesian(ylim = c(0,70)) +
+  coord_cartesian(ylim = c(0,30)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") 
   
 
@@ -152,7 +152,7 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 
-ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
+p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   coord_cartesian(ylim = c(0,35)) +
@@ -218,9 +218,15 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 
-ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
+p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   coord_cartesian(ylim = c(0,30)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") 
+
+
+ggarrange(
+  p22, p23, p24, labels = c("A", "B", "C"),
+  common.legend = TRUE
+)
 

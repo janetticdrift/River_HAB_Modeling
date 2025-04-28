@@ -7,6 +7,8 @@ library(gjam)
 library(devtools)
 library(here)
 library(lubridate)
+library("StreamLightUtils")
+library("StreamLight")
 
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
@@ -108,24 +110,26 @@ nutrients <- nut_data %>%
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% #per year week
   ungroup() %>% 
-  mutate(across(c(temp_C, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
-                ~ zoo::na.approx(.x))) %>%  #interpolate env values, and fill in real week NAs
+  mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
+                ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 stand_nut <- nutrients %>% 
-  mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C), 
+  mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
   group_by(model_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L),temp_C = mean(temp_C))
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L),temp_C = mean(temp_C),
+                   cond_uS_cm = mean(cond_uS_cm))
 
 
 #Averaged by reach 
 nutrients_avg <- nutrients %>% 
   group_by(model_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C))
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
+                   cond_uS_cm = mean(cond_uS_cm))
 
 #Prelim plot: Nitrate
 ggplot(nutrients, aes(x = model_date, y = nitrate_mg_N_L, colour = reach)) +
@@ -168,6 +172,21 @@ ggplot(nutrients, aes(x = model_date, y = ammonium_mg_N_L, colour = reach)) +
   theme_bw()
 
 ggplot(nutrients_avg, aes(x = model_date, y = ammonium_mg_N_L)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_point() +
+  geom_line() +
+  viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
+  theme_bw()
+
+#Prelim plot: Conductivity
+ggplot(nutrients, aes(x = model_date, y = cond_uS_cm, colour = reach)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_point() +
+  geom_line() +
+  viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
+  theme_bw()
+
+ggplot(nutrients_avg, aes(x = model_date, y = cond_uS_cm)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
