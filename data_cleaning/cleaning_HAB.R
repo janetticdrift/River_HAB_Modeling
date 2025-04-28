@@ -251,7 +251,9 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
-NLDAS_DL(save_dir = "data/NLDAS", Site_ID = "sfkeel_mir", Lat = 40.198173, 
-         Lon = -123.775930, startDate = "2022-06-29")
+#Only need to run this download code once
+#working_dir <- "/Users/jld/Documents/Github/River_HAB_Modeling/data"
+# NLDAS_DL(save_dir = working_dir, Site_ID = "sfkeel_mir", Lat = 40.198173, 
+#          Lon = -123.775930, startDate = "2022-06-29")
              
              
