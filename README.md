@@ -11,5 +11,3 @@ This folder contains data files, cleaning code, and analysis code for using Ceda
             Learning gjamTime.R: Example code taken from the gjamTime Vignette: https://rpubs.com/jimclark/631209 
             
         data cleaning: This where data files are cleaned and subsetted before analysis use
-        
-        R: This is where custom R functions for analysis are stored. Irrelevant to gjam work
