@@ -255,5 +255,7 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #working_dir <- "/Users/jld/Documents/Github/River_HAB_Modeling/data"
 # NLDAS_DL(save_dir = working_dir, Site_ID = "sfkeel_mir", Lat = 40.198173, 
 #          Lon = -123.775930, startDate = "2022-06-29")
+
+NLDAS_processed <- NLDAS_proc(working_dir, "sfkeel_mir")[["sfkeel_mir"]]
              
              
