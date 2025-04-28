@@ -248,7 +248,9 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
   geom_line() +
   coord_cartesian(xlim = as.Date(c('2022-06-01', '2022-11-01')), ylim = c(0,7))
 
+#############################################################################################
+#Import and tidy photosynthetically active radiation (PAR) data
 
-             
+
              
              
