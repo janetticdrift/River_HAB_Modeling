@@ -260,4 +260,4 @@ NLDAS_processed <- NLDAS_proc(working_dir, "sfkeel_mir")[["sfkeel_mir"]]
 source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1c_NLDAS_formatting_function.R")
 supporting <- "/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/"
 NLDAS_formatted <- NLDAS_formatting(NLDAS_processed, supporting)
-             
+'/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1a_split_interpolate_data.R'
