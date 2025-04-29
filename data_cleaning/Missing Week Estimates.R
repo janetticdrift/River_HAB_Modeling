@@ -12,12 +12,12 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 #This dataframe uses HAB_missing_weeks.stan
 
 weekdata <- cover_indexweek %>% 
-  select(-c(timestep, field_date)) %>% 
+  dplyr::select(-c(timestep, field_date)) %>% 
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   replace(is.na(.), -99) %>% 
   ungroup() %>% 
-  filter(year == "2022") %>% 
+  dplyr::filter(year == "2022") %>% 
   mutate(reach = as.numeric(factor(reach))) %>% 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
   mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
@@ -26,7 +26,7 @@ weekdata <- cover_indexweek %>%
 #Fills in missing weeks for years that sampled bimonthly, and sets missing entries to -99
 
 yeardata <- cover_indexweek %>% 
-  select(-c(timestep, field_date)) %>% 
+  dplyr::select(-c(timestep, field_date)) %>% 
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   replace(is.na(.), -99) %>% 
@@ -123,7 +123,8 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
                 "discharge" = discharge$stand_discharge,
-                "temp" = stand_nut$temp_C
+                "temp" = stand_nut$temp_C,
+                "cond" = stand_nut$cond_uS_cm
 )
 #-------------------------------------------------------------------------------------------------
 #Run model

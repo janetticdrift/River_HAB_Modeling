@@ -91,19 +91,20 @@ calculate_NH4 <- function(df) {
 }
 #Subset out the last year
 x <- calculate_NH4(nut_data)[138:173,] %>% 
-  select(!c(pKa, f))
+  dplyr::select(!c(pKa, f))
 #Fill back in the full dataset
 nut_data <- nut_data %>% 
   slice(1:137)
 nut_data <- rbind(nut_data, x)
 nut_data[85, "nitrate_mg_N_L"] <- NA #Take out an outlier
+nut_data[145, "cond_uS_cm"] <- 237 #Fix glitch reading from sensor with lowest HOBO estimate
 
 
 
 #Pull out variables of interest
 nutrients <- nut_data %>% 
-  filter(site == "SFE-M") %>% 
-  select(!c("time", 15:length(unique(nut_data)))) %>% #remove uninteresting nutrients
+  dplyr::filter(site == "SFE-M") %>% 
+  dplyr::select(!c("time", 15:length(unique(nut_data)))) %>% #remove uninteresting nutrients
   mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
   mutate(year = year(field_date)) %>% 
   group_by(year) %>% 
@@ -115,6 +116,7 @@ nutrients <- nut_data %>%
                 ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
+
 
 stand_nut <- nutrients %>% 
   mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 

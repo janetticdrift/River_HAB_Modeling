@@ -81,18 +81,18 @@ obs_data_all <- coverpercent %>%
   mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
          model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  filter(Species != "bare_biofilm")
+  dplyr::filter(Species != "bare_biofilm")
 
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
 params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>% 
-  select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
-  select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
-  select(-c(`chain:1.Ntheta[1]`:`chain:3.Beta[4,4]`)) %>% 
+  dplyr::select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
+  dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
+  dplyr::select(-c(`chain:1.Ntheta[1]`:`chain:3.Beta[4,4]`)) %>% 
   mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
   t 
 
 #Set up dataframe to extract week/year info from
- yearweek <- alltaxatime %>% 
+yearweek <- alltaxatime %>% 
    pivot_longer(cols = c(green_algae, microcoleus, anabaena_cylindrospermum,
                          bare_biofilm, other_nfixers),
                 names_to = "Species", values_to = "mean") %>% 
@@ -102,7 +102,7 @@ params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>%
 params2_all <- as.data.frame(params1_all) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
-  select(-chain) %>% 
+  dplyr::select(-chain) %>% 
   group_by(group) %>% 
   dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
                    se_mean = calcSE(c_across(starts_with("V"))),
@@ -125,7 +125,7 @@ params2_all <- as.data.frame(params1_all) %>%
   mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                               (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  filter(Species != "bare_biofilm")
+  dplyr::filter(Species != "bare_biofilm")
 
 
 
@@ -186,6 +186,6 @@ ggplot(subsetallyears, aes(x = model_date, y = mean)) +
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Modeled vs. Observed Abundances") +
-  coord_cartesian(ylim = c(0,30)) +
+  coord_cartesian(ylim = c(0,35)) +
   labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
 

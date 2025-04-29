@@ -12,6 +12,7 @@ data {
   vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
   vector [uniqueID] temp; //Vector of temperatures, Celsius
+  vector [uniqueID] cond; //Vector of conductivity, standardized
 }
 
 
@@ -33,6 +34,7 @@ parameters {
   vector[Nspecies] Atheta; //parameter for ammonium each week
   vector[Nspecies] Dtheta; //parameter for discharge each week
   vector[Nspecies] Ttheta; //parameter for temps each week
+  vector[Nspecies] Ctheta; //parameter for conductivity each week
 }
 transformed parameters{
   matrix[Nspecies, Nspecies] ID = diag_matrix(sigma_p);
@@ -72,6 +74,7 @@ model {
   Atheta ~ normal(0,1);
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
 
   
   //Population models
@@ -83,7 +86,7 @@ model {
        n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
                             Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
                             Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
-                            , ID);
+                            Ctheta*cond[t-1], ID);
 }
     for(t in 1:uniqueID){
       for(s in 1:Nspecies){

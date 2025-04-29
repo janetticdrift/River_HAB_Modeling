@@ -29,6 +29,9 @@ dis <- discharge$stand_discharge[1:time]
 Ttheta <- x[["Ttheta"]][,]
 temp <- stand_nut$temp_C[1:time]
 
+Ctheta <- x[["Ctheta"]][,]
+cond <- stand_nut$cond_uS_cm[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -43,12 +46,15 @@ for(z in 1:runs){
   aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
+  cTheta <- Ctheta[z,]
   
   
   for(t in 2:time){
+      # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
+      
       n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] + 
-                                 tTheta*temp[t-1], Sigma = sigma)
+                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                                 tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
   }
 }
 
@@ -85,10 +91,10 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 #Plot
 p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
-  # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
+  # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
-  coord_cartesian(ylim = c(0,30)) +
+  coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") 
   
 
@@ -116,6 +122,8 @@ dis <- discharge$stand_discharge[1:time]
 
 temp <- stand_nut$temp_C[1:time]
 
+cond <- stand_nut$cond_uS_cm[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -130,12 +138,15 @@ for(z in 1:runs){
   aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
+  cTheta <- Ctheta[z,]
   
   
   for(t in 2:time){
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
+    
     n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] + 
-                               tTheta*temp[t-1], Sigma = sigma)
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
   }
 }
 
@@ -155,7 +166,7 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,35)) +
+  coord_cartesian(ylim = c(0,40)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") 
 
 
@@ -182,6 +193,8 @@ dis <- discharge$stand_discharge[1:time]
 
 temp <- stand_nut$temp_C[1:time]
 
+cond <- stand_nut$cond_uS_cm[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -196,12 +209,15 @@ for(z in 1:runs){
   aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
+  cTheta <- Ctheta[z,]
   
   
   for(t in 2:time){
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
+    
     n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] + 
-                               tTheta*temp[t-1], Sigma = sigma)
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
   }
 }
 
@@ -221,12 +237,12 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,30)) +
+  coord_cartesian(ylim = c(0,35)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") 
 
 
 ggarrange(
-  p22, p23, p24, labels = c("A", "B", "C"),
-  common.legend = TRUE
+  p22, p23, p24, labels = c("A", "B", "C"), ncol = 3,
+  common.legend = TRUE, legend = "bottom"
 )
 
