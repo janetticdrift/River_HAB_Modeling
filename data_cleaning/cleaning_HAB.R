@@ -9,6 +9,7 @@ library(here)
 library(lubridate)
 library("StreamLightUtils")
 library("StreamLight")
+library(zoo)
 
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
@@ -256,8 +257,14 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 # NLDAS_DL(save_dir = working_dir, Site_ID = "sfkeel_mir", Lat = 40.198173, 
 #          Lon = -123.775930, startDate = "2022-06-29")
 
+#Process and format downloaded PAR data
 NLDAS_processed <- NLDAS_proc(working_dir, "sfkeel_mir")[["sfkeel_mir"]]
 source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1c_NLDAS_formatting_function.R")
 supporting <- "/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/"
 NLDAS_formatted <- NLDAS_formatting(NLDAS_processed, supporting)
-'/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1a_split_interpolate_data.R'
+
+#Separate data out into the dates used per year
+PAR <- NLDAS_formatted %>% 
+  separate(date_time, c("date", "time"), sep = " ") %>% 
+  group_by(date) %>% 
+  dplyr::summarise(SW_W_m_2 = mean(SW_W_m_2))
