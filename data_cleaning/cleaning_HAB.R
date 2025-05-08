@@ -8,6 +8,7 @@ library(gjam)
 library(devtools)
 library(here)
 library(lubridate)
+library(dataRetrieval)
 
 #Packages for radiation data
 library("StreamLightUtils")
@@ -216,7 +217,7 @@ miranda2022 <- renameNWISColumns(readNWISuv(
   mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
-  filter(row_number() %% 7 == 1)
+  dplyr::filter(row_number() %% 7 == 1)
 
 #2023 - startDate = "2023-06-20", endDate = "2023-09-24" but end it a couple days later
 miranda2023 <- renameNWISColumns(readNWISuv(
@@ -227,7 +228,7 @@ miranda2023 <- renameNWISColumns(readNWISuv(
   mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
-  filter(row_number() %% 7 == 1)
+  dplyr::filter(row_number() %% 7 == 1)
 
 #2024 - startDate = "2024-06-19", endDate = "2024-10-10"
 miranda2024 <- renameNWISColumns(readNWISuv(
@@ -238,7 +239,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
   mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
-  filter(row_number() %% 7 == 1)
+  dplyr::filter(row_number() %% 7 == 1)
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   mutate(year = factor(year(date))) %>% 
@@ -266,7 +267,7 @@ source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions
 
 #Process and format NLDAS data for last two months of 2024
 NLDAS_sw <- get_NLDASv20_datarod(
-  start_date = "2022-06-29",
+  start_date = "2022-06-26",
   end_date = "2024-10-10",
   lat = 40.198173,
   lon = -123.775930,
@@ -275,8 +276,24 @@ NLDAS_sw <- get_NLDASv20_datarod(
 
 #Separate data out into the dates used per year
 PAR <- NLDAS_sw %>% 
-  dplyr::rename(SW_W_m_2 = value) %>% 
+  dplyr::rename(radiation = value) %>% #Metric is SW_W_m_2
   separate(datetime, c("date", "time"), sep = " ") %>% 
-  dplyr::mutate(time = replace_na(time, "00:00:00"))
-  group_by(date) %>% 
-  dplyr::summarise(SW_W_m_2 = mean(SW_W_m_2))
+  dplyr::group_by(date) %>% 
+  dplyr::summarise(radiation = mean(radiation))
+
+#Remove non-field season dates for each year
+PAR2022 <- PAR %>% 
+  dplyr::filter(between(date, "2022-06-26", "2022-09-18")) %>% 
+  dplyr::filter(row_number() %% 7 == 1)
+PAR2023 <- PAR %>% 
+  dplyr::filter(between(date, "2023-06-20", "2023-09-26")) %>% 
+  dplyr::filter(row_number() %% 7 == 1)
+PAR2024 <- PAR %>% 
+  dplyr::filter(between(date, "2024-06-19", "2024-10-10")) %>% 
+  dplyr::filter(row_number() %% 7 == 1)
+
+#Bind together yearly PAR data
+swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
+  mutate(year = factor(year(date))) %>% 
+  mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
+  mutate(stand_rad = c(scale(radiation)))

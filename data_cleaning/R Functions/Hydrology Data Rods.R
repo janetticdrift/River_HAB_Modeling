@@ -1,3 +1,7 @@
+#### Function for reading in and formatting NLDAS data
+### Author: Jacob Schaperow 
+## Data accessed from "https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Data%20Rods"
+
 get_NLDASv20_datarod <- function(start_date, end_date, lat, lon, var)
 {
   base_url <- "https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/access/timeseries.cgi"
