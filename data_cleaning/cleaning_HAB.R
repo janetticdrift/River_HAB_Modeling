@@ -16,6 +16,7 @@ library(zoo)
 library(ncdf4)
 library(CFtime)
 library(lattice)
+library(httr)
 
 
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
@@ -261,6 +262,8 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
+source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/")
+
 #Only need to run this download code once
 #working_dir <- "/Users/jld/Documents/Github/River_HAB_Modeling/data"
 # NLDAS_DL(save_dir = working_dir, Site_ID = "sfkeel_mir", Lat = 40.198173, 
@@ -273,11 +276,12 @@ supporting <- "/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Fu
 NLDAS_formatted <- NLDAS_formatting(NLDAS_processed, supporting)
 
 #Process and format NLDAS data for last two months of 2024
-ncpath <- "/Users/jld/Documents/Github/River_HAB_Modeling/data/"
-ncname <- "SFE_PAR"  
-ncfname <- paste(ncpath, ncname, ".nc", sep="")
-dname <- "par"
-ncin <- nc_open(ncfname)
+# ncpath <- "/Users/jld/Documents/Github/River_HAB_Modeling/data/"
+# ncname <- "SFE_PAR"  
+# ncfname <- paste(ncpath, ncname, ".nc", sep="")
+# dname <- "par"
+# ncin <- nc_open(ncfname)
+
 
 #Separate data out into the dates used per year
 PAR <- NLDAS_formatted %>% 
