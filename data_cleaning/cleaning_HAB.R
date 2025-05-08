@@ -1,5 +1,6 @@
 #Data cleaning of SFE algae cover data per year
 
+#Packages for cleaning data
 library(plyr)
 library(tidyverse)
 library(ggpubr)
@@ -7,9 +8,15 @@ library(gjam)
 library(devtools)
 library(here)
 library(lubridate)
+
+#Packages for radiation data
 library("StreamLightUtils")
 library("StreamLight")
 library(zoo)
+library(ncdf4)
+library(CFtime)
+library(lattice)
+
 
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
@@ -264,6 +271,8 @@ NLDAS_processed <- NLDAS_proc(working_dir, "sfkeel_mir")[["sfkeel_mir"]]
 source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1c_NLDAS_formatting_function.R")
 supporting <- "/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/"
 NLDAS_formatted <- NLDAS_formatting(NLDAS_processed, supporting)
+
+#Process and format NLDAS data for last two months of 2024
 
 #Separate data out into the dates used per year
 PAR <- NLDAS_formatted %>% 
