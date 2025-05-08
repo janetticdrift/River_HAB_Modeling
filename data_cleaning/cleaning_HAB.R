@@ -262,29 +262,21 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
-source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/")
-
-#Only need to run this download code once
-#working_dir <- "/Users/jld/Documents/Github/River_HAB_Modeling/data"
-# NLDAS_DL(save_dir = working_dir, Site_ID = "sfkeel_mir", Lat = 40.198173, 
-#          Lon = -123.775930, startDate = "2022-06-29")
-
-#Process and format downloaded PAR data
-NLDAS_processed <- NLDAS_proc(working_dir, "sfkeel_mir")[["sfkeel_mir"]]
-source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/S1c_NLDAS_formatting_function.R")
-supporting <- "/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/"
-NLDAS_formatted <- NLDAS_formatting(NLDAS_processed, supporting)
+source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
 
 #Process and format NLDAS data for last two months of 2024
-# ncpath <- "/Users/jld/Documents/Github/River_HAB_Modeling/data/"
-# ncname <- "SFE_PAR"  
-# ncfname <- paste(ncpath, ncname, ".nc", sep="")
-# dname <- "par"
-# ncin <- nc_open(ncfname)
-
+NLDAS_sw <- get_NLDASv20_datarod(
+  start_date = "2022-06-29",
+  end_date = "2024-10-10",
+  lat = 40.198173,
+  lon = -123.775930,
+  var = "SWdown"
+)
 
 #Separate data out into the dates used per year
-PAR <- NLDAS_formatted %>% 
-  separate(date_time, c("date", "time"), sep = " ") %>% 
+PAR <- NLDAS_sw %>% 
+  dplyr::rename(SW_W_m_2 = value) %>% 
+  separate(datetime, c("date", "time"), sep = " ") %>% 
+  dplyr::mutate(time = replace_na(time, "00:00:00"))
   group_by(date) %>% 
   dplyr::summarise(SW_W_m_2 = mean(SW_W_m_2))
