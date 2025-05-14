@@ -26,8 +26,8 @@ newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
 #Clean new data to match previous year formatting
 
 percover <- percover1 %>% 
-  filter(site == "SFE-M") %>% 
-  select(!(10:14)) %>%
+  dplyr::filter(site == "SFE-M") %>% 
+  dplyr::select(!(10:14)) %>%
   mutate(field_date = as.Date(field_date)) %>% 
   mutate(year = year(field_date))
 
@@ -103,7 +103,7 @@ x <- calculate_NH4(nut_data)[138:173,] %>%
   dplyr::select(!c(pKa, f))
 #Fill back in the full dataset
 nut_data <- nut_data %>% 
-  slice(1:137)
+  dplyr::slice(1:137)
 nut_data <- rbind(nut_data, x)
 nut_data[85, "nitrate_mg_N_L"] <- NA #Take out an outlier
 nut_data[145, "cond_uS_cm"] <- 237 #Fix glitch reading from sensor with lowest HOBO estimate

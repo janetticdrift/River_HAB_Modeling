@@ -124,7 +124,8 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
                 "ammonium" = stand_nut$ammonium_mg_N_L,
                 "discharge" = discharge$stand_discharge,
                 "temp" = stand_nut$temp_C,
-                "cond" = stand_nut$cond_uS_cm
+                "cond" = stand_nut$cond_uS_cm,
+                "rad" = swradiation$stand_rad
 )
 #-------------------------------------------------------------------------------------------------
 #Run model
