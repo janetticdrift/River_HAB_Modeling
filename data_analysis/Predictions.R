@@ -32,6 +32,9 @@ temp <- stand_nut$temp_C[1:time]
 Ctheta <- x[["Ctheta"]][,]
 cond <- stand_nut$cond_uS_cm[1:time]
 
+Rtheta <- x[["Rtheta"]][,]
+rad <- swradiation$stand_rad[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -47,6 +50,7 @@ for(z in 1:runs){
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
+  rTheta <- Rtheta[z,]
   
   
   for(t in 2:time){
@@ -54,7 +58,8 @@ for(z in 1:runs){
       
       n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
                                  pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                                 tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
+                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1], 
+                               Sigma = sigma)
   }
 }
 

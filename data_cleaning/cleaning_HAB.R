@@ -283,17 +283,23 @@ PAR <- NLDAS_sw %>%
 
 #Remove non-field season dates for each year
 PAR2022 <- PAR %>% 
-  dplyr::filter(between(date, "2022-06-26", "2022-09-18")) %>% 
-  dplyr::filter(row_number() %% 7 == 1)
+  dplyr::filter(between(date, "2022-06-26", "2022-09-18")) #%>% 
+  #dplyr::filter(row_number() %% 7 == 1)
 PAR2023 <- PAR %>% 
-  dplyr::filter(between(date, "2023-06-20", "2023-09-26")) %>% 
-  dplyr::filter(row_number() %% 7 == 1)
+  dplyr::filter(between(date, "2023-06-20", "2023-09-26")) #%>% 
+  #dplyr::filter(row_number() %% 7 == 1)
 PAR2024 <- PAR %>% 
-  dplyr::filter(between(date, "2024-06-19", "2024-10-10")) %>% 
-  dplyr::filter(row_number() %% 7 == 1)
+  dplyr::filter(between(date, "2024-06-19", "2024-10-10")) #%>% 
+  #dplyr::filter(row_number() %% 7 == 1)
 
 #Bind together yearly PAR data
 swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
   mutate(year = factor(year(date))) %>% 
   mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   mutate(stand_rad = c(scale(radiation)))
+
+#Quick plot of radiation data
+ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
+  geom_point() +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
