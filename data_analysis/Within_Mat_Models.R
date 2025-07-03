@@ -35,7 +35,7 @@ afdm <- afdm %>%
   
 #Create dataframe with gene copies and AFDM together
 
-geneAFDM <- inner_join(genecopy, afdm)
+geneAFDM <- left_join(afdm, genecopy)
   
 
 library(plotly)
