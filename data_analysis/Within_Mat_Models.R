@@ -35,7 +35,7 @@ afdm <- afdm %>%
   
 #Create dataframe with gene copies and AFDM together
 
-geneAFDM <- left_join(afdm, genecopy)
+geneAFDM <- left_join(genecopy, afdm)
   
 
 library(plotly)
@@ -59,6 +59,20 @@ p3 <- ggplot(genecopy, aes(x = log(ana_C.uL+1), y = log(nif.uL+1), color = mat, 
   #coord_cartesian(ylim = c(0, 2000)) +
   labs(title = " Gene Copies", x = "ana_C copy count", 
        y = "nif Copy Count")
+
+#%OM and ana_C gene copy count
+ggplot(geneAFDM, aes(x = percentOM, y = log(ana_C.uL+1), color = mat, label = sample)) +
+  geom_point() +
+  #coord_cartesian(ylim = c(0, 2000)) +
+  labs(title = " AFDM and ana_C Gene Copies", x = "Percent Organic Matter", 
+       y = "ana_C copy count")
+
+#%OM and nif gene copy count
+ggplot(geneAFDM, aes(x = percentOM, y = log(nif.uL+1), color = mat, label = sample)) +
+  geom_point() +
+  #coord_cartesian(ylim = c(0, 2000)) +
+  labs(title = " AFDM and nif Gene Copies", x = "Percent Organic Matter", 
+       y = "nif copy count")
 
 ggarrange(
   p1, p2, labels = c("A", "B"),
