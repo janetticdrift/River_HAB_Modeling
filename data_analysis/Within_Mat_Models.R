@@ -6,7 +6,7 @@ withinmat <- read.csv(here::here("data/16S_2024.csv")) #2024 data
 #Gene copies
 genecopy <- read.csv(here::here("data/qPCR_2024.csv")) #2024 data
 #Ash Free Dry Mass
-afdm <- read.csv(here::here("data/Ashfree Dry Mass 2024.csv"))
+ashfreedrymass <- read.csv(here::here("data/Ashfree Dry Mass 2024.csv"))
 
 #Cleaning data: Remove the percentages in percent_comp
 withinmat <- withinmat %>% 
@@ -14,8 +14,29 @@ withinmat <- withinmat %>%
 withinmat$percent_comp <- as.numeric(as.character(withinmat$percent_comp))
 
 #Cleaning data: Organize AFDM, remove improbable row
+afdm <- ashfreedrymass %>% 
+  dplyr::filter(River %in% 'South Fork Eel') %>% 
+  dplyr::filter(!grepl("Extra|Excess", Notes)) %>%  #Remove data on extra mat material
+  dplyr::filter(!grepl("dropped", Ashed.sample...tin..mg.)) %>% #Remove dropped sample
+  rename(percentOM = X.OM) %>% 
+  rename(date = Field.Date) %>% 
+  rename(mat = Cyano) %>% 
+  mutate(across(everything(), str_remove_all, "%"))
+
+afdm$percentOM <- as.numeric(as.character(afdm$percentOM))
+
 afdm <- afdm %>% 
-  dplyr::filter(River %in% 'South Fork Eel')
+  dplyr::mutate(percentOM = ifelse(percentOM>100|percentOM<0, NA, percentOM)) %>%  #Set NA the rows with improper weights
+  dplyr::mutate(site = str_split_i(Sample.ID,"-", 2)) %>%  #Extrate site ID to join with genecopy
+  mutate(site = case_when(site == "4S" ~ "1S",
+                          site == "BUG" ~ "2",
+                          site == "3UP" ~ "3",
+                          site == "2UP" ~ "4")) 
+  
+#Create dataframe with gene copies and AFDM together
+
+geneAFDM <- inner_join(genecopy, afdm)
+  
 
 library(plotly)
 library(ggplot2)
