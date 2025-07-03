@@ -1,13 +1,21 @@
 #Code to model within-mat dynamics
 library(tidyverse)
 
+#Microscopy
 withinmat <- read.csv(here::here("data/16S_2024.csv")) #2024 data
+#Gene copies
 genecopy <- read.csv(here::here("data/qPCR_2024.csv")) #2024 data
+#Ash Free Dry Mass
+afdm <- read.csv(here::here("data/Ashfree Dry Mass 2024.csv"))
 
-#Clean data: Must remove the percentages in percent_comp
+#Cleaning data: Remove the percentages in percent_comp
 withinmat <- withinmat %>% 
   mutate(across(everything(), str_remove_all, "%"))
 withinmat$percent_comp <- as.numeric(as.character(withinmat$percent_comp))
+
+#Cleaning data: Organize AFDM, remove improbable row
+afdm <- afdm %>% 
+  dplyr::filter(River %in% 'South Fork Eel')
 
 library(plotly)
 library(ggplot2)
@@ -43,3 +51,5 @@ ggplotly(p1, tooltip = "sample")
 ggplotly(p2, tooltip = "sample")
 #gene copy count in Ana vs Micro
 ggplotly(p3, tooltip = "sample")
+
+
