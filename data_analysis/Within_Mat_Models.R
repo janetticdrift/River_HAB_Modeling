@@ -13,16 +13,22 @@ library(plotly)
 library(ggplot2)
 
 
-p1 <- ggplot(genecopy, aes(x = DNA_conc, y = ana_C.uL, color = mat, label = sample)) +
+p1 <- ggplot(genecopy, aes(x = DNA_conc, y = log(ana_C.uL+1), color = mat, label = sample)) +
   geom_point() +
-  coord_cartesian(ylim = c(0, 2000)) +
+  #coord_cartesian(ylim = c(-50, 20)) +
   labs(title = "anaC Gene Copies", x = "DNA concentration ng/uL", 
        y = "anaC Copy Count")
 
-p2 <- ggplot(genecopy, aes(x = DNA_conc, y = nif.uL, color = mat, label = sample)) +
+p2 <- ggplot(genecopy, aes(x = DNA_conc, y = log(nif.uL+1), color = mat, label = sample)) +
   geom_point() +
-  coord_cartesian(ylim = c(0, 2000)) +
+  #coord_cartesian(ylim = c(0, 2000)) +
   labs(title = "nif Gene Copies", x = "DNA concentration ng/uL", 
+       y = "nif Copy Count")
+
+p3 <- ggplot(genecopy, aes(x = log(ana_C.uL+1), y = log(nif.uL+1), color = mat, label = sample)) +
+  geom_point() +
+  #coord_cartesian(ylim = c(0, 2000)) +
+  labs(title = " Gene Copies", x = "ana_C copy count", 
        y = "nif Copy Count")
 
 ggarrange(
@@ -31,4 +37,9 @@ ggarrange(
 )
 
 
-ggplotly(plotgenecopy, tooltip = "sample")
+#anaC gene copy count by DNA concentration, log-transformed
+ggplotly(p1, tooltip = "sample")
+#nif gene copy count by DNA concentration, log-transformed
+ggplotly(p2, tooltip = "sample")
+#gene copy count in Ana vs Micro
+ggplotly(p3, tooltip = "sample")
