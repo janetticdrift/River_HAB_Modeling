@@ -129,6 +129,8 @@ temp <- stand_nut$temp_C[1:time]
 
 cond <- stand_nut$cond_uS_cm[1:time]
 
+rad <- swradiation$stand_rad[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -144,6 +146,8 @@ for(z in 1:runs){
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
+  rTheta <- Rtheta[z,]
+  
   
   
   for(t in 2:time){
@@ -151,7 +155,8 @@ for(z in 1:runs){
     
     n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
   }
 }
 
@@ -171,7 +176,7 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,40)) +
+  coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") 
 
 
@@ -200,6 +205,8 @@ temp <- stand_nut$temp_C[1:time]
 
 cond <- stand_nut$cond_uS_cm[1:time]
 
+rad <- swradiation$stand_rad[1:time]
+
 
 for(z in 1:runs){
   #Set parameters
@@ -215,6 +222,7 @@ for(z in 1:runs){
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
+  rTheta <- Rtheta[z,]
   
   
   for(t in 2:time){
@@ -222,7 +230,8 @@ for(z in 1:runs){
     
     n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1], Sigma = sigma)
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
   }
 }
 
@@ -242,7 +251,7 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,35)) +
+  coord_cartesian(ylim = c(0,45)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") 
 
 

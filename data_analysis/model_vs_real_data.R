@@ -17,7 +17,7 @@ library(lubridate)
 coverpercent <- readRDS(here::here("data/allcoverdataplot.rds"))
 
 #Read in model data (from Missing Week Estimates)
-fit.m2 <- readRDS(here::here("data/Bayes_avg_reach_fit.rds"))
+#fit.m2 <- readRDS(here::here("data/Bayes_avg_reach_fit.rds"))
 fit.m4 <- readRDS(here::here("data/Bayes_all_year_fit.rds"))
 
 
@@ -40,36 +40,36 @@ dimnames(posterior) #To see variable names
 color_scheme_set("green")
 mcmc_hist(posterior, pars = c("Beta0[1]", "Beta0[2]", "Beta0[3]", "Beta0[4]"))
 
-#OBSERVED DATA
-obs_data <- coverpercent %>% 
-  #filter(Species %in% c("green_algae", "microcoleus", "anabaena_cylindrospermum")) %>% #filter for only 2 sp for now
-  filter(year %in% "2022") %>% 
-  group_by(field_date, Species) %>% 
-  dplyr::summarise(obs_mean = mean(Abundance)) %>% 
-  ungroup() %>% 
-  mutate(week = rep(seq(1, 13, 2), each = length(unique(Species))))
-
-#Manually calculate mean posteriors for species $ cover, as well as confidence interval
-params1 <- as.data.frame(rstan::extract(fit.m2, permuted=FALSE)) %>% 
-  select(-c(1:`chain:3.Beta1[4]`)) %>% 
-  select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
-  mutate(across(1:`chain:3.n[13,4]`, exp)) %>% 
-  t 
-params2 <- as.data.frame(params1) %>% 
-  rownames_to_column(var="ID") %>% 
-  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
-  select(-chain) %>% 
-  group_by(group) %>% 
-  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
-                   se_mean = calcSE(c_across(starts_with("V"))),
-                   CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
-                   CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
-  mutate(Species = case_when(grepl(",1]", group) ~ 'green_algae',
-                             grepl(",2]", group) ~ 'microcoleus',
-                             grepl(",3]", group) ~ 'anabaena_cylindrospermum',
-                             grepl(",4]", group) ~ 'other_nfixers',
-                             grepl("b", group) ~ 'bare_biofilm')) %>% 
-  mutate(week = as.numeric(str_extract(group, "[0-9]+")))
+# #OBSERVED DATA
+# obs_data <- coverpercent %>% 
+#   #filter(Species %in% c("green_algae", "microcoleus", "anabaena_cylindrospermum")) %>% #filter for only 2 sp for now
+#   filter(year %in% "2022") %>% 
+#   group_by(field_date, Species) %>% 
+#   dplyr::summarise(obs_mean = mean(Abundance)) %>% 
+#   ungroup() %>% 
+#   mutate(week = rep(seq(1, 13, 2), each = length(unique(Species))))
+# 
+# #Manually calculate mean posteriors for species $ cover, as well as confidence interval
+# params1 <- as.data.frame(rstan::extract(fit.m2, permuted=FALSE)) %>% 
+#   select(-c(1:`chain:3.Beta1[4]`)) %>% 
+#   select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
+#   mutate(across(1:`chain:3.n[13,4]`, exp)) %>% 
+#   t 
+# params2 <- as.data.frame(params1) %>% 
+#   rownames_to_column(var="ID") %>% 
+#   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+#   select(-chain) %>% 
+#   group_by(group) %>% 
+#   dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
+#                    se_mean = calcSE(c_across(starts_with("V"))),
+#                    CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
+#                    CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
+#   mutate(Species = case_when(grepl(",1]", group) ~ 'green_algae',
+#                              grepl(",2]", group) ~ 'microcoleus',
+#                              grepl(",3]", group) ~ 'anabaena_cylindrospermum',
+#                              grepl(",4]", group) ~ 'other_nfixers',
+#                              grepl("b", group) ~ 'bare_biofilm')) %>% 
+#   mutate(week = as.numeric(str_extract(group, "[0-9]+")))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
 #OBSERVED DATA

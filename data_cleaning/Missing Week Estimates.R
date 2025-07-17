@@ -166,16 +166,10 @@ shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Beta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-avg.reach.fit <- fit.m2
 avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
 
 
 #Save raw parameter estimates
-saveRDS(
-  avg.reach.fit, 
-  file = here::here("data/Bayes_avg_reach_fit.rds")
-) 
-
 saveRDS(
   avg.reach.output, 
   file = here::here("data/Bayes_avg_reach_output.rds")
