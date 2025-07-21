@@ -94,7 +94,6 @@ model {
     for(t in 1:uniqueID){
       for(s in 1:Nspecies){
         
-        //if(firstdays[t]==1) continue;
       if(N[t,s] >= -3){ //if the year is a year we actually have sampled data for
         N[t,s] ~ normal(n[s,t], sigma_o[s]); //for collected data, we apply poisson dist to use for estimating unknown weeks
           //N[t,r] ~ normal(exp(n[t,r]), sigma_o); 

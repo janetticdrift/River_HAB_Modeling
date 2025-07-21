@@ -125,7 +125,8 @@ params2_all <- as.data.frame(params1_all) %>%
   mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                               (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  dplyr::filter(Species != "bare_biofilm")
+  dplyr::filter(Species != "bare_biofilm") %>% 
+  mutate(CIupper = replace(CIupper, CIupper>70, 70))
 
 
 
@@ -149,9 +150,9 @@ params2_all <- as.data.frame(params1_all) %>%
 #All years
 ggplot(params2_all, aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
-  geom_point(aes(colour = Species), size = 3) + 
+  geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = .7) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, 
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
                   fill = Species), alpha = 0.3) +
   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
   geom_point(data = obs_data_all, aes(x = model_date, y = obs_mean, shape = Species), size = 2.5) +
@@ -159,8 +160,16 @@ ggplot(params2_all, aes(x = model_date, y = mean)) +
             size = .5) +
   #scale_x_continuous(breaks=c(seq(1,17,2))) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Modeled vs. Observed Abundances") +
-  labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
+  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances") +
+  labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
+  scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
+                                "Other N fixers"), values = c("brown", "darkolivegreen4", 
+                                                               "darkcyan", "darkorange")) +
+  scale_fill_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
+                               "Other N fixers"), values = c("brown", "darkolivegreen4", 
+                                                             "darkcyan", "darkorange")) +
+  scale_shape_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
+                                "Other N Fixers"), values = c(16, 17, 15, 3))
   
 #Pulling out basic numbers
 aggregate(mean ~ Species + year, data = params2_all, max)
