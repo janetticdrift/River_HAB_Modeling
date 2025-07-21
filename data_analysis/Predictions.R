@@ -9,7 +9,7 @@ x <- rstan::extract(fit.m4)
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
-nullbetas <- apply(betas, 1:3, function(x) 1)
+nullbetas <- apply(betas, 1:3, function(x) diag(diag(x)))
 sigmas <- x[["sigma_p"]][,]
 
 #inputs
@@ -60,12 +60,12 @@ for(z in 1:runs){
   
   for(t in 2:time){
       # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
-
-    #Everything included
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                               Sigma = sigma)
+      
+    # #Everything included
+    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                              pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                              tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1], 
+    #                            Sigma = sigma)
     # #Remove env drivers
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
     #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
