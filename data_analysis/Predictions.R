@@ -1,5 +1,10 @@
 #Historical Predictions, 2022
 library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+
+#Read in latent states, params2_all
+source(here::here("data_analysis/model_vs_real_data.R"))
 
 #Note to janette: you'll probably have to read in the fit.m4 file since it's too
 #large to be saved with rds 
@@ -9,8 +14,11 @@ x <- rstan::extract(fit.m4)
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
-nullbetas <- apply(betas, 1:3, function(x) diag(diag(x)))
+nullbetas <- apply(betas, 1:3, function(x) 1)
 sigmas <- x[["sigma_p"]][,]
+
+#Testing idk what I'm doing
+
 
 #inputs
 runs <- nrow(abundances)
@@ -44,7 +52,7 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- nullbetas[z,,]
+  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
@@ -61,11 +69,11 @@ for(z in 1:runs){
   for(t in 2:time){
       # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
       
-    # #Everything included
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                              pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                              tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1], 
-    #                            Sigma = sigma)
+    #Everything included
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                               Sigma = sigma)
     # #Remove env drivers
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
     #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
@@ -112,14 +120,18 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 
 #Plot
 p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_line(size = 1) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), alpha = 0.3) +
+  geom_point(size = 3)+
+  geom_line(size = 1.5) +
+  geom_line(data=params2_all[params2_all$year %in% "2022", ], 
+            aes(x = model_date, y = mean, colour = Species),
+            linewidth = 4, alpha = .25) +
+  # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+  #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
   coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N fixers"), values = c("brown", "darkolivegreen4", 
+                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
                                                               "darkcyan", "darkorange"))
   
 
@@ -174,22 +186,22 @@ for(z in 1:runs){
   for(t in 2:time){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
-    # #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1], 
-    #                          Sigma = sigma)
+    #Everything included
+    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
     # #Remove env drivers
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
     #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
     #                              0*tTheta*temp[t-1] + 0*cTheta*cond[t-1] + 0*rTheta*rad[t-1],
     #                            Sigma = sigma)
 
-    #Remove interactions
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                               Sigma = sigma)
+    # #Remove interactions
+    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                              pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                              tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                            Sigma = sigma)
     
   }
 }
@@ -208,12 +220,16 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_line(size = 1) +
+  geom_point(size = 3)+
+  geom_line(size = 1.5) +
+  geom_line(data=params2_all[params2_all$year %in% "2023", ], 
+            aes(x = model_date, y = mean, colour = Species),
+            linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N fixers"), values = c("brown", "darkolivegreen4", 
+                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
                                                               "darkcyan", "darkorange"))
 
 
@@ -266,22 +282,22 @@ for(z in 1:runs){
   for(t in 2:time){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
-    # #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1], 
-    #                          Sigma = sigma)
+    #Everything included
+    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
     # #Remove env drivers
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
     #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
     #                              0*tTheta*temp[t-1] + 0*cTheta*cond[t-1] + 0*rTheta*rad[t-1],
     #                            Sigma = sigma)
 
-    #Remove interactions
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                               Sigma = sigma)
+    # #Remove interactions
+    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                              pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                              tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                            Sigma = sigma)
     
   }
 }
@@ -300,12 +316,16 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_line(size = 1) +
+  geom_point(size = 3)+
+  geom_line(size = 1.5) +
+  geom_line(data=params2_all[params2_all$year %in% "2024", ], 
+            aes(x = model_date, y = mean, colour = Species),
+            linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   coord_cartesian(ylim = c(0,45)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N fixers"), values = c("brown", "darkolivegreen4", 
+                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
                                                               "darkcyan", "darkorange"))
 
 
