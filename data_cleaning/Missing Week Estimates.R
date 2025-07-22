@@ -152,7 +152,7 @@ options(mc.cores = parallel::detectCores())
 #                                                            max_treedepth = 20))
 
 #All years, all species, averaged reach
-fit.m4 <-  stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
+fit.m4 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))

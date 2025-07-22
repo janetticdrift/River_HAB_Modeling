@@ -52,29 +52,27 @@ for(z in 1:runs){
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
-  #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # #Pull env covariates
+  # nTheta <- Ntheta[z,]
+  # pTheta <- Ptheta[z,]
+  # aTheta <- Atheta[z,]
+  # dTheta <- Dtheta[z,]
+  # tTheta <- Ttheta[z,]
+  # cTheta <- Ctheta[z,]
+  # rTheta <- Rtheta[z,]
   
   
   for(t in 2:time){
       # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
       
     #Everything included
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                                 pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                                 tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+      # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+      #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+      #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+      #                          Sigma = sigma)
+    #Remove env drivers
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
                                Sigma = sigma)
-    # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
-    #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
-    #                              0*tTheta*temp[t-1] + 0*cTheta*cond[t-1] + 0*rTheta*rad[t-1],
-    #                            Sigma = sigma)
 
     # #Remove interactions
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
