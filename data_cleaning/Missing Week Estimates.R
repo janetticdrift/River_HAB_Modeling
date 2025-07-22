@@ -152,7 +152,13 @@ options(mc.cores = parallel::detectCores())
 #                                                            max_treedepth = 20))
 
 #All years, all species, averaged reach
-fit.m4 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
+fit.m4 <-  stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+                                                           stepsize = 0.001,
+                                                           max_treedepth = 20))
+
+#Only biotic variables
+fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))
@@ -162,7 +168,7 @@ fit.m4 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 100
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
-shinystan::launch_shinystan(fit.m4)
+shinystan::launch_shinystan(fit.m5)
 print(fit.m4, par = "Beta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R

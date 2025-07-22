@@ -88,7 +88,7 @@ params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>%
   dplyr::select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
   dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
   dplyr::select(-c(`chain:1.Ntheta[1]`:`chain:3.Beta[4,4]`)) %>% 
-  mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
+  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
   t 
 
 #Set up dataframe to extract week/year info from
@@ -201,11 +201,11 @@ ggplot(subsetallyears, aes(x = model_date, y = mean)) +
 
 #Latent states for biotic-only model
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>% 
+params1_all <- as.data.frame(rstan::extract(fit.m5, permuted=FALSE)) %>% 
   dplyr::select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
   dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
   dplyr::select(-c(`chain:1.ID[1,1]`:`chain:3.Beta[4,4]`)) %>% 
-  mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
+  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
   t 
 
 #Set up dataframe to extract week/year info from

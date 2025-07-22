@@ -1,4 +1,4 @@
-//This model include only biotic factors
+//This model include all abiotic and biotic factors
 
 data {
   int uniqueID; //Total number of weeks down the years
@@ -8,6 +8,14 @@ data {
   matrix [uniqueID, Nspecies] N; //Percent cover at year per species
   
   vector [Nspecies] id; //Vector of 1s for ID matrix
+  
+  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  vector [uniqueID] phos; //Vector of o phos levels, standardized
+  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
+  vector [uniqueID] discharge; //Vector of discharge levels, logged
+  vector [uniqueID] temp; //Vector of temperatures, Celsius
+  vector [uniqueID] cond; //Vector of conductivity, standardized
+  vector [uniqueID] rad; //Vector of shortwave radiation, standardized
 }
 
 
@@ -19,25 +27,17 @@ parameters {
 
   vector<lower=0>[Nspecies] Alpha;
   
-  vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector
-  matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
+  vector<lower=0,upper=1>[Nspecies] Beta; //create intraspecific vector
   
   matrix<upper=99>[Nspecies, uniqueID] n; //percent cover each week at each reach
-}
-
-transformed parameters{
-  matrix[Nspecies, Nspecies] ID = diag_matrix(sigma_p);
   
-   matrix[Nspecies, Nspecies] Beta_d = diag_matrix(Beta_diag);
-   
-   matrix[Nspecies, Nspecies] Beta;
-   
-   for(i in 1:Nspecies){
-     for(j in 1:Nspecies){
-       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
-     }
-   }
-   
+  vector[Nspecies] Ntheta; //parameter for nitrate each week
+  vector[Nspecies] Ptheta; //parameter for o phos each week
+  vector[Nspecies] Atheta; //parameter for ammonium each week
+  vector[Nspecies] Dtheta; //parameter for discharge each week
+  vector[Nspecies] Ttheta; //parameter for temps each week
+  vector[Nspecies] Ctheta; //parameter for conductivity each week
+  vector[Nspecies] Rtheta; //parameter for shortwave radiation each week
 }
 
 model {
@@ -55,16 +55,26 @@ model {
 
   Alpha ~ normal(0,1);
   
-  Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
-  to_vector(Beta_off) ~ normal(.3, .2);
+  Beta ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
+  
+  Ntheta ~ normal(0,1);
+  Ptheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  Dtheta ~ normal(0,1);
+  Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
+  Rtheta ~ normal(0,1);
 
   
   //Population models
   for(t in 2:uniqueID){
-    //for(s in 1:Nspecies){
+    for(s in 1:Nspecies){
       
       if(firstdays[t]==1) continue;
-       n[,t] ~ multi_normal(Alpha + Beta*n[,t-1], ID);
+       n[t,s] ~ normal(Alpha[s] + Beta[s]*n[t-1, s] + Ntheta*nitrate[t-1,s] +
+                            Ptheta*phos[t-1,s] + Atheta*ammonium[t-1,s] +
+                            Dtheta*discharge[t-1,s] + Ttheta*temp[t-1,s] +
+                            Ctheta*cond[t-1,s] + Rtheta*rad[t-1,s], sigma_p[s]);
 }
     for(t in 1:uniqueID){
       for(s in 1:Nspecies){

@@ -84,21 +84,21 @@ for(z in 1:runs){
 
 #Create dataframe
 sims2022mean <- as.data.frame(apply(n, c(1,2), mean)) %>% 
-  mutate(across(1:4, exp)) %>%
+  dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
                 other_nfixers = V4) %>% 
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2022lquant <- as.data.frame(apply(n, c(1,2), quantile, probs = 0.025)) %>% 
-  mutate(across(1:4, exp)) %>%
+  dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
                 other_nfixers = V4) %>% 
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2022uquant <- as.data.frame(apply(n, c(1,2), quantile, probs = 0.975)) %>% 
-  mutate(across(1:4, exp)) %>%
+  dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
                 other_nfixers = V4) %>% 
@@ -162,34 +162,32 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- nullbetas[z,,]
+  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # nTheta <- Ntheta[z,]
+  # pTheta <- Ptheta[z,]
+  # aTheta <- Atheta[z,]
+  # dTheta <- Dtheta[z,]
+  # tTheta <- Ttheta[z,]
+  # cTheta <- Ctheta[z,]
+  # rTheta <- Rtheta[z,]
   
   
   
   for(t in 2:time){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
-    #Everything included
-    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
-    # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
-    #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
-    #                              0*tTheta*temp[t-1] + 0*cTheta*cond[t-1] + 0*rTheta*rad[t-1],
-    #                            Sigma = sigma)
+    # #Everything included
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
+    #Remove env drivers
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+                               Sigma = sigma)
 
     # #Remove interactions
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
@@ -201,7 +199,7 @@ for(z in 1:runs){
 }
 
 sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
-  mutate(across(1:4, exp)) %>%
+  dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
                 other_nfixers = V4) %>% 
@@ -259,33 +257,31 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- nullbetas[z,,]
+  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # nTheta <- Ntheta[z,]
+  # pTheta <- Ptheta[z,]
+  # aTheta <- Atheta[z,]
+  # dTheta <- Dtheta[z,]
+  # tTheta <- Ttheta[z,]
+  # cTheta <- Ctheta[z,]
+  # rTheta <- Rtheta[z,]
   
   
   for(t in 2:time){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
     #Everything included
-    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
-    # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + 0*nTheta*nitrate[t-1]+
-    #                              0*pTheta*phos[t-1] + 0*aTheta*amon[t-1] + 0*dTheta*dis[t-1] +
-    #                              0*tTheta*temp[t-1] + 0*cTheta*cond[t-1] + 0*rTheta*rad[t-1],
-    #                            Sigma = sigma)
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
+    #Remove env drivers
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+                               Sigma = sigma)
 
     # #Remove interactions
     #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + NullBeta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
@@ -297,7 +293,7 @@ for(z in 1:runs){
 }
 
 sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
-  mutate(across(1:4, exp)) %>%
+  dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
                 other_nfixers = V4) %>% 
