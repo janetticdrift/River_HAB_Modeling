@@ -163,12 +163,18 @@ fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 100
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))
 
+#Only abiotic variables
+fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+                                                           stepsize = 0.001,
+                                                           max_treedepth = 20))
+
 #-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
-shinystan::launch_shinystan(fit.m5)
+shinystan::launch_shinystan(fit.m6)
 print(fit.m4, par = "Beta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R

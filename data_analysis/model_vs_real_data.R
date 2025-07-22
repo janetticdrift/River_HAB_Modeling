@@ -198,7 +198,8 @@ ggplot(subsetallyears, aes(x = model_date, y = mean)) +
   coord_cartesian(ylim = c(0,35)) +
   labs(color = "Modeled Species", fill = "Modeled Species", shape = "Observed Species")
 
-
+-------------------------------------------------------------------
+  
 #Latent states for biotic-only model
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
 params1_all <- as.data.frame(rstan::extract(fit.m5, permuted=FALSE)) %>% 
@@ -244,4 +245,53 @@ params2_all <- as.data.frame(params1_all) %>%
                                      (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::filter(Species != "bare_biofilm") %>% 
   mutate(CIupper = replace(CIupper, CIupper>70, 70))
+
+-------------------------------------------------------------------
+  
+#Latent states for abiotic-only model
+#Manually calculate mean posteriors for species $ cover, as well as confidence interval
+params1_all <- as.data.frame(rstan::extract(fit.m6, permuted=FALSE)) %>% 
+  dplyr::select(-c(1:`chain:3.Beta[4]`)) %>% 
+  dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
+  dplyr::select(-c(`chain:1.Ntheta[1]`:`chain:3.Rtheta[4]`)) %>% 
+  dplyr::mutate(across(1:`chain:3.n[45,4]`, exp)) %>% 
+  t 
+
+#Set up dataframe to extract week/year info from
+yearweek <- alltaxatime %>% 
+  pivot_longer(cols = c(green_algae, microcoleus, anabaena_cylindrospermum,
+                        bare_biofilm, other_nfixers),
+               names_to = "Species", values_to = "mean") %>% 
+  mutate(time = rep(seq(45), each = length(unique(Species))))
+
+
+params2_all <- as.data.frame(params1_all) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
+                   se_mean = calcSE(c_across(starts_with("V"))),
+                   CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
+                   CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
+  mutate(Species = case_when(grepl(",1", group) ~ 'green_algae',
+                             grepl(",2", group) ~ 'microcoleus',
+                             grepl(",3", group) ~ 'anabaena_cylindrospermum',
+                             grepl(",4", group) ~ 'other_nfixers',
+                             grepl("b", group) ~ 'bare_biofilm')) %>% 
+  mutate(time = as.numeric(str_extract(group, "[0-9]+"))) %>% 
+  left_join(yearweek[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
+  relocate(uniqueID) %>% 
+  separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
+  mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+  ungroup() %>% 
+  left_join(obs_data_all[,c("year", "week", "Species", "real_week")], by = c("year", "week", "Species")) %>% 
+  arrange(time) %>% 
+  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  dplyr::filter(Species != "bare_biofilm") %>% 
+  mutate(CIupper = replace(CIupper, CIupper>70, 70))
+
+
 

@@ -87,11 +87,10 @@ model {
     //for(s in 1:Nspecies){
       
       if(firstdays[t]==1) continue;
-        n[,t] ~ multi_normal(Alpha + Beta*n[,t-1], ID);
-       // n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
-       //                      Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
-       //                      Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
-       //                      Ctheta*cond[t-1] + Rtheta*rad[t-1], ID);
+       n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
+                            Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
+                            Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
+                            Ctheta*cond[t-1] + Rtheta*rad[t-1], ID);
 }
     for(t in 1:uniqueID){
       for(s in 1:Nspecies){
