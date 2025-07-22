@@ -4,7 +4,7 @@ library(ggpubr)
 library(tidyverse)
 
 #Read in latent states, params2_all
-source(here::here("data_analysis/model_vs_real_data.R"))
+#source(here::here("data_analysis/model_vs_real_data.R"))
 
 #Note to janette: you'll probably have to read in the fit.m4 file since it's too
 #large to be saved with rds 
@@ -14,11 +14,7 @@ x <- rstan::extract(fit.m4)
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
-nullbetas <- apply(betas, 1:3, function(x) 1)
 sigmas <- x[["sigma_p"]][,]
-
-#Testing idk what I'm doing
-
 
 #inputs
 runs <- nrow(abundances)
