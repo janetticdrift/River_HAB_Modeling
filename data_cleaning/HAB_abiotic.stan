@@ -1,4 +1,4 @@
-//This model include all abiotic and biotic factors
+//This model includes only abiotic factors
 
 data {
   int uniqueID; //Total number of weeks down the years

@@ -10,7 +10,7 @@ library(tidyverse)
 #large to be saved with rds 
 
 #Pull out community abundances and demographics 
-x <- rstan::extract(fit.m4)
+x <- rstan::extract(fit.m5) #m4 = all vars, m5 = biotic only
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
@@ -48,7 +48,6 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
@@ -66,13 +65,13 @@ for(z in 1:runs){
       # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
       
     #Everything included
-    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
     # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-    #                            Sigma = sigma)
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+                               Sigma = sigma)
   }
 }
 
@@ -108,7 +107,7 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 
 #Plot
 p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
             aes(x = model_date, y = mean, colour = Species),
@@ -116,7 +115,7 @@ p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
-  coord_cartesian(ylim = c(0,70)) +
+  #coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 
@@ -156,7 +155,6 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
@@ -175,13 +173,13 @@ for(z in 1:runs){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
     #Everything included
-    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
     # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-    #                            Sigma = sigma)
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+                               Sigma = sigma)
 
     
   }
@@ -201,13 +199,13 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2023", ], 
             aes(x = model_date, y = mean, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,50)) +
+  #coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 
@@ -246,7 +244,6 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  NullBeta <- diag(diag(betas[z,,]))
   n[1,,z] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
@@ -264,13 +261,13 @@ for(z in 1:runs){
     # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
     #Everything included
-    n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
     # #Remove env drivers
-    #   n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-    #                            Sigma = sigma)
+      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+                               Sigma = sigma)
     
   }
 }
@@ -289,13 +286,13 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2024", ], 
             aes(x = model_date, y = mean, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,45)) +
+  #coord_cartesian(ylim = c(0,45)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 
@@ -377,6 +374,9 @@ for(z in 1:runs){
       n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + nTheta[s]*nitrate[t-1]+
                           pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
                           tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+    #Remove nutrients too  
+      # n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + dTheta[s]*dis[t-1] +
+      #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
     }
   }
 }
@@ -413,7 +413,7 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 
 #Plot
 p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
             aes(x = model_date, y = mean, colour = Species),
@@ -421,7 +421,7 @@ p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
-  coord_cartesian(ylim = c(0,70)) +
+  #coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 
@@ -482,6 +482,10 @@ for(z in 1:runs){
     n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + nTheta[s]*nitrate[t-1]+
       pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
       tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      
+    #Remove nutrients too  
+    # n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + dTheta[s]*dis[t-1] +
+    #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
     
   }
   }
@@ -501,13 +505,13 @@ sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2023", ], 
             aes(x = model_date, y = mean, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,50)) +
+  #coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 
@@ -568,6 +572,10 @@ for(z in 1:runs){
         pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
         tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
       
+      #Remove nutrients too  
+      # n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + dTheta[s]*dis[t-1] +
+      #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      
     }
   }
 }
@@ -586,13 +594,13 @@ sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 
 p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_point(size = 3)+
+  #geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2024", ], 
             aes(x = model_date, y = mean, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
-  coord_cartesian(ylim = c(0,45)) +
+  #coord_cartesian(ylim = c(0,45)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N Fixers"), values = c("brown", "darkolivegreen4", 

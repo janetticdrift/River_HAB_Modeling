@@ -77,8 +77,8 @@ obs_data_all <- coverpercent %>%
   group_by(field_date, year, Species) %>% 
   dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   ungroup() %>% 
-  group_by(year) %>% 
-  mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
+  dplyr::group_by(year) %>% 
+  dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
          model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::filter(Species != "bare_biofilm")
@@ -150,10 +150,10 @@ params2_all <- as.data.frame(params1_all) %>%
 #All years
 ggplot(params2_all, aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
-  geom_point(aes(colour = Species), size = 3) +
-  geom_line(aes(colour = Species), size = 2, alpha = .7) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), alpha = 0.3) +
+  # geom_point(aes(colour = Species), size = 3) +
+  # geom_line(aes(colour = Species), size = 2, alpha = .7) +
+  # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+  #                 fill = Species), alpha = 0.3) +
   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
   geom_point(data = obs_data_all, aes(x = model_date, y = obs_mean, shape = Species), size = 2.5) +
   geom_line(data = obs_data_all, aes(x = model_date, y = obs_mean, group = Species),
