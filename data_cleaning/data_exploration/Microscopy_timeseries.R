@@ -32,7 +32,20 @@ ggplot(subset(microscopy, year %in% 2022), aes(x = field_date, y = Abundance, fi
   labs(title = "2022") +
   theme(legend.position="bottom")
 
+  #Histogram of Microcolus and Anabaena for this year
+ggplot(subset(microscopy, year %in% 2022 & Species %in% c("microcoleus", 
+"anabaena_and_cylindrospermum")), aes(x = Abundance, fill = Species)) +
+  geom_histogram(binwidth = 1, position="dodge") +
+  labs(title = "2022 Counts")
+
 #2023
 ggplot(subset(microscopy, year %in% 2023), aes(x = field_date, y = Abundance, fill = Species)) +
   geom_col(position = "fill") +
-  labs(title = "2023")
+  labs(title = "2023") +
+  theme(legend.position="bottom")
+
+  #Histogram of Microcolus and Anabaena for this year
+  ggplot(subset(microscopy, year %in% 2023 & Species %in% c("microcoleus", 
+                                                          "anabaena_and_cylindrospermum")), aes(x = Abundance, fill = Species)) +
+    geom_histogram(binwidth = 1, position="dodge") +
+    labs(title = "2023 Counts")
