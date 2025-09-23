@@ -33,7 +33,7 @@ model {
   sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
   
   tauP ~ inv_gamma(1,1); //reach random var
-  gamma ~ normal(0,tauP); //random effect for reac //gamma[r]*tauP
+  gamma ~ normal(0,tauP); //random effect for reach //gamma[r]*tauP
   //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues
 
 

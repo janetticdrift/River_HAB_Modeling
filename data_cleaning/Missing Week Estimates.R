@@ -174,8 +174,8 @@ fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
-shinystan::launch_shinystan(fit.m6)
-print(fit.m4, par = "Beta")
+shinystan::launch_shinystan(fit.m4)
+print(fit.m4, par = "Ptheta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
