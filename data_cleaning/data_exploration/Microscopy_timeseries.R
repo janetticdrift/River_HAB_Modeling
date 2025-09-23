@@ -13,7 +13,7 @@ library(RColorBrewer)
 microdata <- read.csv(here::here("data/Target Microscopy.csv"))
 
 #Clean data for analysis
-microscopy <- microdata %>% 
+microscopy_non_avg <- microdata %>% 
   filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
   separate(site_reach, into=c("site", "location", "reach"), 
            sep="-") %>% #Split location columns into separate categories
@@ -22,8 +22,23 @@ microscopy <- microdata %>%
   mutate(year = year(field_date)) %>%  #create year column
   relocate(year, .after = field_date) %>%   #reorganize column order
   select(!non_algal) %>% #Remove column measuring sediment amount
-  pivot_longer(microcoleus:aphanothece, names_to = "Species", values_to = "Abundance") #Change layout of dataframe
-
+  pivot_longer(microcoleus:aphanothece, names_to = "Species", values_to = "Abundance")    #Change layout of dataframe
+  
+  #Average together slide replicates  
+  averaged_slides <- microscopy_non_avg %>% 
+    filter(!slide_rep == "Final") %>%
+    group_by(field_date, year, site, location, reach, sample_type, date_analyzed, 
+             method, Species) %>% 
+    dplyr::summarise(Abundance = mean(Abundance)) %>% 
+    mutate(slide_rep = "Final") %>% 
+    relocate(slide_rep, .after = sample_type)
+  #Pull out already processed slides
+  processed_slides <- microscopy_non_avg %>% 
+    filter(slide_rep == "Final")
+  #Bind together dataframes
+  microscopy <- rbind(averaged_slides, processed_slides)
+  
+  
 #Do TAC samples all actually contain Anabaena?
 TAC <- microscopy %>% 
   filter(sample_type == "TAC" & Species == "anabaena_and_cylindrospermum")
@@ -37,7 +52,7 @@ non_occurences <- microscopy %>%
   group_by(year, sample_type, Species) %>% 
   dplyr::summarise(Sum = sum(Abundance))
 
-rownum <- which(non_occurences$Sum <= 1) #Which samples only find 1% summed across all sampled dates per year
+rownum <- which(non_occurences$Sum <= 0) #Which samples only find 1% summed across all sampled dates per year
 
 rare_species <- non_occurences %>% 
   #dplyr::filter(year == "2022") %>% 
