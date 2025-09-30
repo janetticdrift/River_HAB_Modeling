@@ -44,9 +44,35 @@ yeardata <- cover_indexweek %>%
 #This dataframe (yearmatdata) is created for HAB_mat_community.stan
 #####
 
-yearmatdata <- micro_indexweek %>% 
-  dplyr::select(-c(timestep, field_date, slide_rep, date_analyzed, method)) %>%
-  group_by(year)
+yearmatdata_TM <- micro_indexweek %>% 
+  dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
+  filter(sample_type == "TM") %>% 
+  group_by(year) %>%
+  complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
+  mutate(sample_type = replace_na(sample_type, "TM")) %>% 
+  replace(is.na(.), -5)
+
+yearmatdata_TAC <- micro_indexweek %>% 
+  dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
+  filter(sample_type == "TAC") %>% 
+  group_by(year) %>%
+  complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
+  mutate(sample_type = replace_na(sample_type, "TAC")) %>% 
+  replace(is.na(.), -5)
+
+yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC)
+
+#Visualize how much data is missing
+yearmatplot <- yearmatdata %>% 
+  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
+
+ggplot(subset(yearmatplot, Species == "green_algae"), aes(x = week, y = Abundance, color=sample_type)) +
+  facet_wrap(~year, scales = "free") +
+  geom_col(position = position_dodge(.6), width = 0.5, aes(fill = sample_type)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 1)) +
+  coord_cartesian(ylim = c(-1, 1)) +
+  geom_hline(yintercept = 0)+
+  labs(title = "Green Algae - no zero occurrences")
 
 #-------------------------------------------------------------------------------------------------
 # #SINGLE SPECIES - Gather data into STAN list format
