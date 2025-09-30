@@ -85,34 +85,87 @@ averaged_slides <- microscopy_non_avg %>%
 #Pull out already processed slides
 processed_slides <- microscopy_non_avg %>% 
   filter(slide_rep == "Final")
-#Bind together dataframes into final set
-microscopy <- rbind(averaged_slides, processed_slides)
 
-#Separate dataframe into target microcoleus and target anabaena-cyl
-microscopy_TM <- microscopy %>% 
-  filter(sample_type == "TM")
-microscopy_TAC <- microscopy %>% 
-  filter(sample_type == "TAC")
+#Bind together dataframes into final set
+microscopy1 <- rbind(averaged_slides, processed_slides)
+
+#Collapse rare species into one column
+non_occurences <- microscopy1 %>% 
+  group_by(year, sample_type, Species) %>% 
+  dplyr::summarise(Sum = sum(Abundance))
+
+rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences per each target and each year?
+
+rare_species <- non_occurences %>% 
+  #dplyr::filter(year == "2022") %>% 
+  ungroup() %>% 
+  dplyr::slice(rownum)
+
+rare_names <- unique(rare_species$Species) #Names of the species that are rare
+
+microscopy <- microscopy1 %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
+  dplyr::mutate(rare = rowSums(select(., rare_names))) %>% 
+  dplyr::select(!rare_names)
 
 #############################################################################################
-#Index date by timesteps: 1, 2, 3... n
+#Index date by timesteps and week numbers: 1, 2, 3... n
 
 #split dataset up into each year
 cover_indexdate <- allcoverdata %>% 
+  group_split(year)
+
+micro_indexdate <- microscopy%>% 
   group_split(year)
 
 year1cover <- cover_indexdate[[1]]
 year2cover <- cover_indexdate[[2]]
 year3cover <- cover_indexdate[[3]]
 
+year1micro <- micro_indexdate[[1]]
+year2micro <- micro_indexdate[[2]]
+
+#Create function for assigning week numbers
+week_from_step <- function(x) {
+  case_when(
+    timestep == 1 ~ 1,
+    timestep == 2 ~ 3,
+    timestep == 3 ~ 5,
+    timestep == 4 ~ 7,
+    timestep == 5 ~ 9,
+    timestep == 6 ~ 11,
+    timestep == 7 ~ 13,
+    timestep == 8 ~ 15
+)
+}
+
 #year 2022
 year1_indexdate <- year1cover %>% 
   mutate(timestep = dense_rank(field_date)) %>% 
   mutate(week = rep(seq(1, 13, 2), times = length(unique(reach))))
 
+year1_indexmicro <- year1micro %>% 
+  mutate(timestep = dense_rank(field_date)) %>% 
+  arrange(reach, field_date) %>% 
+  mutate(week = case_when(
+    timestep == 1 ~ 1,
+    timestep == 2 ~ 3,
+    timestep == 3 ~ 5,
+    timestep == 4 ~ 7,
+    timestep == 5 ~ 9,
+    timestep == 6 ~ 11,
+    timestep == 7 ~ 13,
+    timestep == 8 ~ 15))
+
 #year 2023
 year2_indexdate <- year2cover %>% 
   mutate(timestep = dense_rank(field_date)) %>% 
+  mutate(week = timestep)
+
+year2_indexmicro <- year2micro %>% 
+  mutate(timestep = dense_rank(field_date)) %>% 
+  arrange(reach, field_date) %>% 
   mutate(week = timestep)
 
 #year 2024
@@ -123,6 +176,9 @@ year3_indexdate <- year3cover %>%
 
 #River-wide percent cover binding
 cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
+
+#Mat community proportion binding
+micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro)
 
 
 
