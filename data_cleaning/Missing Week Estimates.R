@@ -44,6 +44,9 @@ yeardata <- cover_indexweek %>%
 #This dataframe (yearmatdata) is created for HAB_mat_community.stan
 #####
 
+yearmatdata <- micro_indexweek %>% 
+  dplyr::select(-c(timestep, field_date, slide_rep, date_analyzed, method)) %>%
+  group_by(year)
 
 #-------------------------------------------------------------------------------------------------
 # #SINGLE SPECIES - Gather data into STAN list format

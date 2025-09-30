@@ -178,7 +178,8 @@ year3_indexdate <- year3cover %>%
 cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
 
 #Mat community proportion binding
-micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro)
+micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro) %>% 
+  unite(site_reach, c(site, reach), sep = "-", remove =F)
 
 
 
