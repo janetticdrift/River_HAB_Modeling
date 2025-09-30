@@ -23,7 +23,10 @@ library(httr)
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
 
-#Clean new data to match previous year formatting
+#Read in mat community raw data for mat proportion by reach and year
+microdata <- read.csv(here::here("data/Target Microscopy.csv"))
+
+#Clean new percent cover data to match previous year formatting
 
 percover <- percover1 %>% 
   dplyr::filter(site == "SFE-M") %>% 
@@ -56,6 +59,41 @@ cleanpercoverplot <- cleanpercover %>%
 allcoverdataplot <- rbind(percoverplot, cleanpercoverplot)
 allcoverdata <- rbind(percover, cleanpercover)
 
+
+#Clean microscopy data to tidy slide replicates and consolidate rare species
+microscopy_non_avg <- microdata %>% 
+  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
+  separate(site_reach, into=c("site", "location", "reach"), 
+           sep="-") %>% #Split location columns into separate categories
+  filter(grepl("M", location)) %>% #Keep Miranda sites, remove Standish-Hicky (SH) sites
+  mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
+  mutate(year = year(field_date)) %>%  #create year column
+  relocate(year, .after = field_date) %>%   #reorganize column order
+  select(!non_algal) %>% #Remove column measuring sediment amount
+  filter(!reach == 2) %>% #Remove the added reach
+  pivot_longer(microcoleus:aphanothece, names_to = "Species", values_to = "Abundance")
+
+#Average together slide replicates  
+averaged_slides <- microscopy_non_avg %>% 
+  filter(!slide_rep == "Final") %>%
+  group_by(field_date, year, site, location, reach, sample_type, date_analyzed, 
+           method, Species) %>% 
+  dplyr::summarise(Abundance = mean(Abundance)) %>% 
+  mutate(slide_rep = "Final") %>% 
+  relocate(slide_rep, .after = sample_type)
+
+#Pull out already processed slides
+processed_slides <- microscopy_non_avg %>% 
+  filter(slide_rep == "Final")
+#Bind together dataframes into final set
+microscopy <- rbind(averaged_slides, processed_slides)
+
+#Separate dataframe into target microcoleus and target anabaena-cyl
+microscopy_TM <- microscopy %>% 
+  filter(sample_type == "TM")
+microscopy_TAC <- microscopy %>% 
+  filter(sample_type == "TAC")
+
 #############################################################################################
 #Index date by timesteps: 1, 2, 3... n
 
@@ -83,7 +121,13 @@ year3_indexdate <- year3cover %>%
   arrange(reach) %>% 
   mutate(week = rep(seq(1, 17, 2), times = length(unique(reach))))
 
+#River-wide percent cover binding
 cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
+
+
+
+
+
 
 #############################################################################################
 #Tidy water chemistry data
