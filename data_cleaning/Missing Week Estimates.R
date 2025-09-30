@@ -9,7 +9,7 @@ library(dataRetrieval)
 source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Tidy dataframe into format needed for STAN
-#This dataframe uses HAB_missing_weeks.stan
+#This dataframe uses HAB_all_years.stan, HAB_abiotic.stan, and HAB_biotic.stan
 
 weekdata <- cover_indexweek %>% 
   dplyr::select(-c(timestep, field_date)) %>% 

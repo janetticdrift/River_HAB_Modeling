@@ -19,7 +19,7 @@ library(CFtime)
 library(lattice)
 library(httr)
 
-
+#Read in river-wide raw data for percent cover by reach and year
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
 
@@ -303,3 +303,11 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
   geom_point() +
   geom_line() +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
+
+#----------------------------------------
+#Calculation of average temperature
+calcSE<-function(x){
+  x <- x[is.na(x)==F] 
+  sd(x)/sqrt(length(x))
+}
+calcSE(nutrients_avg$temp_C)
