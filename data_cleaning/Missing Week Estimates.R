@@ -50,7 +50,7 @@ yearmatdata_TM <- micro_indexweek %>%
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TM")) %>% 
-  replace(is.na(.), -5)
+  replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
   dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
@@ -58,21 +58,23 @@ yearmatdata_TAC <- micro_indexweek %>%
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TAC")) %>% 
-  replace(is.na(.), -5)
+  replace(is.na(.), -99)
 
-yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC)
+yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
+  mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
 
 #Visualize how much data is missing
 yearmatplot <- yearmatdata %>% 
   pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
 
 ggplot(subset(yearmatplot, Species == "green_algae"), aes(x = week, y = Abundance, color=sample_type)) +
-  facet_wrap(~year, scales = "free") +
+  facet_grid(reach ~ year, scales = "free_x") +
   geom_col(position = position_dodge(.6), width = 0.5, aes(fill = sample_type)) +
   scale_x_continuous(breaks = seq(0, 15, by = 1)) +
   coord_cartesian(ylim = c(-1, 1)) +
   geom_hline(yintercept = 0)+
-  labs(title = "Green Algae - no zero occurrences")
+  labs(title = "Green Algae - no zero occurrences") +
+  theme(panel.spacing = unit(2, "lines"))
 
 #-------------------------------------------------------------------------------------------------
 # #SINGLE SPECIES - Gather data into STAN list format
@@ -172,24 +174,34 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 library(abind)
 
 #Clean and transform into a 2D dataframe
-temp.spreach <- weekdata %>% 
-  select(-c(1:3, 5, 8:10)) %>% 
-  mutate(across(green_algae:microcoleus, round, 0)) 
-# mutate(across(.cols = c("green_algae":3), .fns = log)) %>%  #logtransform
-# mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) #reset the -99s
+mattaxareach <- yearmatdata %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0)) %>%
+  unite("uniqueID", c(year, week), sep = "_") %>% 
+  relocate(firstday) %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>% #logtransform
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
+  select(!c(site_reach, site))
 
 #Split data into an array by reach, then drop the reach column
-spreach.array <- abind(split(temp.spreach[, -1], temp.spreach$reach), along = 3)
+mat.array <- abind(split(mattaxareach[, -1], mattaxareach$reach), along = 3) #2 = # of reaches
 
 #Convert array into a list
-spreach = plyr::alply(spreach.array,3, .dims = TRUE)
+spreach = plyr::alply(mat.array, 3, .dims = TRUE) #weeks, species, reaches
 
 
-model.3 <- list("Nweeks" = nrow(spreach[["1"]]), 
+model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
                 "Nreach" = length(spreach),
-                "Nspecies" = ncol(spreach[["1"]]),
-                "N" = spreach
+                "Nspecies" = as.integer(ncol(spreach[["1S"]])-3),#take out first 3 columns
+                "N" = lapply(spreach, function(df) df[, -c(1:3)]) #take out first 3 colums
 )
+
+lapply(df_list, function(df) df[, -c(1:3)])
+
+"uniqueID" = nrow(alltaxatime), 
+"Nspecies" = as.integer(ncol(alltaxatime)-3),
+"firstdays" = alltaxatime$firstday,
+"id" = c(1,1,1,1),
+"N" = alltaxatime[,-(1:3)], #all species
 #-------------------------------------------------------------------------------------------------
 #Run models
 
@@ -198,7 +210,7 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.4, chains = 3, iter = 10000,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))

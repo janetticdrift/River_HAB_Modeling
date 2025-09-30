@@ -36,11 +36,11 @@ microscopy_non_avg <- microdata %>%
   processed_slides <- microscopy_non_avg %>% 
     filter(slide_rep == "Final")
   #Bind together dataframes
-  microscopy <- rbind(averaged_slides, processed_slides)
+  microscopy1 <- rbind(averaged_slides, processed_slides)
   
   
 #Do TAC samples all actually contain Anabaena?
-TAC <- microscopy %>% 
+TAC <- microscopy1 %>% 
   filter(sample_type == "TAC" & Species == "anabaena_and_cylindrospermum")
 
 which(TAC$Abundance < 10) #Are there any instances where Abundance is small? FALSE = no
@@ -48,7 +48,7 @@ which(TAC$Abundance < 20)
   #Some instances where Anabaena is less than 20% in TAC sample
 
 #Are there any species that never appear?
-non_occurences <- microscopy %>% 
+non_occurences <- microscopy1 %>% 
   group_by(year, sample_type, Species) %>% 
   dplyr::summarise(Sum = sum(Abundance))
 
@@ -62,30 +62,28 @@ rare_species <- non_occurences %>%
 rare_names <- unique(rare_species$Species) #Names of the species that are rare
 
 #Remove non-occuring species, and combine those that are super rare
-microscopy1 <- microscopy %>% 
-  #dplyr::filter(!Species == "tolypothrix") %>% #Remove non-occuring
-  dplyr::mutate(Species = fct_collapse(Species,
-                                        rare = c(rare_names)))
+microscopy <- microscopy1 %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
+  dplyr::mutate(rare = rowSums(select(., rare_names))) %>% 
+  dplyr::select(!rare_names)
 
 
 #Standardize TAC mats to Anabaena abundances
-TAC_ref_group <- microscopy1 %>% 
+microscopy_TAC_stand <- microscopy %>% 
   dplyr::filter(sample_type == "TAC") %>% 
-  dplyr::filter(Species == "anabaena_and_cylindrospermum") %>%
-  group_by(year) %>% 
-  dplyr::summarise(ref_mean = mean(Abundance),
-            ref_sd = sd(Abundance))  #Calculate mean and SD for Anabaena per year
+  mutate(across(anabaena_and_cylindrospermum:rare, ~ . / anabaena_and_cylindrospermum)) %>% 
+  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
 
-#Standardize all TAC mat species using reference group
-microscopy_TAC_stand <- microscopy1 %>% 
-  dplyr::filter(sample_type == "TAC") %>% 
-  mutate(stand_abund = (Abundance - TAC_ref_group$ref_mean) / TAC_ref_group$ref_sd) 
+#Standardize TM mats to Microcoleus abundances
+microscopy_TM_stand <- microscopy %>% 
+  dplyr::filter(sample_type == "TM") %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, ~ . / microcoleus)) %>% 
+  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
 
 
 
 #------Plots and Graphs---------------------------------------
-
-
 
 
 #Plot timeseries of within-mat species per year
@@ -152,9 +150,17 @@ ggplot(subset(microscopy, year %in% 2022 &
   
   
 #Plots using standardized values
-  ggplot(subset(microscopy_TAC_stand), aes(x = field_date, y = stand_abund, color = Species)) +
+  ggplot(microscopy_TAC_stand, aes(x = field_date, y = Abundance)) +
     facet_wrap(~year, scales = "free") +
-    geom_point() +
+    geom_col(position = position_dodge(7), width = 7, aes(fill = Species)) +
     theme(legend.position="bottom")+
     scale_fill_brewer(palette = "Set3") +
     labs(title = "Target Anabaena")
+  
+  ggplot(microscopy_TM_stand, aes(x = field_date, y = Abundance)) +
+    facet_wrap(~year, scales = "free") +
+    geom_col(position = position_dodge(7), width = 7, aes(fill = Species)) +
+    theme(legend.position="bottom")+
+    scale_fill_brewer(palette = "Set3") +
+    labs(title = "Target Microcoleus") +
+    coord_cartesian(ylim = c(0, .75))
