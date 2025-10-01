@@ -55,9 +55,8 @@ non_occurences <- microscopy1 %>%
 rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences per each target and year?
 
 rare_species <- non_occurences %>% 
-  #dplyr::filter(year == "2022") %>% 
   ungroup() %>% 
-  dplyr::slice(rownum)
+  dplyr::slice(rownum) #Leave in row numbers identified above as having no occurence
 
 rare_names <- unique(rare_species$Species) #Names of the species that are rare
 
@@ -66,19 +65,28 @@ microscopy <- microscopy1 %>%
   ungroup() %>% 
   pivot_wider(names_from = Species, values_from = Abundance) %>% 
   dplyr::mutate(rare = rowSums(select(., rare_names))) %>% 
-  dplyr::select(!rare_names)
+  dplyr::select(!rare_names) #Remove rare columns now that they have been consolidated
 
 
 #Standardize TAC mats to Anabaena abundances
 microscopy_TAC_stand <- microscopy %>% 
   dplyr::filter(sample_type == "TAC") %>% 
   mutate(across(anabaena_and_cylindrospermum:rare, ~ . / anabaena_and_cylindrospermum)) %>% 
-  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
+  select(!anabaena_and_cylindrospermum) %>% 
+  mutate(total = rowSums(select(., e_diatoms:rare))) %>% 
+  mutate(across(e_diatoms:rare, ~. / total)) %>% 
+  select(!total) %>% 
+  pivot_longer(e_diatoms:rare, names_to = "Species", values_to = "Abundance")
+
 
 #Standardize TM mats to Microcoleus abundances
 microscopy_TM_stand <- microscopy %>% 
   dplyr::filter(sample_type == "TM") %>% 
   mutate(across(anabaena_and_cylindrospermum:rare, ~ . / microcoleus)) %>% 
+  select(!microcoleus) %>% 
+  mutate(total = rowSums(select(., anabaena_and_cylindrospermum:rare))) %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, ~. / total)) %>% 
+  select(!total) %>% 
   pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
 
 
@@ -151,16 +159,21 @@ ggplot(subset(microscopy, year %in% 2022 &
   
 #Plots using standardized values
   ggplot(microscopy_TAC_stand, aes(x = field_date, y = Abundance)) +
-    facet_wrap(~year, scales = "free") +
-    geom_col(position = position_dodge(7), width = 7, aes(fill = Species)) +
+    facet_grid(reach ~ year, scales = "free") +
+    geom_col( aes(fill = Species)) +
     theme(legend.position="bottom")+
     scale_fill_brewer(palette = "Set3") +
-    labs(title = "Target Anabaena")
+    labs(title = "Target Anabaena") +
+    theme(panel.spacing = unit(1, "lines"))
   
   ggplot(microscopy_TM_stand, aes(x = field_date, y = Abundance)) +
-    facet_wrap(~year, scales = "free") +
-    geom_col(position = position_dodge(7), width = 7, aes(fill = Species)) +
+    facet_grid(reach ~ year, scales = "free") +
+    geom_col( aes(fill = Species)) +
     theme(legend.position="bottom")+
     scale_fill_brewer(palette = "Set3") +
     labs(title = "Target Microcoleus") +
+    theme(panel.spacing = unit(1, "lines"))
     coord_cartesian(ylim = c(0, .75))
+  
+  #code for separating out bars into more histogram-like 
+    #position = position_dodge(7), width = 7,
