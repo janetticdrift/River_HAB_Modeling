@@ -27,6 +27,19 @@ parameters {
 
 }
 
+transformed parameters{
+  matrix[Nspecies, Nspecies] ID = diag_matrix(sigma_p);
+  
+   matrix[Nspecies, Nspecies] Beta_d = diag_matrix(Beta_diag);
+   
+   matrix[Nspecies, Nspecies] Beta;
+   
+   for(i in 1:Nspecies){
+     for(j in 1:Nspecies){
+       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
+     }
+   }
+
 model {
 	
   //priors
@@ -39,22 +52,20 @@ model {
   //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues
 
 
-  Beta0 ~ normal(0,1.5);
+  Alpha ~ normal(0,1.5);
   
-  Beta1 ~ uniform(0,1);
-  //uniform(0,2) or normal(0,2)T[0,]; //T[0,]; //T means Truncate, so bounded at zero
+  Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
+  to_vector(Beta_off) ~ normal(0, .2);
   
   //Population models
   
       //Process model
   for(r in 1:Nreach){
-    for(t in 2:(Nweeks)){
-      for(s in 1:Nspecies){
+    for(t in 2:(uniqueID)){
     	
-       n[r,t,s] ~ normal(Beta0[s] + Beta1[s]*n[r,t-1,s] + gamma[r], sigma_p[s]);
-       //n[r,t,s] ~ normal(Beta0[s] + Beta1[s]*n[r,t-1,s], sigma_p[s]);
+       n[,r,t] ~ multi_normal(Alpha + Beta*n[,r,t-1] + gamma[r], sigma_p[s]);
       
-       }
+       
    }
 }
     //Observation model
