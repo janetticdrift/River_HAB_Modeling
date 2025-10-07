@@ -172,10 +172,6 @@ mattaxareach <- yearmatdata %>%
   select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
   filter(sample_type == "TM") #Evaluate TM and TAC separatedly
 
-
-#Split data into an array by reach, then drop the reach and target columns
-mat.array <- abind(split(mattaxareach[, -c(3:4)], mattaxareach$reach), along = 3) #3 = # of reaches
-
 #Convert array into a list
 spreach <- plyr::alply(mat.array, 3, .dims = TRUE) #weeks, species, reaches
 
