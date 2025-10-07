@@ -2,11 +2,11 @@ data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
   int Nreach; //Total number of reaches (3 each year, removed the added one in 2023)
-  vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  //vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
   
-  matrix [Nreach, uniqueID, Nspecies] N; //Percent cover at reach and year per species
+  matrix [uniqueID, Nspecies] N [Nreach]; //Percent cover at reach and year per species
   
-  vector [Nspecies] id; //Vector of 1s for ID matrix
+  //vector [Nspecies] id; //Vector of 1s for ID matrix
   
 }
 
@@ -23,7 +23,7 @@ parameters {
   vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interac
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
-  matrix<upper=99>[Nweeks, Nspecies] n[Nreach]; //fill in with modeled data
+  matrix<upper=99>[uniqueID, Nspecies] n[Nreach]; //fill in with modeled data
 
 }
 
@@ -39,6 +39,7 @@ transformed parameters{
        Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
      }
    }
+}
 
 model {
 	
@@ -52,10 +53,10 @@ model {
   //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues
 
 
-  Alpha ~ normal(0,1.5);
+  Alpha ~ normal(0,1);
   
   Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
-  to_vector(Beta_off) ~ normal(0, .2);
+  to_vector(Beta_off) ~ normal(0, .2); //input matrix reshaped to vector
   
   //Population models
   
@@ -63,21 +64,21 @@ model {
   for(r in 1:Nreach){
     for(t in 2:(uniqueID)){
     	
-       n[,r,t] ~ multi_normal(Alpha + Beta*n[,r,t-1] + gamma[r], sigma_p[s]);
+       n[r,,t] ~ multi_normal(Alpha + Beta*n[r,,t-1] + gamma[r], ID);
       
        
    }
 }
     //Observation model
     for(r in 1:Nreach){
-      for(t in 1:Nweeks){
+      for(t in 1:uniqueID){
         for(s in 1:Nspecies){
       
         if(N[r,t,s] >= -3){ //if the year is a year we actually have sampled data for
-          N[r,t,s] ~ normal(exp(n[r,t,s]) + gamma[r], sigma_o[s]); //for collected data
+          N[r,t,s] ~ normal(n[r,t,s] + gamma[r], sigma_o[s]); //for collected data
+                            //t and s may switch positions, pulling from all years stan
             //N[t,r] ~ normal(exp(n[t,r]), sigma_o);
       }
     }  
   }
-}
 }

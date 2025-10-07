@@ -173,11 +173,11 @@ mattaxareach <- yearmatdata %>%
   filter(sample_type == "TM") #Evaluate TM and TAC separatedly
 
 
-#Split data into an array by reach, then drop the reach column
-mat.array <- abind(split(mattaxareach[, -1], mattaxareach$reach), along = 3) #2 = # of reaches
+#Split data into an array by reach, then drop the reach and target columns
+mat.array <- abind(split(mattaxareach[, -c(3:4)], mattaxareach$reach), along = 3) #3 = # of reaches
 
 #Convert array into a list
-spreach = plyr::alply(mat.array, 3, .dims = TRUE) #weeks, species, reaches
+spreach <- plyr::alply(mat.array, 3, .dims = TRUE) #weeks, species, reaches
 
 
 model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
@@ -187,8 +187,8 @@ model.1 <- list("uniqueID" = nrow(spreach[["1S"]]),
 )
 
 
-"firstdays" = alltaxatime$firstday,
-"id" = c(1,1,1,1),
+#"firstdays" = alltaxatime$firstday,
+#"id" = c(1,1,1,1),
 #-------------------------------------------------------------------------------------------------
 #Run models
 
