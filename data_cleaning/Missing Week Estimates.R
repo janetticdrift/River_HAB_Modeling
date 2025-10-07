@@ -63,19 +63,6 @@ yearmatdata_TAC <- micro_indexweek %>%
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
   mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
 
-#Visualize how much data is missing
-yearmatplot <- yearmatdata %>% 
-  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
-
-ggplot(subset(yearmatplot, Species == "green_algae"), aes(x = week, y = Abundance, color=sample_type)) +
-  facet_grid(reach ~ year, scales = "free_x") +
-  geom_col(position = position_dodge(.6), width = 0.5, aes(fill = sample_type)) +
-  scale_x_continuous(breaks = seq(0, 15, by = 1)) +
-  coord_cartesian(ylim = c(-1, 1)) +
-  geom_hline(yintercept = 0)+
-  labs(title = "Green Algae - no zero occurrences") +
-  theme(panel.spacing = unit(2, "lines"))
-
 #-------------------------------------------------------------------------------------------------
 # #SINGLE SPECIES - Gather data into STAN list format
 # 
@@ -176,11 +163,15 @@ library(abind)
 #Clean and transform into a 2D dataframe
 mattaxareach <- yearmatdata %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0)) %>%
+  filter(year == 2022) %>% #TEST ONE YEAR FIRST
   unite("uniqueID", c(year, week), sep = "_") %>% 
   relocate(firstday) %>% 
   mutate(across(anabaena_and_cylindrospermum:rare, log)) %>% #logtransform
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
-  select(!c(site_reach, site))
+  select(!c(site_reach, site)) %>% 
+  select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
+  filter(sample_type == "TM") #Evaluate TM and TAC separatedly
+
 
 #Split data into an array by reach, then drop the reach column
 mat.array <- abind(split(mattaxareach[, -1], mattaxareach$reach), along = 3) #2 = # of reaches
@@ -195,13 +186,9 @@ model.1 <- list("uniqueID" = nrow(spreach[["1S"]]),
                 "N" = lapply(spreach, function(df) df[, -c(1:3)]) #take out first 3 colums
 )
 
-lapply(df_list, function(df) df[, -c(1:3)])
 
-"uniqueID" = nrow(alltaxatime), 
-"Nspecies" = as.integer(ncol(alltaxatime)-3),
 "firstdays" = alltaxatime$firstday,
 "id" = c(1,1,1,1),
-"N" = alltaxatime[,-(1:3)], #all species
 #-------------------------------------------------------------------------------------------------
 #Run models
 

@@ -366,7 +366,7 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 
 source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
 
-#Process and format NLDAS data for last two months of 2024
+#Process and format NLDAS data for last two months of 2024. SW = shortwaves
 NLDAS_sw <- get_NLDASv20_datarod(
   start_date = "2022-06-26",
   end_date = "2024-10-10",
