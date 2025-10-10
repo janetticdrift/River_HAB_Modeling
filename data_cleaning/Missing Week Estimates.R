@@ -162,7 +162,16 @@ library(abind)
 
 #Clean and transform into a 2D dataframe
 mattaxareach <- yearmatdata %>% 
-  mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0)) %>%
+  mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0))
+
+for(i in 1:nrow(mattaxareach)){
+  if(microcoleus == -99) {
+   firstsample = 0 
+  } else {
+    firstsample = 1
+  }
+}
+
   filter(year == 2022) %>% #TEST ONE YEAR FIRST
   unite("uniqueID", c(year, week), sep = "_") %>% 
   relocate(firstday) %>% 
@@ -170,16 +179,16 @@ mattaxareach <- yearmatdata %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
   select(!c(site_reach, site)) %>% 
   select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
-  filter(sample_type == "TM") #Evaluate TM and TAC separatedly
+  filter(sample_type == "TM")  #Evaluate TM and TAC separatedly
 
-#Convert array into a list
-spreach <- plyr::alply(mat.array, 3, .dims = TRUE) #weeks, species, reaches
+#Convert dataframe into a list
+spreach <- split(mattaxareach, mattaxareach$reach) #weeks, species, reaches
 
 
 model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
                 "Nreach" = length(spreach),
-                "Nspecies" = as.integer(ncol(spreach[["1S"]])-3),#take out first 3 columns
-                "N" = lapply(spreach, function(df) df[, -c(1:3)]) #take out first 3 colums
+                "Nspecies" = as.integer(ncol(spreach[["1S"]])-4),#take out first 4 col: firstday:sample_type
+                "N" = lapply(spreach, function(df) df[, -c(1:4)]) #take out first 3 colums
 )
 
 
