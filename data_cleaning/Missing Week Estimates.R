@@ -193,7 +193,7 @@ N_array <- array(N_unlist, dim = c(15, 2, 3)) #Create array. dims = time, specie
 model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
                 "Nreach" = length(spreach),
                 "Nspecies" = as.integer(ncol(spreach[["1S"]])-4),#take out first 4 col: firstday:sample_type
-                "N" = N_array #take out first 3 colums
+                "N" = N_array 
 )
 
 
@@ -207,10 +207,17 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 1, iter = 10000,
                 warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))
+#Switch chains back to 3 when done debugging
+#[Nspecies, uniqueID] n[Nreach] = Rows of m2 (3) <- prefer this organization
+#[Nspecies, Nreach] n[uniqueID] = Rows of m2 (15)
+#[uniqueID, Nspecies] n[Nreach] = Rows of m2 (3)
+#[uniqueID, Nreach] n[Nspecies] = Rows of m2 (3)
+#[Nreach, uniqueID] n[Nspecies] = Rows of m2 (15)
+#[Nreach, Nspecies] n[uniqueID] = Rows of m2 (3)
 
 #Working through for loop
 uniqueID <- 1:15
@@ -220,7 +227,7 @@ beta_D <- rnorm(2)
 Beta <- matrix(rnorm(2*2), nrow = 2,ncol = 2)
 Alpha <- rnorm(2)
 
-Beta %*% n[,1,1] + Alpha
+Beta %*% n[,2,1] + Alpha
 
 
 

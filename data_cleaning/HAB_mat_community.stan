@@ -24,8 +24,8 @@ parameters {
   vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
-  matrix<upper=99>[Nspecies, uniqueID] n[Nreach]; //fill in with modeled data
-  //vector<upper=99>[Nspecies] n[Nreach, uniqueID];
+  matrix<upper=99>[Nspecies, Nreach] n[uniqueID]; //fill in with modeled data
+  //vector<upper=99>[Nreach] n[Nspecies, uniqueID];
 
 }
 
@@ -68,7 +68,7 @@ model {
    // if(firstsample[r] <= -3) continue; way to skip to the first sampled date for reaches with missing data?
     
     	
-       to_vector(n[,t,r]) ~ multi_normal(Alpha + Beta*to_row_vector(n[,t-1,r]) + gamma[r], ID);
+       to_vector(n[,r,t]) ~ multi_normal(Alpha + Beta*to_vector(n[,r,t-1]) + gamma[r], ID);
       
        
    }
@@ -79,7 +79,7 @@ model {
         for(s in 1:Nspecies){
       
         if(N[s,r,t] >= -3){ //if the year is a year we actually have sampled data for
-          N[s,r,t] ~ normal(n[s,t,r] + gamma[r], sigma_o[s]); //for collected data
+          N[s,r,t] ~ normal(n[s,r,t] + gamma[r], sigma_o[s]); //for collected data
                             //t and s may switch positions, pulling from all years stan
       }
     }  
