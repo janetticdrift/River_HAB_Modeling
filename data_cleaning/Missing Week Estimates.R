@@ -212,6 +212,17 @@ fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, ite
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))
 
+#Working through for loop
+uniqueID <- 1:15
+Nreach <- 1:3
+n <- array(data = rnorm(2*15*3), c(2,15, 3)) #species, time, reach
+beta_D <- rnorm(2)
+Beta <- matrix(rnorm(2*2), nrow = 2,ncol = 2)
+Alpha <- rnorm(2)
+
+Beta %*% n[,1,1] + Alpha
+
+
 
 ######RIVER WIDE
 

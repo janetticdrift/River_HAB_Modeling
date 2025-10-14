@@ -4,8 +4,8 @@ data {
   int Nreach; //Total number of reaches (3 each year, removed the added one in 2023)
   //vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
   
-  matrix [uniqueID, Nspecies] N [Nreach]; //Percent cover at reach and year per species
-    //Declares as "dims found=(weeks,species,reach)
+  matrix [Nspecies, Nreach] N [uniqueID]; //Percent cover at reach and year per species
+    //dims declared=(3,15,2) when [uniqueID, Nspecies] N [Nreach]
   
   //vector [Nspecies] id; //Vector of 1s for ID matrix
   
@@ -25,7 +25,7 @@ parameters {
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
   matrix<upper=99>[Nspecies, uniqueID] n[Nreach]; //fill in with modeled data
-  //vector<upper=99>[Nspecies] n[uniqueID, Nreach];
+  //vector<upper=99>[Nspecies] n[Nreach, uniqueID];
 
 }
 
@@ -63,11 +63,12 @@ model {
   //Population models
   
       //Process model
-  for(t in 2:(uniqueID)){
+  for(r in 1:Nreach){
+    for(t in 2:(uniqueID)){
    // if(firstsample[r] <= -3) continue; way to skip to the first sampled date for reaches with missing data?
-    for(r in 1:Nreach){
+    
     	
-       n[,t,r] ~ multi_normal(Alpha + Beta*n[,t-1,r] + gamma[r], ID);
+       to_vector(n[,t,r]) ~ multi_normal(Alpha + Beta*to_row_vector(n[,t-1,r]) + gamma[r], ID);
       
        
    }
@@ -77,8 +78,8 @@ model {
       for(t in 1:uniqueID){
         for(s in 1:Nspecies){
       
-        if(N[t,s,r] >= -3){ //if the year is a year we actually have sampled data for
-          N[t,s,r] ~ normal(n[s,t,r] + gamma[r], sigma_o[s]); //for collected data
+        if(N[s,r,t] >= -3){ //if the year is a year we actually have sampled data for
+          N[s,r,t] ~ normal(n[s,t,r] + gamma[r], sigma_o[s]); //for collected data
                             //t and s may switch positions, pulling from all years stan
       }
     }  
