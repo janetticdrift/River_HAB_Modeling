@@ -21,10 +21,11 @@ parameters {
   vector<lower=0>[Nspecies] sigma_o; //var w/ observation model
 
   vector<lower=0>[Nspecies] Alpha; //Is a beta per reach overkill? could turn this into a matrix
-  vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interac
+  vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
-  matrix<upper=99>[uniqueID, Nspecies] n[Nreach]; //fill in with modeled data
+  matrix<upper=99>[Nspecies, uniqueID] n[Nreach]; //fill in with modeled data
+  //vector<upper=99>[Nspecies] n[uniqueID, Nreach];
 
 }
 
@@ -62,11 +63,11 @@ model {
   //Population models
   
       //Process model
-  for(r in 1:Nreach){
+  for(t in 2:(uniqueID)){
    // if(firstsample[r] <= -3) continue; way to skip to the first sampled date for reaches with missing data?
-    for(t in 2:(uniqueID)){
+    for(r in 1:Nreach){
     	
-       n[r,,t] ~ multi_normal(Alpha + Beta*n[r,,t-1] + gamma[r], ID);
+       n[,t,r] ~ multi_normal(Alpha + Beta*n[,t-1,r] + gamma[r], ID);
       
        
    }
@@ -76,8 +77,8 @@ model {
       for(t in 1:uniqueID){
         for(s in 1:Nspecies){
       
-        if(N[r,t,s] >= -3){ //if the year is a year we actually have sampled data for
-          N[r,t,s] ~ normal(n[r,t,s] + gamma[r], sigma_o[s]); //for collected data
+        if(N[t,s,r] >= -3){ //if the year is a year we actually have sampled data for
+          N[t,s,r] ~ normal(n[s,t,r] + gamma[r], sigma_o[s]); //for collected data
                             //t and s may switch positions, pulling from all years stan
       }
     }  

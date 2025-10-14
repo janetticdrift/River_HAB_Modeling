@@ -184,11 +184,16 @@ for(i in 1:nrow(mattaxareach)){
 #Convert dataframe into a list
 spreach <- split(mattaxareach, mattaxareach$reach) #weeks, species, reaches
 
+#Create array for abundance data
+N <- lapply(spreach, function(df) df[, -c(1:4)]) #Remove unnecessary columns
+N_unlist <- unlist(N) #Convert list to a vector
+N_array <- array(N_unlist, dim = c(15, 2, 3)) #Create array. dims = time, species, reach
+
 
 model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
                 "Nreach" = length(spreach),
                 "Nspecies" = as.integer(ncol(spreach[["1S"]])-4),#take out first 4 col: firstday:sample_type
-                "N" = lapply(spreach, function(df) df[, -c(1:4)]) #take out first 3 colums
+                "N" = N_array #take out first 3 colums
 )
 
 

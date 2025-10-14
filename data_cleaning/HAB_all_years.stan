@@ -49,7 +49,7 @@ transformed parameters{
    
    for(i in 1:Nspecies){
      for(j in 1:Nspecies){
-       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
+       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j]; //if it's off diagonal, supply zero, otherwise keep diag value
      }
    }
    
