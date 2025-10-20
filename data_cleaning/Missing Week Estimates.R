@@ -158,36 +158,41 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 )
 #-------------------------------------------------------------------------------------------------
 #MULTI SPECIES and MULTI-REACH - Gather data into STAN list format
-library(abind)
+# library(abind)
+# 
+# #Clean and transform into a 2D dataframe
+# mattaxareach <- yearmatdata %>% 
+#   mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0))
+#   filter(year == 2022) %>% #TEST ONE YEAR FIRST
+#   unite("uniqueID", c(year, week), sep = "_") %>% 
+#   relocate(firstday) %>% 
+#   mutate(across(anabaena_and_cylindrospermum:rare, log)) %>% #logtransform
+#   mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
+#   select(!c(site_reach, site)) %>% 
+#   select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
+#   filter(sample_type == "TM")  #Evaluate TM and TAC separatedly
+# 
+# #Convert dataframe into a list
+# spreach <- split(mattaxareach, mattaxareach$reach) #weeks, species, reaches
+# 
+# #Create array for abundance data
+# N <- lapply(spreach, function(df) df[, -c(1:4)]) #Remove unnecessary columns
+# N_unlist <- unlist(N) #Convert list to a vector
+# N_array <- array(N_unlist, dim = c(15, 2, 3)) #Create array. dims = time, species, reach
 
-#Clean and transform into a 2D dataframe
-mattaxareach <- yearmatdata %>% 
-  mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0))
+#Split data into reach subsets, and run model separately per reach
 
-for(i in 1:nrow(mattaxareach)){
-  if(microcoleus == -99) {
-   firstsample = 0 
-  } else {
-    firstsample = 1
-  }
-}
-
-  filter(year == 2022) %>% #TEST ONE YEAR FIRST
-  unite("uniqueID", c(year, week), sep = "_") %>% 
-  relocate(firstday) %>% 
-  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>% #logtransform
-  mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
-  select(!c(site_reach, site)) %>% 
-  select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
-  filter(sample_type == "TM")  #Evaluate TM and TAC separatedly
-
-#Convert dataframe into a list
-spreach <- split(mattaxareach, mattaxareach$reach) #weeks, species, reaches
-
-#Create array for abundance data
-N <- lapply(spreach, function(df) df[, -c(1:4)]) #Remove unnecessary columns
-N_unlist <- unlist(N) #Convert list to a vector
-N_array <- array(N_unlist, dim = c(15, 2, 3)) #Create array. dims = time, species, reach
+1S <- yearmatdata %>% 
+  group_by(year, week) %>% 
+  dplyr::summarise(green_algae = mean(green_algae), microcoleus = mean(microcoleus),
+                   anabaena_cylindrospermum = mean(anabaena_cylindrospermum), 
+                   bare_biofilm = mean(bare_biofilm),
+                   other_nfixers = mean(other_nfixers)) %>% #Average across reaches
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday, bare_biofilm) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  mutate(across(green_algae:other_nfixers, log)) %>%
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
 model.1 <- list("uniqueID" = nrow(spreach[["1S"]]), 
