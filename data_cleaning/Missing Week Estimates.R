@@ -210,23 +210,6 @@ fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 1, ite
                                                            stepsize = 0.001,
                                                            max_treedepth = 20))
 #Switch chains back to 3 when done debugging
-#[Nspecies, uniqueID] n[Nreach] = Rows of m2 (3) <- prefer this organization
-#[Nspecies, Nreach] n[uniqueID] = Rows of m2 (15)
-#[uniqueID, Nspecies] n[Nreach] = Rows of m2 (3)
-#[uniqueID, Nreach] n[Nspecies] = Rows of m2 (3)
-#[Nreach, uniqueID] n[Nspecies] = Rows of m2 (15)
-#[Nreach, Nspecies] n[uniqueID] = Rows of m2 (3)
-
-#Working through for loop
-uniqueID <- 1:15
-Nreach <- 1:3
-n <- array(data = rnorm(2*15*3), c(2,15, 3)) #species, time, reach
-beta_D <- rnorm(2)
-Beta <- matrix(rnorm(2*2), nrow = 2,ncol = 2)
-Alpha <- rnorm(2)
-
-Beta %*% n[,2,1] + Alpha
-
 
 
 ######RIVER WIDE
@@ -254,7 +237,7 @@ fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
-shinystan::launch_shinystan(fit.m4)
+shinystan::launch_shinystan(fit.m1)
 print(fit.m4, par = "Ptheta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
