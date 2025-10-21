@@ -1,13 +1,9 @@
 data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
-  int Nreach; //Total number of reaches (3 each year, removed the added one in 2023)
-  //vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
   
-  matrix [Nspecies, Nreach] N [uniqueID]; //Percent cover at reach and year per species
-    //dims declared=(3,15,2) when [uniqueID, Nspecies] N [Nreach]
-  
-  //vector [Nspecies] id; //Vector of 1s for ID matrix
+  matrix [uniqueID, Nspecies] N; //Proportion in assemblage at year per species
   
 }
 
