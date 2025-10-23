@@ -26,6 +26,10 @@ newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
 #Read in mat community raw data for mat proportion by reach and year
 microdata <- read.csv(here::here("data/Target Microscopy.csv"))
 
+#Read in anatoxin data for 2024
+atx2223 <- read.csv(here::here("data/cyano_atx.csv"))
+atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
+
 #Clean new percent cover data to match previous year formatting
 
 percover <- percover1 %>% 
@@ -404,6 +408,11 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
   geom_point() +
   geom_line() +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
+
+
+#Clean and view ATX data
+atx24clean <- atx2024 %>% 
+  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
 
 #----------------------------------------
 #Calculation of average temperature
