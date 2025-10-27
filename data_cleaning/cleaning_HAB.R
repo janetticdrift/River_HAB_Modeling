@@ -410,9 +410,19 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
 
 
-#Clean and view ATX data
+#Clean and view ATX data. WHAT ARE THE EXT SAMPLES
 atx24clean <- atx2024 %>% 
-  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
+  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
+  mutate(is_dup = grepl("Duplicate", Sample)) %>% #create col that stores duplicate info
+  mutate(across(.cols = where(is.numeric), #only target numeric columns
+                .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
+  mutate(across(where(is.numeric),
+                ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
+                                                                             #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
+  filter(!is_dup) %>% #remove old duplicate rows
+  select(!is_dup) #remove duplicate ID col
+
+
 
 #----------------------------------------
 #Calculation of average temperature
