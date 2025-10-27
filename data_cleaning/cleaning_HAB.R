@@ -410,7 +410,15 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
 
 
-#Clean and view ATX data. WHAT ARE THE EXT SAMPLES
+#############################################################################################
+#Tidy ATX data.
+
+atx2223clean <- atx2223 %>% 
+  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
+  select(!site) %>% 
+  select(!c(Chla_ug_g:13)) #Remove toxins that weren't analyzed in 2024
+
+#WHAT ARE THE EXT SAMPLES--I ignored them for now!
 atx24clean <- atx2024 %>% 
   filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
   mutate(is_dup = grepl("Duplicate", Sample)) %>% #create col that stores duplicate info
@@ -420,7 +428,25 @@ atx24clean <- atx2024 %>%
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
   filter(!is_dup) %>% #remove old duplicate rows
-  select(!is_dup) #remove duplicate ID col
+  select(!c(is_dup, Type, Sample)) %>%  #remove duplicate ID col
+  dplyr::rename(field_date = Date) %>% 
+  mutate(sample_type = "TM") %>% 
+  select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) #remove toxins that weren't analyzed in '22,'23
+
+#combine 2024 data with 2022,2023
+atx <- rbind(atx2223clean, atx24clean) %>% 
+  pivot_longer(5:8, names_to = "anatoxins", values_to = "concentration") %>% 
+  group_by(field_date, reach, sample_type, anatoxins) %>% 
+  dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
+  mutate(field_date = as.Date(field_date)) %>% 
+  mutate(year = year(field_date))
+
+#Plot data
+ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concentration, color = anatoxins)) +
+  facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
+  geom_point() +
+  geom_line()
+#Row 73 in atx is the 102 concentration of total atx in 2022 reach 4
 
 
 
