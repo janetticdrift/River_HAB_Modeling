@@ -206,19 +206,19 @@ options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
 fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 1, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
-                                                           max_treedepth = 20))
+                                                           max_treedepth = 13))
 #Switch chains back to 3 when done debugging
 
 
 ######RIVER WIDE
 
 #All years, all species, averaged reach
-fit.m4 <-  stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m4 <- stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
-                                                           max_treedepth = 20))
+                                                           max_treedepth = 13))
 
 #Only biotic variables, all species, averaged reach
 fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
@@ -237,7 +237,7 @@ fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
-shinystan::launch_shinystan(fit.m1)
+shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R

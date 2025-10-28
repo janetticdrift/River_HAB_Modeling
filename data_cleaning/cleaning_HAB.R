@@ -442,10 +442,11 @@ atx <- rbind(atx2223clean, atx24clean) %>%
   mutate(year = year(field_date))
 
 #Plot data
-ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concentration, color = anatoxins)) +
+ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
   facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
   geom_point() +
-  geom_line()
+  geom_line() +
+  labs(title = "Target Anabaena")
 #Row 73 in atx is the 102 concentration of total atx in 2022 reach 4
 
 
