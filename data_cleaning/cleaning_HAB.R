@@ -414,24 +414,23 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
 #Tidy ATX data.
 
 atx2223clean <- atx2223 %>% 
-  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
-  select(!site) %>% 
-  select(!c(Chla_ug_g:13)) #Remove toxins that weren't analyzed in 2024
+  dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
+  dplyr::select(!site) %>% 
+  dplyr::select(!c(Chla_ug_g:13)) #Remove toxins that weren't analyzed in 2024
 
 #WHAT ARE THE EXT SAMPLES--I ignored them for now!
 atx24clean <- atx2024 %>% 
-  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
-  mutate(is_dup = grepl("Duplicate", Sample)) %>% #create col that stores duplicate info
-  mutate(across(.cols = where(is.numeric), #only target numeric columns
+  dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
+  dplyr:: mutate(is_dup = grepl("Duplicate", Sample)) %>% #create col that stores duplicate info
+  dplyr::mutate(across(.cols = where(is.numeric), #only target numeric columns
                 .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
-  mutate(across(where(is.numeric),
+  dplyr:: mutate(across(where(is.numeric),
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
-  filter(!is_dup) %>% #remove old duplicate rows
-  select(!c(is_dup, Type, Sample)) %>%  #remove duplicate ID col
+  dplyr::filter(!is_dup) %>% #remove old duplicate rows
+  dplyr::select(!c(is_dup, Type, Sample)) %>%  #remove duplicate ID col
   dplyr::rename(field_date = Date) %>% 
-  mutate(sample_type = "TM") %>% 
-  select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) #remove toxins that weren't analyzed in '22,'23
+  dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) #remove toxins that weren't analyzed in '22,'23
 
 #combine 2024 data with 2022,2023
 atx <- rbind(atx2223clean, atx24clean) %>% 

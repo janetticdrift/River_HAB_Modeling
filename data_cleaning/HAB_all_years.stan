@@ -49,7 +49,7 @@ transformed parameters{
    
    for(i in 1:Nspecies){
      for(j in 1:Nspecies){
-       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
+       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j]; //if it's off diagonal, supply zero, otherwise keep diag
      }
    }
    
@@ -86,7 +86,7 @@ model {
   for(t in 2:uniqueID){
     //for(s in 1:Nspecies){
       
-      if(firstdays[t]==1) continue;
+      if(firstdays[t]==1) continue; //continue ends current operation and returns to top of loop
        n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
                             Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
                             Dtheta*discharge[t-1] + Ttheta*temp[t-1] +

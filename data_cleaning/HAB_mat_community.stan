@@ -43,7 +43,7 @@ model {
 	
   //priors
   
-  sigma_p ~ inv_gamma(3,1); //process model var
+  sigma_p ~ inv_gamma(3,1.5); //process model var
   sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
   
   //tauP ~ inv_gamma(1,1); //reach random var
@@ -51,7 +51,7 @@ model {
   //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues
 
 
-  Alpha ~ normal(0,1)T[0,];
+  Alpha ~ normal(1,1)T[0,];
   
   Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
   to_vector(Beta_off) ~ normal(0, .2); //input matrix reshaped to vector
