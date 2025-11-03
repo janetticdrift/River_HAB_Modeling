@@ -416,12 +416,13 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
 
 atx2223clean <- atx2223 %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
-  dplyr::select(!site) %>% 
-  dplyr::select(!c(Chla_ug_g:13)) #Remove toxins that weren't analyzed in 2024
+  dplyr::select(!c(site, site_reach)) %>% 
+  dplyr::select(!c(Chla_ug_g:12)) %>%  #Remove toxins that weren't analyzed in 2024
+  mutate(field_date = as.Date(field_date))
 
 #WHAT ARE THE EXT SAMPLES--I ignored them for now!
 atx24clean <- atx2024 %>% 
-  dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
+  dplyr::filter(grepl("SFE", site)) %>%  #Keep sites that include string "SFE" in site col
   dplyr:: mutate(is_dup = grepl("Duplicate", Sample)) %>% #create empty col that stores duplicate info
   dplyr::mutate(across(.cols = where(is.numeric), #only target numeric columns
                 .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
@@ -429,16 +430,30 @@ atx24clean <- atx2024 %>%
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
   dplyr::filter(!is_dup) %>% #remove old duplicate rows
-  dplyr::select(!c(is_dup, Sample)) %>%  #remove duplicate ID col
-  dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) #remove toxins that weren't analyzed in '22,'23
-
+  dplyr::filter(!grepl("Var Reps", Sample)) %>% 
+  dplyr::select(!c(is_dup, Sample, site)) %>%  #remove duplicate ID col and Sample col
+  dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) %>%   #remove toxins that weren't analyzed in '22,'23
+  dplyr::mutate(field_date = as.Date(format(mdy(field_date), '%Y-%m-%d'))) %>% 
+  arrange(field_date)
+  
 #combine 2024 data with 2022,2023
 atx <- rbind(atx2223clean, atx24clean) %>% 
-  pivot_longer(5:8, names_to = "anatoxins", values_to = "concentration") %>% 
+  pivot_longer(5:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-  mutate(field_date = as.Date(field_date)) %>% 
-  mutate(year = year(field_date))
+  mutate(year = year(field_date)) %>% 
+
+#For Joanna cleaning
+HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>% 
+  mutate(site = "SFE-M") %>% 
+  pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
+  group_by(field_date, reach, sample_type, anatoxins) %>% 
+  dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
+  pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
+  mutate(year = year(field_date)) %>% 
+  mutate(site = "SFE-M") %>% 
+  relocate(year, .after = field_date) %>% 
+  relocate(site, .after = year)
 
 write.csv(atx,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
 
