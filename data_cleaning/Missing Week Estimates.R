@@ -46,7 +46,7 @@ yeardata <- cover_indexweek %>%
 
 yearmatdata_TM <- micro_indexweek %>% 
   dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
-  filter(sample_type == "TM") %>% 
+  dplyr::filter(sample_type == "TM") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TM")) %>% 
@@ -54,7 +54,7 @@ yearmatdata_TM <- micro_indexweek %>%
 
 yearmatdata_TAC <- micro_indexweek %>% 
   dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
-  filter(sample_type == "TAC") %>% 
+  dplyr::filter(sample_type == "TAC") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TAC")) %>% 

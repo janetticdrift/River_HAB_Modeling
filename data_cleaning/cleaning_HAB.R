@@ -3,6 +3,7 @@
 #Packages for cleaning data
 library(plyr)
 library(tidyverse)
+library(dplyr)
 library(ggpubr)
 library(gjam)
 library(devtools)
@@ -66,29 +67,29 @@ allcoverdata <- rbind(percover, cleanpercover)
 
 #Clean microscopy data to tidy slide replicates and consolidate rare species
 microscopy_non_avg <- microdata %>% 
-  filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
+  dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
   separate(site_reach, into=c("site", "location", "reach"), 
            sep="-") %>% #Split location columns into separate categories
-  filter(grepl("M", location)) %>% #Keep Miranda sites, remove Standish-Hicky (SH) sites
+  dplyr::filter(grepl("M", location)) %>% #Keep Miranda sites, remove Standish-Hicky (SH) sites
   mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
   mutate(year = year(field_date)) %>%  #create year column
   relocate(year, .after = field_date) %>%   #reorganize column order
-  select(!non_algal) %>% #Remove column measuring sediment amount
-  filter(!reach == 2) %>% #Remove the added reach
+  dplyr::select(!non_algal) %>% #Remove column measuring sediment amount
+  dplyr::filter(!reach == 2) %>% #Remove the added reach
   pivot_longer(microcoleus:aphanothece, names_to = "Species", values_to = "Abundance")
 
 #Average together slide replicates  
 averaged_slides <- microscopy_non_avg %>% 
-  filter(!slide_rep == "Final") %>%
+  dplyr::filter(!slide_rep == "Final") %>%
   group_by(field_date, year, site, location, reach, sample_type, date_analyzed, 
            method, Species) %>% 
   dplyr::summarise(Abundance = mean(Abundance)) %>% 
-  mutate(slide_rep = "Final") %>% 
+  dplyr::mutate(slide_rep = "Final") %>% 
   relocate(slide_rep, .after = sample_type)
 
 #Pull out already processed slides
 processed_slides <- microscopy_non_avg %>% 
-  filter(slide_rep == "Final")
+  dplyr::filter(slide_rep == "Final")
 
 #Bind together dataframes into final set
 microscopy1 <- rbind(averaged_slides, processed_slides)
@@ -110,7 +111,7 @@ rare_names <- unique(rare_species$Species) #Names of the species that are rare
 microscopy <- microscopy1 %>% 
   ungroup() %>% 
   pivot_wider(names_from = Species, values_from = Abundance) %>% 
-  dplyr::mutate(rare = rowSums(select(., rare_names))) %>% 
+  dplyr::mutate(rare = rowSums(dplyr::select(., rare_names))) %>% 
   dplyr::select(!rare_names)
 
 #############################################################################################
@@ -421,15 +422,14 @@ atx2223clean <- atx2223 %>%
 #WHAT ARE THE EXT SAMPLES--I ignored them for now!
 atx24clean <- atx2024 %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
-  dplyr:: mutate(is_dup = grepl("Duplicate", Sample)) %>% #create col that stores duplicate info
+  dplyr:: mutate(is_dup = grepl("Duplicate", Sample)) %>% #create empty col that stores duplicate info
   dplyr::mutate(across(.cols = where(is.numeric), #only target numeric columns
                 .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
   dplyr:: mutate(across(where(is.numeric),
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
   dplyr::filter(!is_dup) %>% #remove old duplicate rows
-  dplyr::select(!c(is_dup, Type, Sample)) %>%  #remove duplicate ID col
-  dplyr::rename(field_date = Date) %>% 
+  dplyr::select(!c(is_dup, Sample)) %>%  #remove duplicate ID col
   dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) #remove toxins that weren't analyzed in '22,'23
 
 #combine 2024 data with 2022,2023
@@ -439,6 +439,8 @@ atx <- rbind(atx2223clean, atx24clean) %>%
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
   mutate(field_date = as.Date(field_date)) %>% 
   mutate(year = year(field_date))
+
+write.csv(atx,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
 
 #Plot data
 ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +

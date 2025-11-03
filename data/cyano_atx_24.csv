@@ -1,120 +1,120 @@
-﻿Sample,Date,reach,Type,Total_ATXs,Det_ATXs,Total_CYL,Det_CYL,Total_MCs,Det_MCs,ATX,dhATX,HTX,dhHTX,Total_ATXs2,,
-South ,2024-08-21,,TM,nd,0.113,nd,0.093,nd,0.05,nd,nd,nd,nd,nd,,
-East,2024-08-21,,Other,nd,0.119,nd,0.099,0.38*,0.05,nd,nd,nd,nd,nd,,
-Red-1,2024-08-21,,TM,nd,0.108,nd,0.09,nd,0.05,nd,nd,nd,nd,nd,,
-Etna - Green ,2024-08-22,,TM,nd,0.128,nd,0.106,nd,0.06,nd,nd,nd,nd,nd,,
-Etna,2024-08-22,,TM,nd,0.119,nd,0.099,nd,0.05,nd,nd,nd,nd,nd,,
-Black -2,2024-08-22,,TM,0.094,0.114,nd,0.095,nd,0.05,nd,0.094,nd,nd,0.094,,
-Shack -Up,2024-08-22,,TM,nd,0.15,nd,0.124,nd,0.06,nd,nd,nd,nd,nd,,
-Kid-Down ,2024-08-23,,TM,0.144,0.118,nd,0.098,nd,0.05,nd,0.144,nd,nd,0.144,,
-Kid-Up,2024-08-23,,Other,0.624,0.115,nd,0.095,nd,0.05,nd,0.624,nd,nd,0.624,,
-Canyon ,2024-08-24,,TM,nd,0.158,nd,0.131,nd,0.07,nd,nd,nd,nd,nd,,
-Kelsey ,2024-08-24,,TM,nd,0.115,nd,0.095,nd,0.05,nd,nd,nd,nd,nd,,
-Mill,2024-08-24,,TM,nd,0.111,nd,0.092,nd,0.05,nd,nd,nd,nd,nd,,
-Town -5,2024-08-24,,TM,nd,0.109,nd,0.09,nd,0.05,nd,nd,nd,nd,nd,,
-Klam -6,2024-08-25,,TM,0.47,0.112,nd,0.093,nd,0.05,nd,0.119,0.078,0.078,0.47,,
-Jones -4,2024-08-25,,TM,nd,0.111,nd,0.092,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S,2024-10-10,1S,TM,nd,0.121,nd,0.1,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S Duplicate ,2024-10-10,1S,TM,nd,0.175,nd,0.1,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S,2024-09-14,1S,TM,nd,0.119,nd,0.098,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S,2024-09-14,1S,TAC,0.022,0.121,nd,0.101,nd,0.05,nd,0.022,nd,nd,0.022,,
-Eel-BUG ,2024-09-14,2,TM,nd,0.121,nd,0.101,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-BUG EXT 2 ,2024-09-14,2,TM,0.098,0.155,nd,0.128,nd,0.07,nd,0.098,nd,nd,0.098,,
-Eel_BUG EXT 3 ,2024-09-14,2,TM,nd,0.147,nd,0.122,nd,0.06,nd,nd,nd,nd,nd,,
-Eel-BUG ,2024-09-14,2,TAC,0.051,0.109,nd,0.09,nd,0.05,nd,0.051,nd,nd,0.051,,
-Eel-BUG EXT 2 ,2024-09-14,2,TAC,0.064,0.133,nd,0.111,nd,0.06,nd,0.064,nd,nd,0.064,,
-Eel_BUG EXT 3 ,2024-09-14,2,TAC,0.102,0.131,nd,0.109,nd,0.06,nd,0.102,nd,nd,0.102,,
-BLANK 1 ,N/A,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd,,
-Eel-3UP,2024-09-14,3,TM,0.096,0.162,nd,0.092,nd,0.05,nd,0.096,nd,nd,0.096,,
-Eel-3UP,2024-09-14,3,TAC,0.158,0.172,nd,0.098,nd,0.05,nd,0.158,nd,nd,0.158,,
-Eel-2UP,2024-09-14,4,TM,0.086,0.21,nd,0.12,nd,0.06,nd,0.086,nd,nd,0.086,,
-Eel-2UP,2024-09-14,4,TAC,0.066,0.177,nd,0.101,nd,0.05,nd,0.066,nd,nd,0.066,,
-Eel-4S,2024-08-14,1S,TM,2.531,0.229,nd,0.131,nd,0.07,2.064,0.468,nd,nd,2.531,,
-Eel-4S,2024-08-14,1S,TAC,0.475,0.159,nd,0.091,nd,0.05,0.43,0.045,nd,nd,0.475,,
-Eel-4S EXT 2 ,2024-08-14,1S,TAC,0.471,0.214,nd,0.122,nd,0.06,0.418,0.053,nd,nd,0.471,,
-Eel-4S EXT 3 ,2024-08-14,1S,TAC,0.668,0.173,nd,0.099,nd,0.05,0.497,0.171,nd,nd,0.668,,
-Eel-4S,2024-08-14,1S,TM,2.497,0.17,nd,0.097,nd,0.05,1.901,0.596,nd,nd,2.497,,
-Eel-BUG ,2024-08-14,,TM,0.594,0.174,nd,0.099,nd,0.05,0.594,nd,nd,nd,0.594,,
-Eel-BUG ,2024-08-14,,TAC,0.298,0.199,nd,0.114,nd,0.06,0.204,*,0.093,*,nd,,
-Eel-3UP,2024-08-14,,TM,0.081,0.169,nd,0.097,nd,0.05,nd,0.081,nd,nd,0.081,,
-Eel-3UP,2024-08-14,,TAC,nd,0.301,nd,0.172,nd,0.09,nd,nd,nd,nd,nd,,
-Eel-2UP,2024-08-14,,TM,0.88,0.181,nd,0.103,nd,0.05,0.614,0.266,nd,nd,0.88,,
-Eel-2UP,2024-08-14,,TAC,1.988,0.175,nd,0.1,nd,0.05,1.218,0.77,nd,nd,1.988,,
-Eel-4S,2024-07-31,,TM,0.76,0.163,nd,0.093,nd,0.05,0.663,0.097,nd,nd,0.76,,
-Eel-4S Duplicate ,2024-07-31,,TM,0.643,0.18,nd,0.103,nd,0.05,0.541,0.102,*,nd,nd,,
-Eel-4S,2024-07-31,,TAC,6.055,0.17,nd,0.097,nd,0.05,5.42,0.635,nd,nd,6.055,,
-Eel-4S Duplicate ,2024-07-31,,TAC,5.267,0.183,nd,0.105,nd,0.05,nd,nd,nd,nd,nd,,
-BLANK 2 ,N/A,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd,,
-Eel-BUG ,2024-07-31,,TM,0.363,0.16,nd,0.091,nd,0.05,0.363,*,nd,nd,nd,,
-Eel-BUG ,2024-07-31,,TAC,4.878,0.164,nd,0.094,nd,0.05,3.489,1.389,nd,nd,4.878,,
-Eel-3UP,2024-07-31,,TM,0.059,0.179,nd,0.102,nd,0.05,nd,0.059,nd,nd,0.059,,
-Eel-3UP,2024-07-31,,TAC,1.241,0.212,nd,0.121,nd,0.06,1.005,0.236,nd,nd,1.241,,
-Eel-2UP,2024-07-31,,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-2UP EXT 2 ,2024-07-31,,TM,nd,0.18,nd,0.103,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-2UP EXT 3 ,2024-07-31,,TM,nd,0.161,nd,0.092,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-2UP,2024-07-31,,TAC,0.977,0.174,nd,0.099,nd,0.05,0.736,0.242,nd,nd,0.977,,
-Eel-2UP EXT 2 ,2024-07-31,,TAC,1.201,0.187,nd,0.107,nd,0.06,1.023,0.179,nd,nd,1.201,,
-Eel-2UP EXT 3 ,2024-07-31,,TAC,1.156,0.195,nd,0.111,nd,0.06,0.936,0.22,nd,nd,1.156,,
-Jones -4,2024-07-26,,TM,nd,0.16,nd,0.091,nd,0.05,nd,nd,nd,nd,nd,,
-Red-1,2024-07-26,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd,,
-Town -5,2024-07-26,,TM,nd,0.164,nd,0.094,nd,0.05,nd,nd,nd,nd,nd,,
-East-Up,2024-07-26,,TM,nd,0.178,nd,0.102,nd,0.05,nd,nd,nd,nd,nd,,
-Mill,2024-07-27,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd,,
-SRS-3,2024-07-27,,TM,nd,0.171,nd,0.098,nd,0.05,nd,nd,nd,nd,nd,,
-Klam -6,2024-07-27,,TM,nd,0.171,nd,0.098,nd,0.05,nd,nd,nd,nd,nd,,
-Kid-Up,2024-06-24,,TM,nd,0.161,nd,0.092,nd,0.05,nd,nd,nd,nd,nd,,
-South ,2024-06-25,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd,,
-Shack -Up,2024-06-26,,TM,nd,1.335,nd,0.762,nd,0.4,nd,nd,nd,nd,nd,,
-Etna-Up,2024-06-26,,TM,nd,0.179,nd,0.102,nd,0.05,nd,nd,nd,nd,nd,,
-Kelsey ,2024-06-27,,TM,nd,0.159,nd,0.091,nd,0.05,nd,nd,nd,nd,nd,,
-Klam -6,2024-06-28,,TM,nd,0.334,nd,0.191,nd,0.1,nd,nd,nd,nd,nd,,
-Mill,2024-06-28,,TM,nd,0.168,nd,0.096,nd,0.05,nd,nd,nd,nd,nd,,
-BLANK 3 ,N/A,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd,,
-Eel-4S,2024-08-26,,TM,2.051,0.179,nd,0.102,nd,0.05,1.436,0.616,nd,nd,2.051,,
-Eel-4S,2024-08-26,,TAC,2.083,0.17,nd,0.097,nd,0.05,1.529,0.553,nd,nd,2.083,,
-Eel-BUG ,2024-08-26,,TM,0.341,0.159,nd,0.091,nd,0.05,0.262,0.078,nd,nd,0.341,,
-Eel-BUG ,2024-08-26,,TAC,2.242,0.208,nd,0.119,nd,0.06,1.424,0.818,nd,nd,2.242,,
-Eel-3UP,2024-08-26,,TM,1.697,0.179,nd,0.102,nd,0.05,1.23,0.466,nd,nd,1.697,,
-Eel-3UP ,2024-08-26,,TAC,6.7,0.207,nd,0.119,nd,0.06,4.955,1.744,nd,nd,6.7,,
-Eel-3UP EXT 2 ,2024-08-26,,TAC,6.457,0.178,nd,0.101,nd,0.05,4.689,1.768,nd,nd,6.457,,
-Eel-3UP EXT 3 ,2024-08-26,,TAC,6.577,0.19,nd,0.109,nd,0.06,4.551,2.026,nd,nd,6.577,,
-Eel-2UP,2024-08-26,,TM,1.067,0.182,nd,0.104,nd,0.05,0.663,0.404,nd,nd,1.067,,
-Eel-2UP,2024-08-26,,TAC,1.172,0.17,nd,0.097,nd,0.05,0.746,0.426,nd,nd,1.172,,
-Black -2,2024-09-18,,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd,,
-Etna,2024-09-18,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd,,
-Red-1,2024-09-18,,TM,nd,0.16,nd,0.091,nd,0.05,nd,nd,nd,nd,nd,,
-Canyon ,2024-09-19,,TM,nd,0.174,nd,0.099,nd,0.05,nd,nd,nd,nd,nd,,
-Mill,2024-09-19,,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd,,
-Jones -4,2024-09-20,,TM,nd,0.178,nd,0.102,nd,0.05,nd,nd,nd,nd,nd,,
-Kid-Down ,2024-09-20,,TM,0.557,0.167,nd,0.095,nd,0.05,nd,0.557,nd,nd,0.557,,
-Eel-4S,2024-07-02,,TM,nd,0.242,nd,0.138,nd,0.07,nd,nd,nd,nd,nd,,
-Eel-BUG ,2024-07-02,,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-BUG EXT 2 ,2024-07-02,,TM,nd,0.162,nd,0.092,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-BUG EXT 3 ,2024-07-02,,TM,nd,0.172,nd,0.098,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-3UP,2024-07-02,,TM,nd,0.181,nd,0.103,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-2UP,2024-07-02,,TM,nd,0.175,nd,0.1,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S,2024-07-17,,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S EXT 2 ,2024-07-17,,TM,0.071,0.18,nd,0.103,nd,0.05,nd,0.071,nd,nd,0.071,,
-Eel-4S EXT 3 ,2024-07-17,,TM,0.088,0.157,nd,0.09,nd,0.05,nd,0.088,*,nd,nd,,
-Eel-BUG ,2024-07-17,,TM,nd,0.183,nd,0.104,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-3UP,2024-07-17,,TM,nd,0.18,nd,0.103,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-2UP,2024-07-17,,TM,nd,0.159,nd,0.091,nd,0.05,nd,nd,nd,nd,nd,,
-Town -5,2024-10-15,,TM,nd,0.299,nd,0.171,nd,0.09,nd,nd,nd,nd,nd,,
-Jones -4,2024-10-15,,TM,12.085,0.167,nd,0.096,nd,0.05,10.221,1.43,0.389,0.045,12.085,,
-Kid-Down ,2024-10-17,,TM,0.592,0.166,nd,0.095,nd,0.05,nd,0.592,nd,nd,0.592,,
-Etna,2024-10-16,,TM,nd,0.283,nd,0.162,nd,0.08,nd,nd,nd,nd,nd,,
-Black -2,2024-10-16,,TM,0.215,0.176,nd,0.1,nd,0.05,nd,0.215,nd,nd,0.215,,
-Red-1,2024-10-16,,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd,,
-Canyon ,2024-10-15,,TM,nd,0.163,nd,0.093,nd,0.05,nd,nd,nd,nd,nd,,
-Blackwood Upper -R1,2024-07-23,,TM,nd,0.163,nd,0.093,0.55*,0.05,nd,nd,nd,nd,nd,,
-Blackwood Upper -R2,2024-07-23,,TM,nd,0.172,nd,0.098,5.07**,0.05,nd,nd,nd,nd,nd,,
-Blackwood Upper -R3,2024-07-23,,TM,nd,0.189,nd,0.108,1.39*,0.06,nd,nd,nd,nd,nd,,
-Eel-4S,2024-09-27,,TM,nd,0.156,nd,0.089,nd,0.05,nd,nd,nd,nd,nd,,
-Eel-4S,2024-06-19,,TM,nd,4.581,nd,2.617,nd,1.37,nd,nd,nd,nd,nd,,
-Eel-2UP,2024-06-19,,TM,nd,2.493,nd,1.424,nd,0.74,nd,nd,nd,nd,nd,,
-BLANK 4 ,N/A,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd,,
-Eel-BUG Var Reps ATX 1 ,2024-08-14,,NA,NA,NA,NA,NA,NA,NA,nd,0.217,nd,nd,0.217,,
-Eel-BUG Var Reps ATX 2 ,2024-08-14,,NA,NA,NA,NA,NA,NA,NA,2.295,0.614,nd,nd,2.908,,
-Eel-BUG Var Reps ATX 3 ,2024-08-14,,NA,NA,NA,NA,NA,NA,NA,nd,0.093,*,nd,nd,,
-Eel-BUG Var Reps ATX 4 ,2024-08-14,,NA,NA,NA,NA,NA,NA,NA,nd,nd,nd,nd,nd,,
-Eel-BUG Var Reps ATX 5 ,2024-08-14,,NA,NA,NA,NA,NA,NA,NA,1.302,0.254,nd,nd,1.556,,
+﻿Sample,field_date,site,reach,sample_type,Total_ATXs,Det_ATXs,Total_CYL,Det_CYL,Total_MCs,Det_MCs,ATX,dhATX,HTX,dhHTX,Total_ATXs2
+South ,8/21/24,,,TM,nd,0.113,nd,0.093,nd,0.05,nd,nd,nd,nd,nd
+East,8/21/24,,,Other,nd,0.119,nd,0.099,0.38*,0.05,nd,nd,nd,nd,nd
+Red-1,8/21/24,,,TM,nd,0.108,nd,0.09,nd,0.05,nd,nd,nd,nd,nd
+Etna - Green ,8/22/24,,,TM,nd,0.128,nd,0.106,nd,0.06,nd,nd,nd,nd,nd
+Etna,8/22/24,,,TM,nd,0.119,nd,0.099,nd,0.05,nd,nd,nd,nd,nd
+Black -2,8/22/24,,,TM,0.094,0.114,nd,0.095,nd,0.05,nd,0.094,nd,nd,0.094
+Shack -Up,8/22/24,,,TM,nd,0.15,nd,0.124,nd,0.06,nd,nd,nd,nd,nd
+Kid-Down ,8/23/24,,,TM,0.144,0.118,nd,0.098,nd,0.05,nd,0.144,nd,nd,0.144
+Kid-Up,8/23/24,,,Other,0.624,0.115,nd,0.095,nd,0.05,nd,0.624,nd,nd,0.624
+Canyon ,8/24/24,,,TM,nd,0.158,nd,0.131,nd,0.07,nd,nd,nd,nd,nd
+Kelsey ,8/24/24,,,TM,nd,0.115,nd,0.095,nd,0.05,nd,nd,nd,nd,nd
+Mill,8/24/24,,,TM,nd,0.111,nd,0.092,nd,0.05,nd,nd,nd,nd,nd
+Town -5,8/24/24,,,TM,nd,0.109,nd,0.09,nd,0.05,nd,nd,nd,nd,nd
+Klam -6,8/25/24,,,TM,0.47,0.112,nd,0.093,nd,0.05,nd,0.119,0.078,0.078,0.47
+Jones -4,8/25/24,,,TM,nd,0.111,nd,0.092,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S,10/10/24,SFE-M,1S,TM,nd,0.121,nd,0.1,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S Duplicate ,10/10/24,SFE-M,1S,TM,nd,0.175,nd,0.1,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S,9/14/24,SFE-M,1S,TM,nd,0.119,nd,0.098,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S,9/14/24,SFE-M,1S,TAC,0.022,0.121,nd,0.101,nd,0.05,nd,0.022,nd,nd,0.022
+Eel-BUG ,9/14/24,SFE-M,2,TM,nd,0.121,nd,0.101,nd,0.05,nd,nd,nd,nd,nd
+Eel-BUG EXT 2 ,9/14/24,SFE-M,2,TM,0.098,0.155,nd,0.128,nd,0.07,nd,0.098,nd,nd,0.098
+Eel_BUG EXT 3 ,9/14/24,SFE-M,2,TM,nd,0.147,nd,0.122,nd,0.06,nd,nd,nd,nd,nd
+Eel-BUG ,9/14/24,SFE-M,2,TAC,0.051,0.109,nd,0.09,nd,0.05,nd,0.051,nd,nd,0.051
+Eel-BUG EXT 2 ,9/14/24,SFE-M,2,TAC,0.064,0.133,nd,0.111,nd,0.06,nd,0.064,nd,nd,0.064
+Eel_BUG EXT 3 ,9/14/24,SFE-M,2,TAC,0.102,0.131,nd,0.109,nd,0.06,nd,0.102,nd,nd,0.102
+BLANK 1 ,N/A,,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd
+Eel-3UP,9/14/24,SFE-M,3,TM,0.096,0.162,nd,0.092,nd,0.05,nd,0.096,nd,nd,0.096
+Eel-3UP,9/14/24,SFE-M,3,TAC,0.158,0.172,nd,0.098,nd,0.05,nd,0.158,nd,nd,0.158
+Eel-2UP,9/14/24,SFE-M,4,TM,0.086,0.21,nd,0.12,nd,0.06,nd,0.086,nd,nd,0.086
+Eel-2UP,9/14/24,SFE-M,4,TAC,0.066,0.177,nd,0.101,nd,0.05,nd,0.066,nd,nd,0.066
+Eel-4S,8/14/24,SFE-M,1S,TM,2.531,0.229,nd,0.131,nd,0.07,2.064,0.468,nd,nd,2.531
+Eel-4S,8/14/24,SFE-M,1S,TAC,0.475,0.159,nd,0.091,nd,0.05,0.43,0.045,nd,nd,0.475
+Eel-4S EXT 2 ,8/14/24,SFE-M,1S,TAC,0.471,0.214,nd,0.122,nd,0.06,0.418,0.053,nd,nd,0.471
+Eel-4S EXT 3 ,8/14/24,SFE-M,1S,TAC,0.668,0.173,nd,0.099,nd,0.05,0.497,0.171,nd,nd,0.668
+Eel-4S,8/14/24,SFE-M,1S,TM,2.497,0.17,nd,0.097,nd,0.05,1.901,0.596,nd,nd,2.497
+Eel-BUG ,8/14/24,SFE-M,2,TM,0.594,0.174,nd,0.099,nd,0.05,0.594,nd,nd,nd,0.594
+Eel-BUG ,8/14/24,SFE-M,2,TAC,0.298,0.199,nd,0.114,nd,0.06,0.204,*,0.093,*,nd
+Eel-3UP,8/14/24,SFE-M,3,TM,0.081,0.169,nd,0.097,nd,0.05,nd,0.081,nd,nd,0.081
+Eel-3UP,8/14/24,SFE-M,3,TAC,nd,0.301,nd,0.172,nd,0.09,nd,nd,nd,nd,nd
+Eel-2UP,8/14/24,SFE-M,4,TM,0.88,0.181,nd,0.103,nd,0.05,0.614,0.266,nd,nd,0.88
+Eel-2UP,8/14/24,SFE-M,4,TAC,1.988,0.175,nd,0.1,nd,0.05,1.218,0.77,nd,nd,1.988
+Eel-4S,7/31/24,SFE-M,1S,TM,0.76,0.163,nd,0.093,nd,0.05,0.663,0.097,nd,nd,0.76
+Eel-4S Duplicate ,7/31/24,SFE-M,1S,TM,0.643,0.18,nd,0.103,nd,0.05,0.541,0.102,*,nd,nd
+Eel-4S,7/31/24,SFE-M,1S,TAC,6.055,0.17,nd,0.097,nd,0.05,5.42,0.635,nd,nd,6.055
+Eel-4S Duplicate ,7/31/24,SFE-M,1S,TAC,5.267,0.183,nd,0.105,nd,0.05,nd,nd,nd,nd,nd
+BLANK 2 ,N/A,,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd
+Eel-BUG ,7/31/24,SFE-M,2,TM,0.363,0.16,nd,0.091,nd,0.05,0.363,*,nd,nd,nd
+Eel-BUG ,7/31/24,SFE-M,2,TAC,4.878,0.164,nd,0.094,nd,0.05,3.489,1.389,nd,nd,4.878
+Eel-3UP,7/31/24,SFE-M,3,TM,0.059,0.179,nd,0.102,nd,0.05,nd,0.059,nd,nd,0.059
+Eel-3UP,7/31/24,SFE-M,3,TAC,1.241,0.212,nd,0.121,nd,0.06,1.005,0.236,nd,nd,1.241
+Eel-2UP,7/31/24,SFE-M,4,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd
+Eel-2UP EXT 2 ,7/31/24,SFE-M,4,TM,nd,0.18,nd,0.103,nd,0.05,nd,nd,nd,nd,nd
+Eel-2UP EXT 3 ,7/31/24,SFE-M,4,TM,nd,0.161,nd,0.092,nd,0.05,nd,nd,nd,nd,nd
+Eel-2UP,7/31/24,SFE-M,4,TAC,0.977,0.174,nd,0.099,nd,0.05,0.736,0.242,nd,nd,0.977
+Eel-2UP EXT 2 ,7/31/24,SFE-M,4,TAC,1.201,0.187,nd,0.107,nd,0.06,1.023,0.179,nd,nd,1.201
+Eel-2UP EXT 3 ,7/31/24,SFE-M,4,TAC,1.156,0.195,nd,0.111,nd,0.06,0.936,0.22,nd,nd,1.156
+Jones -4,7/26/24,,,TM,nd,0.16,nd,0.091,nd,0.05,nd,nd,nd,nd,nd
+Red-1,7/26/24,,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd
+Town -5,7/26/24,,,TM,nd,0.164,nd,0.094,nd,0.05,nd,nd,nd,nd,nd
+East-Up,7/26/24,,,TM,nd,0.178,nd,0.102,nd,0.05,nd,nd,nd,nd,nd
+Mill,7/27/24,,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd
+SRS-3,7/27/24,,,TM,nd,0.171,nd,0.098,nd,0.05,nd,nd,nd,nd,nd
+Klam -6,7/27/24,,,TM,nd,0.171,nd,0.098,nd,0.05,nd,nd,nd,nd,nd
+Kid-Up,6/24/24,,,TM,nd,0.161,nd,0.092,nd,0.05,nd,nd,nd,nd,nd
+South ,6/25/24,,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd
+Shack -Up,6/26/24,,,TM,nd,1.335,nd,0.762,nd,0.4,nd,nd,nd,nd,nd
+Etna-Up,6/26/24,,,TM,nd,0.179,nd,0.102,nd,0.05,nd,nd,nd,nd,nd
+Kelsey ,6/27/24,,,TM,nd,0.159,nd,0.091,nd,0.05,nd,nd,nd,nd,nd
+Klam -6,6/28/24,,,TM,nd,0.334,nd,0.191,nd,0.1,nd,nd,nd,nd,nd
+Mill,6/28/24,,,TM,nd,0.168,nd,0.096,nd,0.05,nd,nd,nd,nd,nd
+BLANK 3 ,N/A,,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd
+Eel-4S,8/26/24,SFE-M,1S,TM,2.051,0.179,nd,0.102,nd,0.05,1.436,0.616,nd,nd,2.051
+Eel-4S,8/26/24,SFE-M,1S,TAC,2.083,0.17,nd,0.097,nd,0.05,1.529,0.553,nd,nd,2.083
+Eel-BUG ,8/26/24,SFE-M,2,TM,0.341,0.159,nd,0.091,nd,0.05,0.262,0.078,nd,nd,0.341
+Eel-BUG ,8/26/24,SFE-M,2,TAC,2.242,0.208,nd,0.119,nd,0.06,1.424,0.818,nd,nd,2.242
+Eel-3UP,8/26/24,SFE-M,3,TM,1.697,0.179,nd,0.102,nd,0.05,1.23,0.466,nd,nd,1.697
+Eel-3UP ,8/26/24,SFE-M,3,TAC,6.7,0.207,nd,0.119,nd,0.06,4.955,1.744,nd,nd,6.7
+Eel-3UP EXT 2 ,8/26/24,SFE-M,3,TAC,6.457,0.178,nd,0.101,nd,0.05,4.689,1.768,nd,nd,6.457
+Eel-3UP EXT 3 ,8/26/24,SFE-M,3,TAC,6.577,0.19,nd,0.109,nd,0.06,4.551,2.026,nd,nd,6.577
+Eel-2UP,8/26/24,SFE-M,4,TM,1.067,0.182,nd,0.104,nd,0.05,0.663,0.404,nd,nd,1.067
+Eel-2UP,8/26/24,SFE-M,4,TAC,1.172,0.17,nd,0.097,nd,0.05,0.746,0.426,nd,nd,1.172
+Black -2,9/18/24,,,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd
+Etna,9/18/24,,,TM,nd,0.177,nd,0.101,nd,0.05,nd,nd,nd,nd,nd
+Red-1,9/18/24,,,TM,nd,0.16,nd,0.091,nd,0.05,nd,nd,nd,nd,nd
+Canyon ,9/19/24,,,TM,nd,0.174,nd,0.099,nd,0.05,nd,nd,nd,nd,nd
+Mill,9/19/24,,,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd
+Jones -4,9/20/24,,,TM,nd,0.178,nd,0.102,nd,0.05,nd,nd,nd,nd,nd
+Kid-Down ,9/20/24,,,TM,0.557,0.167,nd,0.095,nd,0.05,nd,0.557,nd,nd,0.557
+Eel-4S,7/2/24,SFE-M,1S,TM,nd,0.242,nd,0.138,nd,0.07,nd,nd,nd,nd,nd
+Eel-BUG ,7/2/24,SFE-M,2,TM,nd,0.166,nd,0.095,nd,0.05,nd,nd,nd,nd,nd
+Eel-BUG EXT 2 ,7/2/24,SFE-M,2,TM,nd,0.162,nd,0.092,nd,0.05,nd,nd,nd,nd,nd
+Eel-BUG EXT 3 ,7/2/24,SFE-M,2,TM,nd,0.172,nd,0.098,nd,0.05,nd,nd,nd,nd,nd
+Eel-3UP,7/2/24,SFE-M,3,TM,nd,0.181,nd,0.103,nd,0.05,nd,nd,nd,nd,nd
+Eel-2UP,7/2/24,SFE-M,4,TM,nd,0.175,nd,0.1,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S,7/17/24,SFE-M,1S,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S EXT 2 ,7/17/24,SFE-M,1S,TM,0.071,0.18,nd,0.103,nd,0.05,nd,0.071,nd,nd,0.071
+Eel-4S EXT 3 ,7/17/24,SFE-M,1S,TM,0.088,0.157,nd,0.09,nd,0.05,nd,0.088,*,nd,nd
+Eel-BUG ,7/17/24,SFE-M,2,TM,nd,0.183,nd,0.104,nd,0.05,nd,nd,nd,nd,nd
+Eel-3UP,7/17/24,SFE-M,3,TM,nd,0.18,nd,0.103,nd,0.05,nd,nd,nd,nd,nd
+Eel-2UP,7/17/24,SFE-M,4,TM,nd,0.159,nd,0.091,nd,0.05,nd,nd,nd,nd,nd
+Town -5,10/15/24,,,TM,nd,0.299,nd,0.171,nd,0.09,nd,nd,nd,nd,nd
+Jones -4,10/15/24,,,TM,12.085,0.167,nd,0.096,nd,0.05,10.221,1.43,0.389,0.045,12.085
+Kid-Down ,10/17/24,,,TM,0.592,0.166,nd,0.095,nd,0.05,nd,0.592,nd,nd,0.592
+Etna,10/16/24,,,TM,nd,0.283,nd,0.162,nd,0.08,nd,nd,nd,nd,nd
+Black -2,10/16/24,,,TM,0.215,0.176,nd,0.1,nd,0.05,nd,0.215,nd,nd,0.215
+Red-1,10/16/24,,,TM,nd,0.173,nd,0.099,nd,0.05,nd,nd,nd,nd,nd
+Canyon ,10/15/24,,,TM,nd,0.163,nd,0.093,nd,0.05,nd,nd,nd,nd,nd
+Blackwood Upper -R1,7/23/24,,,TM,nd,0.163,nd,0.093,0.55*,0.05,nd,nd,nd,nd,nd
+Blackwood Upper -R2,7/23/24,,,TM,nd,0.172,nd,0.098,5.07**,0.05,nd,nd,nd,nd,nd
+Blackwood Upper -R3,7/23/24,,,TM,nd,0.189,nd,0.108,1.39*,0.06,nd,nd,nd,nd,nd
+Eel-4S,9/27/24,SFE-M,1S,TM,nd,0.156,nd,0.089,nd,0.05,nd,nd,nd,nd,nd
+Eel-4S,6/19/24,SFE-M,1S,TM,nd,4.581,nd,2.617,nd,1.37,nd,nd,nd,nd,nd
+Eel-2UP,6/19/24,SFE-M,4,TM,nd,2.493,nd,1.424,nd,0.74,nd,nd,nd,nd,nd
+BLANK 4 ,N/A,,,BLANK,nd,3.39,nd,1.937,nd,1.01,nd,nd,nd,nd,nd
+Eel-BUG Var Reps ATX 1 ,8/14/24,SFE-M,2,NA,NA,NA,NA,NA,NA,NA,nd,0.217,nd,nd,0.217
+Eel-BUG Var Reps ATX 2 ,8/14/24,SFE-M,2,NA,NA,NA,NA,NA,NA,NA,2.295,0.614,nd,nd,2.908
+Eel-BUG Var Reps ATX 3 ,8/14/24,SFE-M,2,NA,NA,NA,NA,NA,NA,NA,nd,0.093,*,nd,nd
+Eel-BUG Var Reps ATX 4 ,8/14/24,SFE-M,2,NA,NA,NA,NA,NA,NA,NA,nd,nd,nd,nd,nd
+Eel-BUG Var Reps ATX 5 ,8/14/24,SFE-M,2,NA,NA,NA,NA,NA,NA,NA,1.302,0.254,nd,nd,1.556

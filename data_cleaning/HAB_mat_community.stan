@@ -43,7 +43,7 @@ model {
 	
   //priors
   
-  sigma_p ~ inv_gamma(3,1.5); //process model var
+  sigma_p ~ inv_gamma(3,1); //process model var
   sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
   
   //tauP ~ inv_gamma(1,1); //reach random var
