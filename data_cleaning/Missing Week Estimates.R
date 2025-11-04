@@ -216,9 +216,8 @@ init_fun <- function() list(
   n_nc = matrix(0, 11, nrow(matalltaxa))
 )
 
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 3000,
-                warmup = 1000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
-                                                           stepsize = 0.001,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
 
 

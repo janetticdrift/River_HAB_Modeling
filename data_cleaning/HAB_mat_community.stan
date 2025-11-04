@@ -12,6 +12,9 @@ parameters {
   
   vector<lower=0>[Nspecies] sigma_p; //var w/ process model
   vector<lower=0>[Nspecies] sigma_o; //var w/ observation model
+  
+  //vector[Nspecies] log_sigma_p;
+  //vector[Nspecies] log_sigma_o;
 
   vector[Nspecies] Alpha; //reparameterize constrained Alpha, unconstrain by transforming below
   vector[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
@@ -24,6 +27,9 @@ parameters {
 }
 
 transformed parameters{
+  //vector<lower=0>[Nspecies] sigma_p = exp(log_sigma_p);//delete these if not log-transforming sigma
+  //vector<lower=0>[Nspecies] sigma_o = exp(log_sigma_o);
+  
    matrix[Nspecies, Nspecies] Beta_d = diag_matrix(Beta_diag);
    matrix[Nspecies, Nspecies] Beta;
    
@@ -61,12 +67,15 @@ model {
 	
   //priors
   
+  //log_sigma_p ~ normal(log(0.5), 0.1);  
+  //log_sigma_o ~ normal(log(0.5), 0.1);
+  
   sigma_p ~ inv_gamma(3,1); //process model var
   sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
 
-  Alpha ~ normal(0,1)T[0,];
+  Alpha ~ normal(0,1);
   
-  Beta_diag ~ normal(0.6, 0.2);// T[0,]; //T means Truncate, so bounded at zero
+  Beta_diag ~ normal(0.5, 0.2);// T[0,]; //T means Truncate, so bounded at zero
   to_vector(Beta_off) ~ normal(0, 0.1); //input matrix reshaped to vector
   
   //Population models
