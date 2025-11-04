@@ -9,8 +9,6 @@ data {
 
 
 parameters {
-  //real<lower=0> gamma[Nreach]; //random effect reach
-  //real<lower=0> tauP; //var w/ gamma
   
   vector<lower=0>[Nspecies] sigma_p; //var w/ process model
   vector<lower=0>[Nspecies] sigma_o; //var w/ observation model
@@ -19,16 +17,14 @@ parameters {
   vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
-  matrix<upper=99>[Nspecies, uniqueID] n; //fill in with modeled data
-  //vector<upper=99>[Nreach] n[Nspecies, uniqueID];
+  //Non-centered latent state, to be used in transformed parameters
+  matrix[Nspecies, uniqueID] n_nc; //fill in with modeled data
+  
 
 }
 
 transformed parameters{
-  matrix[Nspecies, Nspecies] ID = diag_matrix(sigma_p);
-  
    matrix[Nspecies, Nspecies] Beta_d = diag_matrix(Beta_diag);
-   
    matrix[Nspecies, Nspecies] Beta;
    
    Beta = Beta_off;
@@ -36,7 +32,25 @@ transformed parameters{
      Beta[i,i] = Beta_diag[i];
    }
    
-   //for(i in 1:Nspecies){
+   //Reconstruct latent state matrix `n` from the non-centered innovations `n_nc`
+   matrix[Nspecies, uniqueID] n;
+
+  //t = 1: no previous state available. As a transformed param, every aspect of it must be 
+  //explicity computed. n[,1] no longer has an implicit prior like it used to
+  n[,1] = Alpha + sigma_p .* n_nc[,1];
+
+  //t >= 2
+  for (t in 2:uniqueID) {
+    if (firstdays[t] == 1){
+      n[,t] = Alpha + sigma_p .* n_nc[,t];
+     continue; //continue ends current operation and returns to top of loop
+    }
+    n[,t] = Alpha + Beta * n[,t-1] + sigma_p .* n_nc[,t];
+  }
+    
+    
+   
+   //for(i in 1:Nspecies){      Old way of assembling Beta Matrix
    //  for(j in 1:Nspecies){
    //    Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
   //   }
@@ -47,13 +61,8 @@ model {
 	
   //priors
   
-  sigma_p ~ gamma(2, 0.1);//inv_gamma(4,1); //process model var
-  sigma_o ~ gamma(2, 0.1);//inv_gamma(4,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
-  
-  //tauP ~ inv_gamma(1,1); //reach random var
-  //gamma ~ normal(0,tauP); //random effect for reach //gamma[r]*tauP
-  //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues
-
+  sigma_p ~ normal(0, 1);//inv_gamma(4,1); //process model var
+  sigma_o ~ normal(0, 1);//inv_gamma(4,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
 
   Alpha ~ normal(1,1)T[0,];
   
@@ -62,25 +71,20 @@ model {
   
   //Population models
   
-      //Process model
-  //for(r in 1:Nreach){
-    for(t in 2:(uniqueID)){
-   // if(firstsample[r] <= -3) continue; way to skip to the first sampled date for reaches with missing data?
-    	if(firstdays[t]==1) continue; //continue ends current operation and returns to top of loop
-       n[,t] ~ multi_normal(Alpha + Beta*n[,t-1], ID);
+  // ----------------- Process model (NON-CENTERED) -----------------
+  // For diagonal process covariance diag(sigma_p^2), the centered process:
+  // n[,t] ~ multi_normal(Alpha + Beta * n[,t-1], diag_matrix(square(sigma_p)))
+  // is equivalent to the NC form implemented here:
+  to_vector(n_nc) ~ normal(0, 1);
       
-       
-   }
-//}
-    //Observation model
-    //for(r in 1:Nreach){
-      for(t in 1:uniqueID){
-        for(s in 1:Nspecies){
       
-        if(N[t,s] >= -3){ //if the year is a year we actually have sampled data for
-        N[t,s] ~ normal(n[s,t], sigma_o[s]); //for collected data, we apply poisson dist to use for estimating unknown weeks
+  // ----------------- Observation model -----------------
+  for (t in 1:uniqueID) {
+    for (s in 1:Nspecies) {
+      if (N[t, s] > -98) { // sentinel check: if the week is a week we have sampled data 
+        N[t, s] ~ normal(n[s, t], sigma_o[s]);   // observation model uses reconstructed n
       }
-    }  
+    }
   }
-//}
+
 }
