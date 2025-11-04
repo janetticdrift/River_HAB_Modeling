@@ -205,11 +205,12 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 2, iter = 10000,
                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
-                                                           max_treedepth = 13))
+                                                           max_treedepth = 15))
 #Switch chains back to 3 when done debugging
+pairs(fit.m1, pars = c("sigma_p", "sigma_o"))
 
 
 ######RIVER WIDE

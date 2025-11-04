@@ -455,7 +455,7 @@ HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>%
   relocate(year, .after = field_date) %>% 
   relocate(site, .after = year)
 
-write.csv(atx,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
+write.csv(HABS_anatoxins,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
 
 #Plot data
 ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +

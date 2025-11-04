@@ -1,10 +1,9 @@
 data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
-  vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  int firstdays[uniqueID]; //Days to skip modeling, first day of the year
   
   matrix [uniqueID, Nspecies] N; //Proportion in assemblage at year per species
-  
 }
 
 
@@ -32,19 +31,24 @@ transformed parameters{
    
    matrix[Nspecies, Nspecies] Beta;
    
-   for(i in 1:Nspecies){
-     for(j in 1:Nspecies){
-       Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
-     }
+   Beta = Beta_off;
+   for (i in 1:Nspecies) {
+     Beta[i,i] = Beta_diag[i];
    }
+   
+   //for(i in 1:Nspecies){
+   //  for(j in 1:Nspecies){
+   //    Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
+  //   }
+ //  }
 }
 
 model {
 	
   //priors
   
-  sigma_p ~ inv_gamma(3,1); //process model var
-  sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
+  sigma_p ~ gamma(2, 0.1);//inv_gamma(4,1); //process model var
+  sigma_o ~ gamma(2, 0.1);//inv_gamma(4,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
   
   //tauP ~ inv_gamma(1,1); //reach random var
   //gamma ~ normal(0,tauP); //random effect for reach //gamma[r]*tauP
