@@ -182,8 +182,10 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 
 #Split data into reach subsets, and run model separately per reach
 
-reach1S <- yearmatdata %>% 
-  dplyr::filter(sample_type == "TM" & reach == "1S") %>% 
+matalltaxa <- yearmatdata %>% 
+  dplyr::filter(sample_type == "TM") %>% 
+  group_by(year, week) %>%
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
@@ -191,10 +193,10 @@ reach1S <- yearmatdata %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
-model.1 <- list("uniqueID" = nrow(reach1S),
-                "Nspecies" = as.integer(ncol(reach1S)-6),#take out first 4 col: firstday:sample_type
-                "firstdays" = reach1S$firstday,
-                "N" = reach1S[,-(1:6)]
+model.1 <- list("uniqueID" = nrow(matalltaxa),
+                "Nspecies" = as.integer(ncol(matalltaxa)-2),#take out first 2 col: firstday and uniqueID
+                "firstdays" = matalltaxa$firstday,
+                "N" = matalltaxa[,-(1:2)]
 )
 
 #-------------------------------------------------------------------------------------------------
@@ -205,8 +207,17 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+init_fun <- function() list(
+  sigma_p = rep(0.5, 11),
+  sigma_o = rep(0.5, 11),
+  Alpha   = rep(0, 11),
+  Beta_diag = rep(0, 0, 11),     # small start
+  Beta_off = matrix(0, 11, 11),
+  n_nc = matrix(0, 11, nrow(matalltaxa))
+)
+
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 3000,
+                warmup = 1000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 15))
 
@@ -238,6 +249,8 @@ library(bayesplot)
 library(ggplot2)
 shinystan::launch_shinystan(fit.m1)
 print(fit.m4, par = "Ptheta")
+
+
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))

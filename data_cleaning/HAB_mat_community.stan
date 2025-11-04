@@ -13,8 +13,8 @@ parameters {
   vector<lower=0>[Nspecies] sigma_p; //var w/ process model
   vector<lower=0>[Nspecies] sigma_o; //var w/ observation model
 
-  vector<lower=0>[Nspecies] Alpha; 
-  vector<lower=0,upper=1>[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
+  vector[Nspecies] Alpha; //reparameterize constrained Alpha, unconstrain by transforming below
+  vector[Nspecies] Beta_diag; //create diagonal vector for intra-interactions
   matrix[Nspecies, Nspecies] Beta_off; //create off diagonal matrix
   
   //Non-centered latent state, to be used in transformed parameters
@@ -61,13 +61,13 @@ model {
 	
   //priors
   
-  sigma_p ~ normal(0, 1);//inv_gamma(4,1); //process model var
-  sigma_o ~ normal(0, 1);//inv_gamma(4,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
+  sigma_p ~ inv_gamma(3,1); //process model var
+  sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
 
-  Alpha ~ normal(1,1)T[0,];
+  Alpha ~ normal(0,1)T[0,];
   
-  Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
-  to_vector(Beta_off) ~ normal(0, .2); //input matrix reshaped to vector
+  Beta_diag ~ normal(0.6, 0.2);// T[0,]; //T means Truncate, so bounded at zero
+  to_vector(Beta_off) ~ normal(0, 0.1); //input matrix reshaped to vector
   
   //Population models
   
