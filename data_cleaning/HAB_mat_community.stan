@@ -27,8 +27,6 @@ parameters {
 }
 
 transformed parameters{
-  //vector<lower=0>[Nspecies] sigma_p = exp(log_sigma_p);//delete these if not log-transforming sigma
-  //vector<lower=0>[Nspecies] sigma_o = exp(log_sigma_o);
   
    matrix[Nspecies, Nspecies] Beta_d = diag_matrix(Beta_diag);
    matrix[Nspecies, Nspecies] Beta;
@@ -53,14 +51,16 @@ transformed parameters{
     }
     n[,t] = Alpha + Beta * n[,t-1] + sigma_p .* n_nc[,t];
   }
+  //multiplying a standard normal variable (n_nc) by sigma_p gives it variance sigma-squared
+  //and adding it to the mean Alpha shifts the center of the distribution.
+  //The first timesteps do not include Beta, because you do not want to inform the new year
+  //with any of the previous year's information, and Beta was informed by the previous timestep
+  
+  //Instead of sampling the latent n state directly with its mean and variance, we sample 
+  //a standardized version of it (n_nc) and then construct the latent state by scaling by
+  //sigma and shifting the center by the added mean. This decouples sigma from n and reduces
+  //divergences.
     
-    
-   
-   //for(i in 1:Nspecies){      Old way of assembling Beta Matrix
-   //  for(j in 1:Nspecies){
-   //    Beta[i,j] = (Beta_d[i,j]==0) ? Beta_off[i,j] : Beta_d[i,j];
-  //   }
- //  }
 }
 
 model {
