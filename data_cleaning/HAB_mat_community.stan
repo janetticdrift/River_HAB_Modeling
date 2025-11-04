@@ -12,9 +12,6 @@ parameters {
   
   vector<lower=0>[Nspecies] sigma_p; //var w/ process model
   vector<lower=0>[Nspecies] sigma_o; //var w/ observation model
-  
-  //vector[Nspecies] log_sigma_p;
-  //vector[Nspecies] log_sigma_o;
 
   vector[Nspecies] Alpha; //reparameterize constrained Alpha, unconstrain by transforming below
   vector[Nspecies] Beta_diag; //create diagonal vector for intra-interactions

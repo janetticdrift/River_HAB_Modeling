@@ -438,33 +438,39 @@ atx24clean <- atx2024 %>%
   
 #combine 2024 data with 2022,2023
 atx <- rbind(atx2223clean, atx24clean) %>% 
-  pivot_longer(5:7, names_to = "anatoxins", values_to = "concentration") %>% 
-  group_by(field_date, reach, sample_type, anatoxins) %>% 
-  dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-  mutate(year = year(field_date)) %>% 
-
-#For Joanna cleaning
-HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>% 
-  mutate(site = "SFE-M") %>% 
   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-  pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
-  mutate(year = year(field_date)) %>% 
-  mutate(site = "SFE-M") %>% 
-  relocate(year, .after = field_date) %>% 
-  relocate(site, .after = year)
+  mutate(year = year(field_date))
 
-write.csv(HABS_anatoxins,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
+# #For Joanna cleaning
+# HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>% 
+#   mutate(site = "SFE-M") %>% 
+#   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
+#   group_by(field_date, reach, sample_type, anatoxins) %>% 
+#   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
+#   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
+#   mutate(year = year(field_date)) %>% 
+#   mutate(site = "SFE-M") %>% 
+#   relocate(year, .after = field_date) %>% 
+#   relocate(site, .after = year)
+# 
+# write.csv(HABS_anatoxins,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
 
 #Plot data
-ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
+TAC <- ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
   facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
   geom_point() +
   geom_line() +
   labs(title = "Target Anabaena")
-#Row 73 in atx is the 102 concentration of total atx in 2022 reach 4
 
+TM <- ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concentration, color = anatoxins)) +
+  facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
+  geom_point() +
+  geom_line() +
+  labs(title = "Target Microcoleus")
+
+ggarrange(TM, TAC, common.legend = TRUE, legend = "bottom")
 
 
 #----------------------------------------
