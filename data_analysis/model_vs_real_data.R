@@ -155,16 +155,14 @@ ggplot(params2_all, aes(x = model_date, y = mean)) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
-  geom_point(data = obs_data_all, aes(x = model_date, y = obs_mean, shape = Species,
-                                      colour = Species),
+  geom_point(data = obs_data_all, aes(x = model_date, y = obs_mean, shape = Species),
              size = 2.5) +
-  geom_line(data = obs_data_all, aes(x = model_date, y = obs_mean, group = Species,
-                                     colour = Species),
+  geom_line(data = obs_data_all, aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   #scale_x_continuous(breaks=c(seq(1,17,2))) +
-  #scale_y_continuous(breaks=c(seq(0,100,10))) +
+  scale_y_continuous(breaks=c(seq(0,100,10))) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances") +
-  labs(color = "Observed", fill = "Observed", shape = "Observed") +
+  labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N fixers"), values = c("brown", "darkolivegreen4", 
                                                                "darkcyan", "darkorange")) +

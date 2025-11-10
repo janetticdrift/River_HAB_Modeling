@@ -250,9 +250,11 @@ shinystan::launch_shinystan(fit.m1)
 print(fit.m4, par = "Ptheta")
 
 
+#Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
 
 #Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
+avg.reach.output <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE))
 
 
 #Save raw parameter estimates
