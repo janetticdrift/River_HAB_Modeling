@@ -4,6 +4,14 @@ data {
   int firstdays[uniqueID]; //Days to skip modeling, first day of the year
   
   matrix [uniqueID, Nspecies] N; //Proportion in assemblage at year per species
+  
+  ector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  vector [uniqueID] phos; //Vector of o phos levels, standardized
+  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
+  vector [uniqueID] discharge; //Vector of discharge levels, logged
+  vector [uniqueID] temp; //Vector of temperatures, Celsius
+  vector [uniqueID] cond; //Vector of conductivity, standardized
+  vector [uniqueID] rad; //Vector of shortwave radiation, standardized
 }
 
 

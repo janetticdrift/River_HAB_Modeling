@@ -196,7 +196,14 @@ matalltaxa <- yearmatdata %>%
 model.1 <- list("uniqueID" = nrow(matalltaxa),
                 "Nspecies" = as.integer(ncol(matalltaxa)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxa$firstday,
-                "N" = matalltaxa[,-(1:2)]
+                "N" = matalltaxa[,-(1:2)],
+                "nitrate" = stand_nut$nitrate_mg_N_L,
+                "phos" = stand_nut$oPhos_ug_P_L,
+                "ammonium" = stand_nut$ammonium_mg_N_L,
+                "discharge" = discharge$stand_discharge,
+                "temp" = stand_nut$temp_C,
+                "cond" = stand_nut$cond_uS_cm,
+                "rad" = swradiation$stand_rad
 )
 
 #-------------------------------------------------------------------------------------------------
