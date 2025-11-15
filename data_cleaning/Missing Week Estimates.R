@@ -212,8 +212,11 @@ model.1 <- list("uniqueID" = nrow(matalltaxa),
 setwd(here::here("data_cleaning")) #Set working directory to current folder
 
 options(mc.cores = parallel::detectCores())
+
+
 #####TARGET MATS
 #All years, one species, 3 reaches
+
 init_fun <- function() list(
   sigma_p = rep(0.5, 11),
   sigma_o = rep(0.5, 11),
