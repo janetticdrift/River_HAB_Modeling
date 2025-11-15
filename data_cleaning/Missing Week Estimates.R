@@ -158,30 +158,10 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 )
 #-------------------------------------------------------------------------------------------------
 #MULTI SPECIES and MULTI-REACH - Gather data into STAN list format
-# library(abind)
-# 
-# #Clean and transform into a 2D dataframe
-# mattaxareach <- yearmatdata %>% 
-#   mutate(firstday = if_else(week == 1 & (year == 2023), 1, 0))
-#   filter(year == 2022) %>% #TEST ONE YEAR FIRST
-#   unite("uniqueID", c(year, week), sep = "_") %>% 
-#   relocate(firstday) %>% 
-#   mutate(across(anabaena_and_cylindrospermum:rare, log)) %>% #logtransform
-#   mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>%  #reset the -99s
-#   select(!c(site_reach, site)) %>% 
-#   select(c(1:5, 10)) %>%  #TEST 2 SPECIES FIRST
-#   filter(sample_type == "TM")  #Evaluate TM and TAC separatedly
-# 
-# #Convert dataframe into a list
-# spreach <- split(mattaxareach, mattaxareach$reach) #weeks, species, reaches
-# 
-# #Create array for abundance data
-# N <- lapply(spreach, function(df) df[, -c(1:4)]) #Remove unnecessary columns
-# N_unlist <- unlist(N) #Convert list to a vector
-# N_array <- array(N_unlist, dim = c(15, 2, 3)) #Create array. dims = time, species, reach
 
 #Split data into reach subsets, and run model separately per reach
 
+#Averaged reach model, Target Microcoleus
 matalltaxa <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year, week) %>%
