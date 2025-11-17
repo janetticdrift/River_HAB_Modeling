@@ -5,7 +5,7 @@ data {
   
   matrix [uniqueID, Nspecies] N; //Proportion in assemblage at year per species
   
-  ector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   vector [uniqueID] phos; //Vector of o phos levels, standardized
   vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
@@ -27,6 +27,14 @@ parameters {
   
   //Non-centered latent state, to be used in transformed parameters
   matrix[Nspecies, uniqueID] n_nc; //fill in with modeled data
+  
+  vector[Nspecies] Ntheta; //parameter for nitrate each week
+  vector[Nspecies] Ptheta; //parameter for o phos each week
+  vector[Nspecies] Atheta; //parameter for ammonium each week
+  vector[Nspecies] Dtheta; //parameter for discharge each week
+  vector[Nspecies] Ttheta; //parameter for temps each week
+  vector[Nspecies] Ctheta; //parameter for conductivity each week
+  vector[Nspecies] Rtheta; //parameter for shortwave radiation each week
   
 
 }
@@ -54,7 +62,11 @@ transformed parameters{
       n[,t] = Alpha + sigma_p .* n_nc[,t];
      continue; //continue ends current operation and returns to top of loop
     }
-    n[,t] = Alpha + Beta * n[,t-1] + sigma_p .* n_nc[,t];
+    n[,t] = Alpha + Beta * n[,t-1] + 
+            Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
+            Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
+            Ctheta*cond[t-1] + Rtheta*rad[t-1] + 
+            sigma_p .* n_nc[,t];
   }
   //multiplying a standard normal variable (n_nc) by sigma_p gives it variance sigma-squared
   //and adding it to the mean Alpha shifts the center of the distribution.
@@ -72,9 +84,6 @@ model {
 	
   //priors
   
-  //log_sigma_p ~ normal(log(0.5), 0.1);  
-  //log_sigma_o ~ normal(log(0.5), 0.1);
-  
   sigma_p ~ inv_gamma(3,1); //process model var
   sigma_o ~ inv_gamma(3,1); //normal(2.5,1); //T[0,]; #observation model var, removed truncation bc log-scale
 
@@ -82,6 +91,14 @@ model {
   
   Beta_diag ~ normal(0.5, 0.2);// T[0,]; //T means Truncate, so bounded at zero
   to_vector(Beta_off) ~ normal(0, 0.1); //input matrix reshaped to vector
+  
+  Ntheta ~ normal(0,1);
+  Ptheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  Dtheta ~ normal(0,1);
+  Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
+  Rtheta ~ normal(0,1);
   
   //Population models
   

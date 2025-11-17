@@ -177,13 +177,13 @@ model.1 <- list("uniqueID" = nrow(matalltaxa),
                 "Nspecies" = as.integer(ncol(matalltaxa)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxa$firstday,
                 "N" = matalltaxa[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L,
-                "phos" = stand_nut$oPhos_ug_P_L,
-                "ammonium" = stand_nut$ammonium_mg_N_L,
-                "discharge" = discharge$stand_discharge,
-                "temp" = stand_nut$temp_C,
-                "cond" = stand_nut$cond_uS_cm,
-                "rad" = swradiation$stand_rad
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
+                "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
+                "discharge" = discharge$stand_discharge[-c(29:45)],
+                "temp" = stand_nut$temp_C[-c(29:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(29:45)],
+                "rad" = swradiation$stand_rad[-c(29:45)]
 )
 
 #-------------------------------------------------------------------------------------------------
