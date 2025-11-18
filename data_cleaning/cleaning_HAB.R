@@ -128,7 +128,7 @@ year1cover <- cover_indexdate[[1]]
 year2cover <- cover_indexdate[[2]]
 year3cover <- cover_indexdate[[3]]
 
-year1micro <- micro_indexdate[[1]]
+year1micro <- micro_indexdate[[1]] %>% 
 year2micro <- micro_indexdate[[2]]
 
 #Create function for assigning week numbers
@@ -151,17 +151,10 @@ year1_indexdate <- year1cover %>%
   mutate(week = rep(seq(1, 13, 2), times = length(unique(reach))))
 
 year1_indexmicro <- year1micro %>% 
-  mutate(timestep = dense_rank(field_date)) %>% 
+  mutate(real_week = week(field_date), timestep = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
-  mutate(week = case_when(
-    timestep == 1 ~ 1,
-    timestep == 2 ~ 3,
-    timestep == 3 ~ 5,
-    timestep == 4 ~ 7,
-    timestep == 5 ~ 9,
-    timestep == 6 ~ 11,
-    timestep == 7 ~ 13,
-    timestep == 8 ~ 15))
+  relocate(timestep, .after = field_date) %>% 
+  dplyr::select(!real_week)
 
 #year 2023
 year2_indexdate <- year2cover %>% 
@@ -169,9 +162,10 @@ year2_indexdate <- year2cover %>%
   mutate(week = timestep)
 
 year2_indexmicro <- year2micro %>% 
-  mutate(timestep = dense_rank(field_date)) %>% 
+  mutate(real_week = week(field_date), timestep = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
-  mutate(week = timestep)
+  relocate(timestep, .after = field_date) %>% 
+  dplyr::select(!real_week)
 
 #year 2024
 year3_indexdate <- year3cover %>% 
@@ -369,23 +363,28 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
-source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
+###The commented out code no longer works as the data is housed elsewhere online now
+###Downloaded the data and saved on Github now
 
-#Process and format NLDAS data for last two months of 2024. SW = shortwaves
-NLDAS_sw <- get_NLDASv20_datarod(
-  start_date = "2022-06-26",
-  end_date = "2024-10-10",
-  lat = 40.198173,
-  lon = -123.775930,
-  var = "SWdown"
-)
+# source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
+# 
+# #Process and format NLDAS data for last two months of 2024. SW = shortwaves
+# NLDAS_sw <- get_NLDASv20_datarod(
+#   start_date = "2022-06-26",
+#   end_date = "2024-10-10",
+#   lat = 40.198173,
+#   lon = -123.775930,
+#   var = "SWdown"
+# )
+# 
+# #Separate data out into the dates used per year
+# PAR <- NLDAS_sw %>% 
+#   dplyr::rename(radiation = value) %>% #Metric is SW_W_m_2
+#   separate(datetime, c("date", "time"), sep = " ") %>% 
+#   dplyr::group_by(date) %>% 
+#   dplyr::summarise(radiation = mean(radiation))
 
-#Separate data out into the dates used per year
-PAR <- NLDAS_sw %>% 
-  dplyr::rename(radiation = value) %>% #Metric is SW_W_m_2
-  separate(datetime, c("date", "time"), sep = " ") %>% 
-  dplyr::group_by(date) %>% 
-  dplyr::summarise(radiation = mean(radiation))
+PAR <- read.csv(here::here("data/PAR.csv"))
 
 #Remove non-field season dates for each year
 PAR2022 <- PAR %>% 

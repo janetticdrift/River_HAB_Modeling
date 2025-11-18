@@ -89,7 +89,7 @@ model {
 
   Alpha ~ normal(0,1);
   
-  Beta_diag ~ normal(0.5, 0.2);// T[0,]; //T means Truncate, so bounded at zero
+  Beta_diag ~ normal(0.5, 0.1);// T[0,]; //T means Truncate, so bounded at zero
   to_vector(Beta_off) ~ normal(0, 0.1); //input matrix reshaped to vector
   
   Ntheta ~ normal(0,1);

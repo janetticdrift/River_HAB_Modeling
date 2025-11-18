@@ -45,20 +45,20 @@ yeardata <- cover_indexweek %>%
 #####
 
 yearmatdata_TM <- micro_indexweek %>% 
-  dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
+  dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
-  mutate(sample_type = replace_na(sample_type, "TM")) %>% 
-  replace(is.na(.), -99)
+  mutate(sample_type = replace_na(sample_type, "TM"))
+  #replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
-  dplyr::select(-c(timestep, location, field_date, slide_rep, date_analyzed, method)) %>%
+  dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TAC") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
-  mutate(sample_type = replace_na(sample_type, "TAC")) %>% 
-  replace(is.na(.), -99)
+  mutate(sample_type = replace_na(sample_type, "TAC"))
+  #replace(is.na(.), -99)
 
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
   mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
@@ -164,7 +164,7 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year, week) %>%
-  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean, na.rm = TRUE)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
@@ -176,13 +176,13 @@ model.1 <- list("uniqueID" = nrow(matalltaxaM),
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaM$firstday,
                 "N" = matalltaxaM[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
-                "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
-                "discharge" = discharge$stand_discharge[-c(29:45)],
-                "temp" = stand_nut$temp_C[-c(29:45)],
-                "cond" = stand_nut$cond_uS_cm[-c(29:45)],
-                "rad" = swradiation$stand_rad[-c(29:45)]
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:45)], #subset 2024 out for now
+                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:45)], #and also first two weeks of 2023
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:45)],
+                "discharge" = discharge$stand_discharge[-c(14:15, 29:45)],
+                "temp" = stand_nut$temp_C[-c(14:15, 29:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:45)],
+                "rad" = swradiation$stand_rad[-c(14:15, 29:45)]
 )
 
 #Target Microcoleus, reach 1S
@@ -276,12 +276,12 @@ options(mc.cores = parallel::detectCores())
 #All years, one species, 3 reaches
 
 init_fun <- function() list(
-  sigma_p = rep(0.5, 11),
+  sigma_p = rep(0.5, 11),     #11 is number of species
   sigma_o = rep(0.5, 11),
   Alpha   = rep(0, 11),
   Beta_diag = rep(0, 0, 11),     # small start
   Beta_off = matrix(0, 11, 11),
-  n_nc = matrix(0, 11, nrow(matalltaxa))
+  n_nc = matrix(0, 11, nrow(matalltaxaM))
 )
 
 #Averaged, TM

@@ -13,32 +13,38 @@ library(bayesplot)
 library(ggplot2)
 library(lubridate)
 
+#Necessary functions
+#SE function
+calcSE <- function(x){
+  x <- x[!is.na(x)]
+  sd(x)/sqrt(length(x))
+}
+
 #Read in real microscopy data 
 source(here::here("data_cleaning/cleaning_HAB.R"))
 #Dataframe of interest is "microscopy"
 
-#Read in model data (from Missing Week Estimates)
-#Microcoleus
-fit.m1 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #averaged reaches
-fit.m1.1S <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 1S
-fit.m1.3 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 3
-fit.m1.4 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 4
-#Anabaena
-fit.m2 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #averaged reaches
-fit.m2.1S <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 1S
-fit.m2.3 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 3
-fit.m2.4 <- readRDS(here::here("data/Bayes_all_year_fit.rds")) #reach 4
+#Run models (from Missing Week Estimates)
+#And read in join-matching data (matalltaxaM)
+source(here::here("data_cleaning/Missing Week Estimates.R"))
 
-#Read in join-matching data (from Missing Week Estimates)
-matalltaxaM <- readRDS(here::here("data/matalltaxaM.rds"))
-
-#Clean dataframe of observed data
+#Clean dataframe of observed REAL data
 obs_data_mat <- microscopy %>% 
+  pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
+               names_to = "Species", values_to = "Abundance") %>% 
   group_by(field_date, year, Species) %>% 
   dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   ungroup() %>% 
   dplyr::group_by(year) %>% 
   dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
                 model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  dplyr::filter(Species != "bare_biofilm")
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+
+#Clean dataframe of MODEL data
+#Manually calculate mean posteriors for species $ cover, as well as confidence interval
+params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>% 
+  dplyr::select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
+  dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
+  dplyr::select(-c(`chain:1.Ntheta[1]`:`chain:3.Beta[4,4]`)) %>% 
+  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
+  t 
