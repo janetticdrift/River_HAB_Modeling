@@ -106,22 +106,22 @@ params2_all <- as.data.frame(params1_all) %>%
                    se_mean = calcSE(c_across(starts_with("V"))),
                    CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
                    CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
-  mutate(Species = case_when(grepl("1,", group) ~ 'green_algae',
+  dplyr::mutate(Species = case_when(grepl("1,", group) ~ 'green_algae',
                              grepl("2,", group) ~ 'microcoleus',
                              grepl("3,", group) ~ 'anabaena_cylindrospermum',
                              grepl("4,", group) ~ 'other_nfixers',
                              grepl("b", group) ~ 'bare_biofilm')) %>% 
-  mutate(time = as.numeric(ifelse(grepl("b", group), str_extract(group, "[0-9]+"),
+  dplyr::mutate(time = as.numeric(ifelse(grepl("b", group), str_extract(group, "[0-9]+"),
          str_extract_all(group, "[0-9]+", simplify = T)[,2]))) %>% 
   left_join(yearweek[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
   relocate(uniqueID) %>% 
   separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
-  mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+  dplyr::mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
   ungroup() %>% 
   left_join(obs_data_all[,c("year", "week", "Species", "real_week")], by = c("year", "week", "Species")) %>% 
   arrange(time) %>% 
-  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                               (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::filter(Species != "bare_biofilm") %>% 
   mutate(CIupper = replace(CIupper, CIupper>70, 70))
@@ -148,8 +148,8 @@ params2_all <- as.data.frame(params1_all) %>%
 #All years
 ggplot(params2_all, aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
-  # geom_point(aes(colour = Species), size = 3) +
-  # geom_line(aes(colour = Species), size = 2, alpha = .7) +
+  geom_point(aes(colour = Species), size = 3) +
+  geom_line(aes(colour = Species), size = 2, alpha = .7) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   #geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) + 
@@ -157,7 +157,6 @@ ggplot(params2_all, aes(x = model_date, y = mean)) +
              size = 2.5) +
   geom_line(data = obs_data_all, aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
-  #scale_x_continuous(breaks=c(seq(1,17,2))) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances") +
   labs(color = "Modeled", fill = "Modeled", shape = "Observed") +

@@ -128,7 +128,7 @@ year1cover <- cover_indexdate[[1]]
 year2cover <- cover_indexdate[[2]]
 year3cover <- cover_indexdate[[3]]
 
-year1micro <- micro_indexdate[[1]] %>% 
+year1micro <- micro_indexdate[[1]]
 year2micro <- micro_indexdate[[2]]
 
 #Create function for assigning week numbers
@@ -151,9 +151,9 @@ year1_indexdate <- year1cover %>%
   mutate(week = rep(seq(1, 13, 2), times = length(unique(reach))))
 
 year1_indexmicro <- year1micro %>% 
-  mutate(real_week = week(field_date), timestep = real_week - min(real_week) + 1) %>%
+  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
-  relocate(timestep, .after = field_date) %>% 
+  relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
 
 #year 2023
@@ -162,9 +162,9 @@ year2_indexdate <- year2cover %>%
   mutate(week = timestep)
 
 year2_indexmicro <- year2micro %>% 
-  mutate(real_week = week(field_date), timestep = real_week - min(real_week) + 1) %>%
+  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
-  relocate(timestep, .after = field_date) %>% 
+  relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
 
 #year 2024

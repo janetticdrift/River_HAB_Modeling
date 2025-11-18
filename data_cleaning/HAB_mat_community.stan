@@ -112,7 +112,7 @@ model {
   // ----------------- Observation model -----------------
   for (t in 1:uniqueID) {
     for (s in 1:Nspecies) {
-      if (N[t, s] > -98) { // sentinel check: if the week is a week we have sampled data 
+      if (N[t, s] > -99) { // sentinel check: if the week is a week we have sampled data 
         N[t, s] ~ normal(n[s, t], sigma_o[s]);   // observation model uses reconstructed n
       }
     }

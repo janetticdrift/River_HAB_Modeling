@@ -95,24 +95,61 @@ mat_params2 <- as.data.frame(mat_params) %>%
 
 #FIGURES--------------------------------------------------------------------------------
 
-ggplot(mat_params2, aes(x = model_date, y = mean)) + 
+###First 6 species
+ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum", 
+                                       "e_diatoms", "geitlerinema", "green_algae",
+                                       "leptolyngbya", "microcoleus")),
+              aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
   geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = .7) +
   geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
-  geom_point(data = obs_data_mat_TM, aes(x = model_date, y = obs_mean, shape = Species),
+  geom_point(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
+                                                           "e_diatoms", "geitlerinema", "green_algae",
+                                                           "leptolyngbya", "microcoleus")), 
+                           aes(x = model_date, y = obs_mean, shape = Species), #shape = Species in aes
              size = 2.5) +
-  geom_line(data = obs_data_mat_TM, aes(x = model_date, y = obs_mean, group = Species),
+  geom_line(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
+                                                          "e_diatoms", "geitlerinema", "green_algae",
+                                                          "leptolyngbya", "microcoleus")),
+            aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
-  #scale_x_continuous(breaks=c(seq(1,17,2))) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances") +
+  labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
   labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
-  scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N fixers"), values = c("brown", "darkolivegreen4", 
-                                                              "darkcyan", "darkorange")) +
-  scale_fill_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                               "Other N fixers"), values = c("brown", "darkolivegreen4", 
-                                                             "darkcyan", "darkorange")) +
-  scale_shape_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N Fixers"), values = c(16, 17, 15, 3))
+  scale_colour_brewer(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
+                                 "Green Algae", "Leptolyngbya", "Microcoleus",
+                                 "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                 "Rare"), palette = "Set3") +
+  scale_shape_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
+                                "Green Algae", "Leptolyngbya", "Microcoleus",
+                                "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
+  coord_cartesian(ylim = c(0,16)) 
+
+
+###Last 5 species#########################################################################
+
+ggplot(subset(mat_params2, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+                                          "other_coccoids", "rare")),
+       aes(x = model_date, y = mean)) + 
+  facet_wrap(~year, scales = "free") + 
+  geom_point(aes(colour = Species), size = 3) +
+  geom_line(aes(colour = Species), size = 2, alpha = .7) +
+  geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
+  geom_point(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+                                                           "other_coccoids", "rare")), 
+             aes(x = model_date, y = obs_mean, shape = Species), 
+             size = 2.5) +
+  geom_line(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+                                                          "other_coccoids", "rare")),
+            aes(x = model_date, y = obs_mean, group = Species),
+            size = .5) +
+  scale_y_continuous(breaks=c(seq(0,100,10))) +
+  labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
+  labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
+  scale_colour_brewer(labels = c("Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                 "Rare"), palette = "Set3") +
+  scale_shape_manual(labels = c("Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
+  coord_cartesian(ylim = c(0,10)) 

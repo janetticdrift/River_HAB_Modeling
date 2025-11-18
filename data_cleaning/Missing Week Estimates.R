@@ -264,6 +264,31 @@ model.1.4 <- list("uniqueID" = nrow(mat4taxa),
 #MAT COMMUNITY PER REACH-----ANABAENA
 #Split data into reach subsets, and run model separately per reach
 
+#Target Anabaena, averaged reaches
+matalltaxaA <- yearmatdata %>% 
+  dplyr::filter(sample_type == "TAC") %>% 
+  group_by(year, week) %>%
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean, na.rm = TRUE)) %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+
+
+model.2 <- list("uniqueID" = nrow(matalltaxaA),
+                "Nspecies" = as.integer(ncol(matalltaxaA)-2),#take out first 2 col: firstday and uniqueID
+                "firstdays" = matalltaxaA$firstday,
+                "N" = matalltaxaA[,-(1:2)],
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:45)], #subset 2024 out for now
+                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:45)], #and also first two weeks of 2023
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:45)],
+                "discharge" = discharge$stand_discharge[-c(14:15, 29:45)],
+                "temp" = stand_nut$temp_C[-c(14:15, 29:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:45)],
+                "rad" = swradiation$stand_rad[-c(14:15, 29:45)]
+)
+
 #-------------------------------------------------------------------------------------------------
 #Run models
 
@@ -293,6 +318,10 @@ fit.m1.1S <-  stan(file = "HAB_mat_community.stan", data = model.1.1S, chains = 
                 warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
 
+#Averaged, TAC
+fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
+                                                                            max_treedepth = 15))
 
 ######RIVER WIDE
 
