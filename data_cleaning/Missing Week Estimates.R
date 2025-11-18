@@ -157,12 +157,11 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
                 "rad" = swradiation$stand_rad
 )
 #-------------------------------------------------------------------------------------------------
-#MULTI SPECIES and MULTI-REACH - Gather data into STAN list format
-
+#MAT COMMUNITY PER REACH-----MICROCOLEUS
 #Split data into reach subsets, and run model separately per reach
 
-#Averaged reach model, Target Microcoleus
-matalltaxa <- yearmatdata %>% 
+#Target Microcoleus, averaged reaches
+matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year, week) %>%
   dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
@@ -173,10 +172,10 @@ matalltaxa <- yearmatdata %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
-model.1 <- list("uniqueID" = nrow(matalltaxa),
-                "Nspecies" = as.integer(ncol(matalltaxa)-2),#take out first 2 col: firstday and uniqueID
-                "firstdays" = matalltaxa$firstday,
-                "N" = matalltaxa[,-(1:2)],
+model.1 <- list("uniqueID" = nrow(matalltaxaM),
+                "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
+                "firstdays" = matalltaxaM$firstday,
+                "N" = matalltaxaM[,-(1:2)],
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
                 "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
@@ -185,6 +184,85 @@ model.1 <- list("uniqueID" = nrow(matalltaxa),
                 "cond" = stand_nut$cond_uS_cm[-c(29:45)],
                 "rad" = swradiation$stand_rad[-c(29:45)]
 )
+
+#Target Microcoleus, reach 1S
+mat1Staxa <- yearmatdata %>% 
+  dplyr::filter(sample_type == "TM" & reach == "1S") %>% 
+  group_by(year, week) %>%
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday) %>%
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  mutate(firstday = replace(firstday, 17, 1)) #Manually set the first day for this reach
+
+model.1.1S <- list("uniqueID" = nrow(mat1Staxa),
+                "Nspecies" = as.integer(ncol(mat1Staxa)-2),#take out first 2 col: firstday and uniqueID
+                "firstdays" = mat1Staxa$firstday,
+                "N" = mat1Staxa[,-(1:2)],
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
+                "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
+                "discharge" = discharge$stand_discharge[-c(29:45)],
+                "temp" = stand_nut$temp_C[-c(29:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(29:45)],
+                "rad" = swradiation$stand_rad[-c(29:45)]
+)
+
+#Target Microcoleus, reach 3
+mat3taxa <- yearmatdata %>% 
+  dplyr::filter(sample_type == "TM" & reach == "3") %>% 
+  group_by(year, week) %>%
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+
+model.1.3 <- list("uniqueID" = nrow(mat3taxa),
+                  "Nspecies" = as.integer(ncol(mat3taxa)-2),#take out first 2 col: firstday and uniqueID
+                  "firstdays" = mat3taxa$firstday,
+                  "N" = mat3taxa[,-(1:2)],
+                  "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
+                  "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
+                  "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
+                  "discharge" = discharge$stand_discharge[-c(29:45)],
+                  "temp" = stand_nut$temp_C[-c(29:45)],
+                  "cond" = stand_nut$cond_uS_cm[-c(29:45)],
+                  "rad" = swradiation$stand_rad[-c(29:45)]
+)
+
+#Target Microcoleus, reach 4
+mat4taxa <- yearmatdata %>% 
+  dplyr::filter(sample_type == "TM" & reach == "4") %>% 
+  group_by(year, week) %>%
+  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean)) %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  mutate(firstday = replace(firstday, 17:21, 1)) #Manually set the first day for this reach
+
+model.1.4 <- list("uniqueID" = nrow(mat4taxa),
+                  "Nspecies" = as.integer(ncol(mat4taxa)-2),#take out first 2 col: firstday and uniqueID
+                  "firstdays" = mat4taxa$firstday,
+                  "N" = mat4taxa[,-(1:2)],
+                  "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
+                  "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
+                  "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
+                  "discharge" = discharge$stand_discharge[-c(29:45)],
+                  "temp" = stand_nut$temp_C[-c(29:45)],
+                  "cond" = stand_nut$cond_uS_cm[-c(29:45)],
+                  "rad" = swradiation$stand_rad[-c(29:45)]
+)
+
+
+#-------------------------------------------------------------------------------------------------
+#MAT COMMUNITY PER REACH-----ANABAENA
+#Split data into reach subsets, and run model separately per reach
 
 #-------------------------------------------------------------------------------------------------
 #Run models
@@ -206,9 +284,14 @@ init_fun <- function() list(
   n_nc = matrix(0, 11, nrow(matalltaxa))
 )
 
+#Averaged, TM
 fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
                 warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
+#1S, TM
+fit.m1.1S <-  stan(file = "HAB_mat_community.stan", data = model.1.1S, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
+                                                                            max_treedepth = 15))
 
 
 ######RIVER WIDE
