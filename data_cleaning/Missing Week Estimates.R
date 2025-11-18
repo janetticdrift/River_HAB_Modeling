@@ -168,7 +168,7 @@ matalltaxaM <- yearmatdata %>%
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
@@ -325,9 +325,6 @@ print(fit.m4, par = "Ptheta")
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
-
-#Save output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-avg.reach.output <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE))
 
 
 #Save raw parameter estimates

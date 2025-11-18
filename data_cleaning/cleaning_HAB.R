@@ -349,7 +349,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   mutate(year = factor(year(date))) %>% 
-  mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
+  dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   mutate(log_discharge = log(discharge)) %>% 
   mutate(stand_discharge = c(scale(discharge)))
 
@@ -401,7 +401,7 @@ PAR2024 <- PAR %>%
 #Bind together yearly PAR data
 swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
   mutate(year = factor(year(date))) %>% 
-  mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
+  dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   mutate(stand_rad = c(scale(radiation)))
 
 #Quick plot of radiation data
