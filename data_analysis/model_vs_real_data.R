@@ -17,7 +17,7 @@ library(lubridate)
 coverpercent <- readRDS(here::here("data/allcoverdataplot.rds"))
 
 #Read in model data (from Missing Week Estimates)
-fit.m4 <- readRDS(here::here("data/Bayes_all_year_fit.rds"))
+#fit.m4 <- readRDS(here::here("data/Bayes_all_year_fit.rds"))
 
 #Read in join-matching data (from Missing Week Estimates)
 alltaxatime <- readRDS(here::here("data/alltaxatime.rds"))
