@@ -39,7 +39,6 @@ model {
   sigma_o ~ inv_gamma(3,1); //observation model var
   
   Beta0 ~ normal(0,1);
-  toxtheta ~ normal(0,1);
   
   // Ntheta ~ normal(0,1);
   // Ptheta ~ normal(0,1);
@@ -58,9 +57,7 @@ model {
 
     for(t in 1:uniqueID){
       if(Toxins[t] >= -3){ //if the week is a week we actually have sampled data for
-        N[t,s] ~ normal(n[s,t], sigma_o[s]); //for collected data, we apply poisson dist to use for estimating unknown weeks
-          //N[t,r] ~ normal(exp(n[t,r]), sigma_o); 
+        Toxins[t] ~ normal(tox[t], sigma_o); //for collected data
       }
     }
-  }
 }

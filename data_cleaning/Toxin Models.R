@@ -98,7 +98,7 @@ anatoxin_data <- anaC %>%
 
 model.anaC <- list("uniqueID" = nrow(anatoxin_data),
                 "firstdays" = anatoxin_data$firstday,
-                "Toxins" = anatoxin_data[,-(1:2)],
+                "Toxins" = anatoxin_data$ATX_all_ug_g,
                 "nitrate" = stand_nut$nitrate_mg_N_L,
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
@@ -117,6 +117,6 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 
 #Estimate anatoxins in TM mats
-fit.m1 <-  stan(file = "HAB_toxins.stan", data = model.1, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
+fit.toxin <-  stan(file = "HAB_toxins.stan", data = model.anaC, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
