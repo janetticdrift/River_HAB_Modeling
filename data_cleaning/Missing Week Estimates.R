@@ -22,7 +22,7 @@ weekdata <- cover_indexweek %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   replace(is.na(.), -99) %>% 
   ungroup() %>% 
-  dplyr::filter(year == "2022") %>% 
+  #dplyr::filter(year == "2022") %>% 
   mutate(reach = as.numeric(factor(reach))) %>% 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
   mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
