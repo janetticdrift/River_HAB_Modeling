@@ -160,6 +160,21 @@ mat_params2_TA <- as.data.frame(mat_params_TA) %>%
 
 #FIGURES--------------------------------------------------------------------------------
 
+###Separate out reaches for observed data
+pivot_matTM <- yearmatdata_TM %>% 
+  pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
+               names_to = "Species", values_to = "Abundance") %>% 
+  na.omit()
+
+ggplot(subset(pivot_matTM, Species %in% c("microcoleus")),
+              aes(x = week, y = Abundance))+
+  facet_grid(reach~year) +
+  geom_point(aes(colour = Species)) +
+  geom_line(aes(colour = Species))
+
+model <- aov(microcoleus ~ reach, data = subset(yearmatdata_TM, reach %in% c("1S", "3")))
+summary(model)
+
 ###First 6 species TM
 ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum", 
                                        "e_diatoms", "geitlerinema", "green_algae",
