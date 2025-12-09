@@ -106,7 +106,9 @@ rare_species <- non_occurences %>%
   ungroup() %>% 
   dplyr::slice(rownum)
 
-rare_names <- unique(rare_species$Species) #Names of the species that are rare
+rare_names <- unique(rare_species$Species)  #Names of the species that are rare
+rare_names <- rare_names[rare_names != "gloeotrichia"]
+  
 
 microscopy <- microscopy1 %>% 
   ungroup() %>% 
@@ -130,20 +132,7 @@ year3cover <- cover_indexdate[[3]]
 
 year1micro <- micro_indexdate[[1]]
 year2micro <- micro_indexdate[[2]]
-
-#Create function for assigning week numbers
-week_from_step <- function(x) {
-  case_when(
-    timestep == 1 ~ 1,
-    timestep == 2 ~ 3,
-    timestep == 3 ~ 5,
-    timestep == 4 ~ 7,
-    timestep == 5 ~ 9,
-    timestep == 6 ~ 11,
-    timestep == 7 ~ 13,
-    timestep == 8 ~ 15
-)
-}
+year3micro <- micro_indexdate[[3]]
 
 #year 2022
 year1_indexdate <- year1cover %>% 
@@ -173,11 +162,17 @@ year3_indexdate <- year3cover %>%
   arrange(reach) %>% 
   mutate(week = rep(seq(1, 17, 2), times = length(unique(reach))))
 
+year3_indexmicro <- year3micro %>% 
+  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
+  arrange(reach, field_date) %>% 
+  relocate(week, .after = field_date) %>% 
+  dplyr::select(!real_week)
+
 #River-wide percent cover binding
 cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
 
 #Mat community proportion binding
-micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro) %>% 
+micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %>% 
   unite(site_reach, c(site, reach), sep = "-", remove =F)
 
 
