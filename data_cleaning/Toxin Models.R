@@ -95,6 +95,9 @@ anatoxin_data <- anaC %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T)
 
+mat_params2_subset <- mat_params2 %>% 
+  dplyr::filter(Species %in% c("anabaena_and_cylindrospermum", "e_diatoms"))
+
 
 model.anaC <- list("uniqueID" = nrow(anatoxin_data),
                 "firstdays" = anatoxin_data$firstday,

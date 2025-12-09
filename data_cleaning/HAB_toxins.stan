@@ -4,6 +4,7 @@ data {
   int uniqueID; //Total number of weeks down the years
   vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
   vector[uniqueID] Toxins; //Vector of known toxin concentrations
+  matrix[uniqueID, Nspecies] N; //microscopy abundances per week
   
   // vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   // vector [uniqueID] phos; //Vector of o phos levels, standardized
@@ -22,6 +23,7 @@ parameters {
   vector[uniqueID] tox; //estimated anatoxins
   
   real Beta0;
+  real Beta1;
   
   // vector[Nspecies] Ntheta; //parameter for nitrate each week
   // vector[Nspecies] Ptheta; //parameter for o phos each week
@@ -39,6 +41,7 @@ model {
   sigma_o ~ inv_gamma(3,1); //observation model var
   
   Beta0 ~ normal(0,1);
+  Beta1 ~ normal(0,1);
   
   // Ntheta ~ normal(0,1);
   // Ptheta ~ normal(0,1);
@@ -52,7 +55,7 @@ model {
   //Population models
   for(t in 2:uniqueID){
       if(firstdays[t]==1) continue; //continue ends current operation and returns to top of loop
-       tox[t] ~ normal(Beta0 + tox[t-1], sigma_p);
+       tox[t] ~ normal(Beta0 + Beta1*n + tox[t-1], sigma_p);
 }
 
     for(t in 1:uniqueID){
