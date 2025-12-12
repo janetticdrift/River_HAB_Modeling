@@ -49,7 +49,7 @@ obs_data_mat_TM <- microscopy %>%
 mat_params <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>% 
   dplyr::select(-c(1:`chain:3.Beta[11,11]`)) %>%
   dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
-  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[11,26]`, exp)) %>%  #backtransform n
+  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[11,41]`, exp)) %>%  #backtransform n
   t 
     #Make sure you anazlyze n, not n_nc: n is the reconstructed latent state, and biologically meaningful
     #n_nc is just the standardized version for model construction
@@ -58,7 +58,7 @@ mat_params <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>%
 yearweekTM <- matalltaxaM %>% 
   pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
                names_to = "Species", values_to = "mean") %>% 
-  mutate(time = rep(seq(26), each = length(unique(Species))))
+  mutate(time = rep(seq(41), each = length(unique(Species)))) #41 is mat timeseries length
 
 #Manually calculate mean posteriors for microscopy proportions
 mat_params2 <- as.data.frame(mat_params) %>% 
@@ -88,7 +88,8 @@ mat_params2 <- as.data.frame(mat_params) %>%
   left_join(obs_data_mat_TM[,c("year", "week", "Species", "real_week")], 
             by = c("year", "week", "Species")) %>% 
   arrange(time) %>% 
-  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
+  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
+  mutate(real_week = ifelse(year == 2024, time, real_week)) %>% #manually fill in multiple skipped weeks, luckily real week = timestep in this year
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
@@ -160,7 +161,7 @@ mat_params2_TA <- as.data.frame(mat_params_TA) %>%
 
 #FIGURES--------------------------------------------------------------------------------
 
-###Separate out reaches for observed data
+###Separate out reaches for OBSERVED data
 pivot_matTM <- yearmatdata_TM %>% 
   pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
                names_to = "Species", values_to = "Abundance") %>% 
@@ -205,34 +206,34 @@ ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum",
                                 "Green Algae", "Leptolyngbya", "Microcoleus",
                                 "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
                                 "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
-  coord_cartesian(ylim = c(0,16)) 
+  coord_cartesian(ylim = c(0,82)) 
 
 
 ###Last 5 species TM#########################################################################
 
-ggplot(subset(mat_params2, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+ggplot(subset(mat_params2, Species %in% c("non_e_diatoms", "nostoc",
                                           "other_coccoids", "rare")),
        aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
   geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = .7) +
   geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
-  geom_point(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+  geom_point(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc",
                                                            "other_coccoids", "rare")), 
              aes(x = model_date, y = obs_mean, shape = Species), 
              size = 2.5) +
-  geom_line(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc", "oscillatoria",
+  geom_line(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc",
                                                           "other_coccoids", "rare")),
             aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
   labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
   labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
-  scale_colour_brewer(labels = c("Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+  scale_colour_brewer(labels = c("Non-Epithemia", "Nostoc",  "Other Coccoids",
                                  "Rare"), palette = "Set3") +
-  scale_shape_manual(labels = c("Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+  scale_shape_manual(labels = c("Non-Epithemia", "Nostoc",  "Other Coccoids",
                                 "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
-  coord_cartesian(ylim = c(0,10)) 
+  coord_cartesian(ylim = c(0,40)) 
 
 
 ###First 6 species TAC---------------------------

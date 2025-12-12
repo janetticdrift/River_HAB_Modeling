@@ -102,12 +102,10 @@ non_occurences <- microscopy1 %>%
 rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences per each target and each year?
 
 rare_species <- non_occurences %>% 
-  #dplyr::filter(year == "2022") %>% 
   ungroup() %>% 
   dplyr::slice(rownum)
 
 rare_names <- unique(rare_species$Species)  #Names of the species that are rare
-rare_names <- rare_names[rare_names != "gloeotrichia"]
   
 
 microscopy <- microscopy1 %>% 

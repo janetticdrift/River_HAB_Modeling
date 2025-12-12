@@ -176,13 +176,13 @@ model.1 <- list("uniqueID" = nrow(matalltaxaM),
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaM$firstday,
                 "N" = matalltaxaM[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:45)], #subset 2024 out for now
-                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:45)], #and also first two weeks of 2023
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:45)],
-                "discharge" = discharge$stand_discharge[-c(14:15, 29:45)],
-                "temp" = stand_nut$temp_C[-c(14:15, 29:45)],
-                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:45)],
-                "rad" = swradiation$stand_rad[-c(14:15, 29:45)]
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #subset 2024 out with 29:45
+                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+                "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
+                "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
+                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+                "rad" = swradiation$stand_rad[-c(14:15, 29:30)]
 )
 
 #Target Microcoleus, reach 1S
@@ -250,13 +250,13 @@ model.1.4 <- list("uniqueID" = nrow(mat4taxa),
                   "Nspecies" = as.integer(ncol(mat4taxa)-2),#take out first 2 col: firstday and uniqueID
                   "firstdays" = mat4taxa$firstday,
                   "N" = mat4taxa[,-(1:2)],
-                  "nitrate" = stand_nut$nitrate_mg_N_L[-c(29:45)], #subset 2024 out for now
-                  "phos" = stand_nut$oPhos_ug_P_L[-c(29:45)],
-                  "ammonium" = stand_nut$ammonium_mg_N_L[-c(29:45)],
-                  "discharge" = discharge$stand_discharge[-c(29:45)],
-                  "temp" = stand_nut$temp_C[-c(29:45)],
-                  "cond" = stand_nut$cond_uS_cm[-c(29:45)],
-                  "rad" = swradiation$stand_rad[-c(29:45)]
+                  "nitrate" = stand_nut$nitrate_mg_N_L, #subset 2024 out with [-c(29:45)]
+                  "phos" = stand_nut$oPhos_ug_P_L,
+                  "ammonium" = stand_nut$ammonium_mg_N_L,
+                  "discharge" = discharge$stand_discharge,
+                  "temp" = stand_nut$temp_C,
+                  "cond" = stand_nut$cond_uS_cm,
+                  "rad" = swradiation$stand_rad
 )
 
 
