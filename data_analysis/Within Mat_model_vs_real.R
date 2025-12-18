@@ -47,9 +47,9 @@ obs_data_mat_TM <- microscopy %>%
 #Clean dataframe of MODEL data
 #Initial cleaning of model outputs
 mat_params <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>% 
-  dplyr::select(-c(1:`chain:3.Beta[11,11]`)) %>%
+  dplyr::select(-c(1:`chain:3.Beta[9,9]`)) %>%
   dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
-  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[11,41]`, exp)) %>%  #backtransform n
+  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[9,41]`, exp)) %>%  #backtransform n
   t 
     #Make sure you anazlyze n, not n_nc: n is the reconstructed latent state, and biologically meaningful
     #n_nc is just the standardized version for model construction
@@ -72,13 +72,11 @@ mat_params2 <- as.data.frame(mat_params) %>%
                              grepl("[2,", group, fixed=TRUE) ~ 'e_diatoms',
                              grepl("[3,", group, fixed=TRUE) ~ 'geitlerinema',
                              grepl("[4,", group, fixed=TRUE) ~ 'green_algae',
-                             grepl("[5,", group, fixed=TRUE) ~ 'leptolyngbya',
-                             grepl("[6,", group, fixed=TRUE) ~ 'microcoleus',
-                             grepl("[7,", group, fixed=TRUE) ~ 'non_e_diatoms',
-                             grepl("[8,", group, fixed=TRUE) ~ 'nostoc',
-                             grepl("[9,", group, fixed=TRUE) ~ 'oscillatoria',
-                             grepl("[10,", group, fixed=TRUE) ~ 'other_coccoids',
-                             grepl("[11,", group, fixed=TRUE) ~ 'rare')) %>% 
+                             grepl("[5,", group, fixed=TRUE) ~ 'microcoleus',
+                             grepl("[6,", group, fixed=TRUE) ~ 'non_e_diatoms',
+                             grepl("[7,", group, fixed=TRUE) ~ 'nostoc',
+                             grepl("[8,", group, fixed=TRUE) ~ 'other_coccoids',
+                             grepl("[9,", group, fixed=TRUE) ~ 'rare')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   left_join(yearweekTM[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
   relocate(uniqueID) %>% 
@@ -161,6 +159,7 @@ mat_params2_TA <- as.data.frame(mat_params_TA) %>%
 
 #FIGURES--------------------------------------------------------------------------------
 
+#Observed Data plots
 ###Separate out reaches for OBSERVED data
 pivot_matTM <- yearmatdata_TM %>% 
   pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
@@ -176,10 +175,12 @@ ggplot(subset(pivot_matTM, Species %in% c("microcoleus")),
 model <- aov(microcoleus ~ reach, data = subset(yearmatdata_TM, reach %in% c("1S", "3")))
 summary(model)
 
+
+#Model data plots
 ###First 6 species TM
 ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum", 
                                        "e_diatoms", "geitlerinema", "green_algae",
-                                       "leptolyngbya", "microcoleus")),
+                                       "microcoleus")),
               aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
   geom_point(aes(colour = Species), size = 3) +
@@ -187,26 +188,26 @@ ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum",
   geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
   geom_point(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
                                                            "e_diatoms", "geitlerinema", "green_algae",
-                                                           "leptolyngbya", "microcoleus")), 
+                                                           "microcoleus")), 
                            aes(x = model_date, y = obs_mean, shape = Species), #shape = Species in aes
              size = 2.5) +
   geom_line(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
                                                           "e_diatoms", "geitlerinema", "green_algae",
-                                                          "leptolyngbya", "microcoleus")),
+                                                         "microcoleus")),
             aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
   labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
   labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
   scale_colour_brewer(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
-                                 "Green Algae", "Leptolyngbya", "Microcoleus",
-                                 "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                 "Green Algae", "Microcoleus",
+                                 "Non-Epithemia", "Nostoc", "Other Coccoids",
                                  "Rare"), palette = "Set3") +
   scale_shape_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
-                                "Green Algae", "Leptolyngbya", "Microcoleus",
-                                "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+                                "Green Algae", "Microcoleus",
+                                "Non-Epithemia", "Nostoc", "Other Coccoids",
                                 "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
-  coord_cartesian(ylim = c(0,82)) 
+  coord_cartesian(ylim = c(0,15)) 
 
 
 ###Last 5 species TM#########################################################################

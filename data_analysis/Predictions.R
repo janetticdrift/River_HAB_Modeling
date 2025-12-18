@@ -19,7 +19,7 @@ sigmas <- x[["sigma_p"]][,]
 #inputs
 runs <- nrow(abundances)
 time <- 13 #number of weeks in 2022
-n <- array(NA, dim = c(time, 4, runs))
+n <- array(NA, dim = c(time, 4, runs)) #4 is number of species
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]][,]

@@ -301,12 +301,12 @@ options(mc.cores = parallel::detectCores())
 #All years, one species, 3 reaches
 
 init_fun <- function() list(
-  sigma_p = rep(0.5, 11),     #11 is number of species
-  sigma_o = rep(0.5, 11),
-  Alpha   = rep(0, 11),
-  Beta_diag = rep(0, 0, 11),     # small start
-  Beta_off = matrix(0, 11, 11),
-  n_nc = matrix(0, 11, nrow(matalltaxaM))
+  sigma_p = rep(0.5, 9),     #9 is number of species in mat datasets
+  sigma_o = rep(0.5, 9),
+  Alpha   = rep(0, 9),
+  Beta_diag = rep(0, 0, 9),     # small start
+  Beta_off = matrix(0, 9, 9),
+  n_nc = matrix(0, 9, nrow(matalltaxaM))
 )
 
 #Averaged, TM

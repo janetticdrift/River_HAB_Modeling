@@ -106,7 +106,7 @@ rare_species <- non_occurences %>%
   dplyr::slice(rownum)
 
 rare_names <- unique(rare_species$Species)  #Names of the species that are rare
-  
+rare_names <- c(rare_names, "oscillatoria", "leptolyngbya") #add species that did not appear in 2024
 
 microscopy <- microscopy1 %>% 
   ungroup() %>% 
@@ -171,7 +171,8 @@ cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
 
 #Mat community proportion binding
 micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %>% 
-  unite(site_reach, c(site, reach), sep = "-", remove =F)
+  unite(site_reach, c(site, reach), sep = "-", remove =F) %>% 
+  arrange(field_date)
 
 
 

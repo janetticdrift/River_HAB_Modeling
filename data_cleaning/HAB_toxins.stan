@@ -23,7 +23,8 @@ parameters {
   vector[uniqueID] tox; //estimated anatoxins
   
   real Beta0;
-  real Beta1;
+  vector[Nspecies] Beta1;
+  vector[uniqueID] Toxtheta;
   
   // vector[Nspecies] Ntheta; //parameter for nitrate each week
   // vector[Nspecies] Ptheta; //parameter for o phos each week
@@ -42,6 +43,7 @@ model {
   
   Beta0 ~ normal(0,1);
   Beta1 ~ normal(0,1);
+  Toxtheta ~ normal(0,1);
   
   // Ntheta ~ normal(0,1);
   // Ptheta ~ normal(0,1);
@@ -55,7 +57,7 @@ model {
   //Population models
   for(t in 2:uniqueID){
       if(firstdays[t]==1) continue; //continue ends current operation and returns to top of loop
-       tox[t] ~ normal(Beta0 + Beta1*n + tox[t-1], sigma_p);
+       tox[t] ~ normal(Beta0 + Beta1*n + Toxtheta*tox[t-1], sigma_p);
 }
 
     for(t in 1:uniqueID){
