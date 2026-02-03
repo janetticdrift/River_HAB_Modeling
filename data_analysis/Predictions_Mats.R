@@ -3,6 +3,9 @@ library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 
+#files mat_params2 and mat_params2_groups are in WithinMatModel_vs_real
+  
+
 #Pull out community abundances and demographics 
 x <- rstan::extract(fit.m1) #m1 = averaged reaches for Microcoleus
 abundances <- x[["n"]][,,1] #iterations, species #, time
@@ -79,7 +82,11 @@ matsims2022 <- as.data.frame(apply(n, c(1,2), mean)) %>%
                 other_coccoids = V8,
                 rare = V9) %>% 
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "Abundance") %>% 
+  mutate(Micro_Green_NonE = microcoleus + green_algae + non_e_diatoms) %>% 
+  mutate(Ana_Geit_E = anabaena_and_cylindrospermum + geitlerinema + e_diatoms) %>% 
+  dplyr::select(!c(microcoleus, green_algae, non_e_diatoms, anabaena_and_cylindrospermum, 
+            geitlerinema, e_diatoms)) %>%  #Toggle as needed, this removes the species that were lumped together above 
+  pivot_longer(cols = c(1:3, 5:6), names_to = "Species", values_to = "Abundance") %>% #cols are 1:9 if species are ungrouped, 1:3, 5:6 if grouped
   mutate(real_week = time + 25, year = 2022) %>% #HEY THIS CHANGED FROM 24 TO 25
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
@@ -87,14 +94,14 @@ matsims2022 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 #Plot
 mat_p22 <- ggplot(matsims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1.5) +
-  geom_line(data=mat_params2[mat_params2$year %in% "2022", ], 
-            aes(x = model_date, y = mean, colour = Species),
+  geom_line(data = mat_params2_spgroups[mat_params2_spgroups$year %in% "2022", ], 
+            aes(x = model_date, y = Abundance, colour = Species),
             linewidth = 4, alpha = .25) +
   # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
   #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,150,5))) +
   #coord_cartesian(ylim = c(0,70)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
+  labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") 
   scale_color_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
                                 "Green Algae", "Microcoleus","Non-Epithemia",
                                 "Nostoc","Other Coccoids", "Rare"), values = c("darkcyan", "darkgreen", 
@@ -172,7 +179,11 @@ matsims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
                 other_coccoids = V8,
                 rare = V9) %>%  
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "Abundance") %>% 
+  mutate(Micro_Green_NonE = microcoleus + green_algae + non_e_diatoms) %>% 
+  mutate(Ana_Geit_E = anabaena_and_cylindrospermum + geitlerinema + e_diatoms) %>% 
+  dplyr::select(!c(microcoleus, green_algae, non_e_diatoms, anabaena_and_cylindrospermum, 
+                   geitlerinema, e_diatoms)) %>%  #Toggle as needed, this removes the species that were lumped together above 
+  pivot_longer(cols = c(1:3, 5:6), names_to = "Species", values_to = "Abundance") %>% #cols are 1:9 if species are ungrouped, 1:3, 5:6 if grouped
   mutate(real_week = time + 26, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
@@ -181,12 +192,12 @@ matsims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 
 mat_p23 <- ggplot(matsims2023, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(size = 1.5) +
-  geom_line(data=mat_params2[mat_params2$year %in% "2023", ], 
-            aes(x = model_date, y = mean, colour = Species),
+  geom_line(data=mat_params2_spgroups[mat_params2_spgroups$year %in% "2023", ], 
+            aes(x = model_date, y = Abundance, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   #coord_cartesian(ylim = c(0,50)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
+  labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") 
   scale_color_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
                                 "Green Algae", "Microcoleus","Non-Epithemia",
                                 "Nostoc","Other Coccoids", "Rare"), values = c("darkcyan", "darkgreen", 
@@ -263,7 +274,11 @@ matsims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
                 other_coccoids = V8,
                 rare = V9) %>%  
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "Abundance") %>% 
+  mutate(Micro_Green_NonE = microcoleus + green_algae + non_e_diatoms) %>% 
+  mutate(Ana_Geit_E = anabaena_and_cylindrospermum + geitlerinema + e_diatoms) %>% 
+  dplyr::select(!c(microcoleus, green_algae, non_e_diatoms, anabaena_and_cylindrospermum, 
+                   geitlerinema, e_diatoms)) %>%  #Toggle as needed, this removes the species that were lumped together above 
+  pivot_longer(cols = c(1:3, 5:6), names_to = "Species", values_to = "Abundance") %>% #cols are 1:9 if species are ungrouped, 1:3, 5:6 if grouped
   mutate(real_week = time + 26, year = 2024) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
@@ -273,12 +288,12 @@ matsims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>%
 mat_p24 <- ggplot(matsims2024, aes(x = model_date, y = Abundance, colour = Species)) +
   #geom_point(size = 3)+
   geom_line(size = 1.5) +
-  geom_line(data=mat_params2[mat_params2$year %in% "2024", ], 
-            aes(x = model_date, y = mean, colour = Species),
+  geom_line(data=mat_params2_spgroups[mat_params2_spgroups$year %in% "2024", ], 
+            aes(x = model_date, y = Abundance, colour = Species),
             linewidth = 4, alpha = .25) +
   scale_y_continuous(breaks=c(seq(0,100,5))) +
   #coord_cartesian(ylim = c(0,45)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") +
+  labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") 
   scale_color_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
                                 "Green Algae", "Microcoleus","Non-Epithemia",
                                 "Nostoc","Other Coccoids", "Rare"), values = c("darkcyan", "darkgreen", 

@@ -91,6 +91,44 @@ mat_params2 <- as.data.frame(mat_params) %>%
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
+#Repeat calcuations for microscopy posteriors, with Ana+Geit+E and Micro+GAlagae+NonE groups
+mat_params2_spgroups <- as.data.frame(mat_params) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'anabaena_and_cylindrospermum',
+                                    grepl("[2,", group, fixed=TRUE) ~ 'e_diatoms',
+                                    grepl("[3,", group, fixed=TRUE) ~ 'geitlerinema',
+                                    grepl("[4,", group, fixed=TRUE) ~ 'green_algae',
+                                    grepl("[5,", group, fixed=TRUE) ~ 'microcoleus',
+                                    grepl("[6,", group, fixed=TRUE) ~ 'non_e_diatoms',
+                                    grepl("[7,", group, fixed=TRUE) ~ 'nostoc',
+                                    grepl("[8,", group, fixed=TRUE) ~ 'other_coccoids',
+                                    grepl("[9,", group, fixed=TRUE) ~ 'rare')) %>% 
+  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
+  left_join(yearweekTM[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
+  relocate(uniqueID) %>% 
+  separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
+  mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+  ungroup() %>% 
+  left_join(obs_data_mat_TM[,c("year", "week", "Species", "real_week")], 
+            by = c("year", "week", "Species")) %>% 
+  arrange(time) %>% 
+  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
+  mutate(real_week = ifelse(year == 2024, time, real_week)) %>% #manually fill in multiple skipped weeks, luckily real week = timestep in this year
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>%
+  dplyr::select(!group) %>%  #remove to be able to pivot table next
+  pivot_wider(names_from = Species, values_from = mean) %>% 
+  dplyr::mutate(Micro_Green_NonE = microcoleus + green_algae + non_e_diatoms) %>% 
+  dplyr::mutate(Ana_Geit_E = anabaena_and_cylindrospermum + geitlerinema + e_diatoms) %>% 
+  dplyr::select(!c(microcoleus, green_algae, non_e_diatoms, anabaena_and_cylindrospermum, 
+                   geitlerinema, e_diatoms)) %>% 
+  pivot_longer(cols = c(nostoc:Ana_Geit_E),
+               names_to = "Species", values_to = "Abundance")
+
 #----------------------------------------------------
 #Cleaning TAC model outputs
 
