@@ -18,15 +18,15 @@ Ttheta <- x[["Ttheta"]][,]
 Ctheta <- x[["Ctheta"]][,]
 Rtheta <- x[["Rtheta"]][,]
 
+#Create identity matrix
+ID <- diag(1, nrow = 4, ncol = 4) #4 is the number of species in the river-wide model
+
 #Find equilibrium abundances
 #Equi_abund_W = A / (Identity matrix - B)
 
 for(z in 1:runs){
   #Set parameters
-  Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  n[1,,z] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
   
   #Pull env covariates
   nTheta <- Ntheta[z,]
@@ -37,17 +37,8 @@ for(z in 1:runs){
   cTheta <- Ctheta[z,]
   rTheta <- Rtheta[z,]
   
-  
-  for(t in 2:time){
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
-    
-    #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-    #                          Sigma = sigma)
-    # #Remove env drivers
+  #Model
+  w[,,z] <- nTheta / (ID - Beta)
     n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
                              Sigma = sigma)
-  }
 }

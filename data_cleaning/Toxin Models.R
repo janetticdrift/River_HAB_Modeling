@@ -9,6 +9,22 @@ library(rstan)
 library(tidyverse)
 library(dataRetrieval)
 
+#First examine relationships between anaC genes and anatoxin quantities
+pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>% 
+  filter(!grepl("analysis", Notes)) %>%  #Remove samples not for analysis ("floating" and "gravel")
+  
+  
+#ana_C and nif
+ggplot(pcr_atx, aes(x = ana_C.uL, ana_C.uL_rerun, y = nif.uL, nif.uL_rerun)) +
+  facet_wrap(~year, scales = "free") +
+  geom_point(aes(color = mat))
+
+ggplot(subset(pcr_atx, mat  %in% "Anabaena"), aes(x = ana_C.uL_rerun, y = ATX_all_ug_g)) +
+  facet_wrap(~year, scales = "free") +
+  geom_jitter(aes(color = mat))
+
+ggplot(params2_all, aes(x = model_date, y = mean)) + 
+  facet_wrap(~year, scales = "free")
 #Read in environmental and microscopy data
 source(here::here("data_cleaning/cleaning_HAB.R"))
 #Read in anatoxin data
