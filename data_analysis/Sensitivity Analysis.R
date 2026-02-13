@@ -42,7 +42,7 @@ w_star <- array(        # iteration, env_var, perturbation, species
     iteration = NULL,
     env = env_names,
     env_peturb = env_range,
-    species = paste0("sp", 1:4)
+    species = 1:4
   )
 )
 
@@ -79,13 +79,13 @@ eq_abund <- as.data.frame.table(w_star, responseName = "w_star") %>%
     env_peturb = as.numeric(as.character(env_peturb)),
     iteration = as.integer(iteration),
     species = factor(species), # Green algae, Microcoleus, Anabaena, Other N-fixers
-    env = factor(env)
-  )
+    env = factor(env)) %>% 
+  select(!iteration)
 
 #Plot outputs
   #Species2: Microcoleus
-ggplot(subset(eq_abund, species %in% "sp2"), aes(x = factor(env_peturb), y = w_star)) +
+ggplot(subset(eq_abund, species %in% "2"), aes(x = factor(env_peturb), y = exp(w_star))) +
   facet_wrap(~env, scales = "free") +
-  geom_boxplot(outliers = T)
+  geom_boxplot(outliers = F)
 
 
