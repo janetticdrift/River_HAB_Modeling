@@ -59,10 +59,10 @@ pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins_forGoel.csv")) %>%
 ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
   facet_wrap(~year, scales = "free") +  #Split plot between the two years, scales = "free" means each year has its own Y axis 
   geom_point(aes(shape = run_type), size = 2) +
-  geom_smooth(data = . %>% filter(anaC != -4 & nif != -4), # filter out "0" values
+  geom_smooth(data = . %>% filter(anaC != -4 & nif != -4), # filter out pseudo "0" values
               method = "lm", se = FALSE) +
   stat_regline_equation(                  #Calculate r^2 values
-    data = . %>% filter(anaC != -4 & nif != -4),   #Remove "0" values from calculating r^2
+    data = . %>% filter(anaC != -4 & nif != -4),   #Remove pseudo "0" values from calculating r^2
     aes(label = paste(..rr.label..)),
     formula = y ~ x,
     parse = TRUE,
