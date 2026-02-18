@@ -119,6 +119,8 @@ ggplot(nif_ediatoms, aes(x = nif, y = e_diatoms, color = mat)) +
     formula = y ~ x,
     label.x.npc = "left",
     label.y.npc = "top") +
+  labs(x = "Log nif gene (copies/ug)", y = "Epithemia (% cover microscopy)", 
+       title = "Epithemia Diatoms and nif gene") +
   scale_colour_brewer(palette = "Dark2")
   
 

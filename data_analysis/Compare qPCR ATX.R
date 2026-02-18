@@ -68,7 +68,7 @@ ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
     parse = TRUE,
     label.x.npc = "left",
     label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "nif gene (copies/ng)") +
+  labs(x = "Log anaC gene (copies/ng)", y = "Log nif gene (copies/ng)", title = "anaC and nif") +
   theme_bw()
 
 #nif ~ anaC, include zeros in regression line
@@ -101,7 +101,7 @@ ggplot(pcr_atx, aes(x = anaC, y = log(ATX_all_ug_g), color = mat)) + #ATXs log-t
     formula = y ~ x,
     label.x.npc = "left",
     label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "Total anatoxin (ug/g)") +
+  labs(x = "Log anaC gene (copies/ng)", y = "Log total anatoxin (ug/g)", title = "ATX and anaC") +
   scale_colour_brewer(type = "qual") +    #Use different colors for anatoxin plot
   theme_bw()
 

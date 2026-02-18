@@ -54,12 +54,12 @@ for(z in 1:15000){
   Beta <- betas[z,,]    #Current iteration of Beta: species interactions
   
   #Include species interactions
-  M_inverse <- solve(ID - Beta)    #solve() takes the inverse of matrices
+  # M_inverse <- solve(ID - Beta)    #solve() takes the inverse of matrices
   
   #Exclude species interactions
-  # B_intra <- Beta
-  # B_intra[row(B_intra) != col(B_intra)] <- 0    #any time row doesn't equal column, set to 0
-  # M_inv_intra <- solve(ID - B_intra)
+  B_intra <- Beta
+  B_intra[row(B_intra) != col(B_intra)] <- 0    #any time row doesn't equal column, set to 0
+  M_inv_intra <- solve(ID - B_intra)
   
   for(v in seq_along(env_names)){     #Use seq_along for iterating along characters
     
@@ -89,7 +89,7 @@ eq_abund <- as.data.frame.table(w_star, responseName = "w_star") %>%
 
 #Plot outputs
   #Species2: Microcoleus
-ggplot(subset(eq_abund, species %in% "2"), aes(x = factor(env_peturb), y = w_star)) +
+ggplot(subset(eq_abund, species %in% "3"), aes(x = factor(env_peturb), y = w_star)) +
   facet_wrap(~env, scales = "free") +
   geom_boxplot(outliers = F)
 
