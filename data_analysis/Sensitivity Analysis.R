@@ -6,8 +6,9 @@
   #Model used includes all biotic and abiotic variables
 x <- rstan::extract(fit.m4) #m4 = all vars
 
-#Pull out species interaction effects
+#Pull out species demographics
 betas <- as.array(x[["Beta"]])[,,]
+alphas <- x[["Alpha"]][,]
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]][,]
@@ -32,8 +33,8 @@ theta_list <- list(
 ID <- diag(1, nrow = 4, ncol = 4) # 4 is the number of species in the river-wide model
 
 #Set conditions and output storage
-env_range <- seq(-3, 3, by = 0.5)
-env_names <- names(theta_list)
+env_range <- seq(-3, 3, by = 0.5)   #Range of env effect, in standard deviation units
+env_names <- names(theta_list)      #Names of env variables
 
 w_star <- array(        # iteration, env_var, perturbation, species
   NA, 
@@ -49,7 +50,8 @@ w_star <- array(        # iteration, env_var, perturbation, species
 #Run model
 for(z in 1:15000){
   
-  Beta <- betas[z,,]
+  Alpha <- alphas[z,]   #Current iteration of Alpha: baseline growth
+  Beta <- betas[z,,]    #Current iteration of Beta: species interactions
   
   #Include species interactions
   M_inverse <- solve(ID - Beta)    #solve() takes the inverse of matrices
@@ -66,7 +68,7 @@ for(z in 1:15000){
     
     for(e in seq_along(env_range)){
       
-      A <- theta_vec * env_range[e]
+      A <- (theta_vec * env_range[e]) + Alpha     #Multiply coef by std dev, then add intercept
       w_star[z, v, e, ] <- as.vector(M_inverse %*% A) #Switch between M_inverse and M_inv_intra
       
     }
@@ -80,12 +82,18 @@ eq_abund <- as.data.frame.table(w_star, responseName = "w_star") %>%
     iteration = as.integer(iteration),
     species = factor(species), # Green algae, Microcoleus, Anabaena, Other N-fixers
     env = factor(env)) %>% 
-  select(!iteration)
+  select(!iteration) %>% 
+  mutate(w_star = exp(w_star)) # Back transform w_star from logged values
+                               #About 200 values were removed for being too large: exp 
+                               #returns Inf on values over 710
 
 #Plot outputs
   #Species2: Microcoleus
-ggplot(subset(eq_abund, species %in% "2"), aes(x = factor(env_peturb), y = exp(w_star))) +
+ggplot(subset(eq_abund, species %in% "2"), aes(x = factor(env_peturb), y = w_star)) +
   facet_wrap(~env, scales = "free") +
   geom_boxplot(outliers = F)
 
+
+any(is.infinite(eq_abund$w_star))
+any(is.na(eq_abund$w_star))
 
