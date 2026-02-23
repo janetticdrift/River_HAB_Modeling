@@ -20,17 +20,19 @@ pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>%
   rename(field_date = date) %>% 
   mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
   mutate(
-    # Normalized anaC gene copies (copies per ng DNA)
-    normalized_anaC = ana_C.uL / DNA_conc_ng_uL,
-    normalized_anaC_rerun = ana_C.uL_rerun / DNA_conc_rerun,
-    # Normalized nif gene copies (copies per ng DNA)
-    normalized_nif = nif.uL / DNA_conc_ng_uL,
-    normalized_nif_rerun = nif.uL_rerun / DNA_conc_rerun,
+    # # Normalized anaC gene copies (copies per ng DNA)
+    # normalized_anaC = ana_C.uL / DNA_conc_ng_uL,
+    # normalized_anaC_rerun = ana_C.uL_rerun / DNA_conc_rerun,
+    # # Normalized nif gene copies (copies per ng DNA)
+    # normalized_nif = nif.uL / DNA_conc_ng_uL,
+    # normalized_nif_rerun = nif.uL_rerun / DNA_conc_rerun,
     
     # Log10 normalized values
     across(c(normalized_anaC, normalized_anaC_rerun,
              normalized_nif, normalized_nif_rerun),
            ~ log10(.x + pseudocount))
+    
+    # Calculate Ash-Free Dry Mass for 2024
   ) %>% 
   pivot_longer(
     cols = c(normalized_anaC, normalized_anaC_rerun,
@@ -74,8 +76,7 @@ ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
   stat_regline_equation(
      aes(label = paste(..rr.label..)),
      formula = y ~ x,
-     parse = TRUE,
-     label.x.npc = "left",
+     label.x.npc = "middle",
      label.y.npc = "top") +
   labs(x = "anaC gene (copies/ng)", y = "nif gene (copies/ng)") +
   theme_bw()
