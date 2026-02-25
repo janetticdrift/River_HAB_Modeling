@@ -83,13 +83,13 @@ ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
   theme_bw()
 
 #ana_C vs Anatoxins, include zeros
-ggplot(pcr_atx, aes(x = anaC, y = ATX_all_ug_L, color = mat)) +
+ggplot(pcr_atx, aes(x = anaC, y = ATX_all_ug_g, color = mat)) +
   facet_wrap(~year, scales = "free") +
   geom_point( size = 2) +
-  geom_smooth(data = . %>% filter(anaC != -4 & ATX_all_ug_L != 0),
+  geom_smooth(data = . %>% filter(anaC != -4 & ATX_all_ug_g != 0),
               method = "lm", se = FALSE) +
   stat_regline_equation(
-    data = . %>% filter(anaC != -4 & ATX_all_ug_L != 0),
+    data = . %>% filter(anaC != -4 & ATX_all_ug_g != 0),
     aes(label = paste(..rr.label..)),
     formula = y ~ x,
     label.x.npc = "left",
