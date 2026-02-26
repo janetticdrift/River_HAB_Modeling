@@ -27,30 +27,41 @@ pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>%
     # normalized_nif = nif.uL / DNA_conc_ng_uL,
     # normalized_nif_rerun = nif.uL_rerun / DNA_conc_rerun,
     
-    # Log10 normalized values
-    across(c(normalized_anaC, normalized_anaC_rerun,
-             normalized_nif, normalized_nif_rerun),
-           ~ log10(.x + pseudocount))
+    # Set any "bdl" values to 0
+    across(c(ana_C.uL, ana_C.uL_rerun, nif.uL, nif.uL_rerun,
+             ATX_all_ug_g, ATXa_ug_g, HTXa_ug_g, dhATXa_ug_g),
+           ~ case_when(. == "bdl" ~ '0',
+                       . != "bdl" ~ .)),
     
-    # Calculate Ash-Free Dry Mass for 2024
+    # Convert values from character to numeric
+      across(c(ana_C.uL, ana_C.uL_rerun, nif.uL, nif.uL_rerun,
+               ATX_all_ug_g, ATXa_ug_g, HTXa_ug_g, dhATXa_ug_g),
+             ~ as.numeric(.)),
+    
+    # Log10 gene counts
+    across(c(ana_C.uL, ana_C.uL_rerun,
+             nif.uL, nif.uL_rerun),
+           ~ log10(.x + pseudocount)),
+    
+    # Calculate ATX normalized with Ash-Free Dry Mass
+    norm_ATX_all_ug_g = ATX_all_ug_g / org_matter_percent
     
   ) %>% 
-  pivot_longer(
-    cols = c(normalized_anaC, normalized_anaC_rerun,
-             normalized_nif, normalized_nif_rerun),
+  pivot_longer(   #Pivot dataframe to create a group for run vs. rerun in the next function
+    cols = c(ana_C.uL, ana_C.uL_rerun,
+             nif.uL, nif.uL_rerun),
     names_to = "gene_run",
     values_to = "value"
   ) %>%
   mutate(
-    gene = case_when(
-      str_detect(gene_run, "anaC") ~ "anaC",
+    gene = case_when(           #Remove extra characters from gene name category names
+      str_detect(gene_run, "ana_C") ~ "anaC",
       str_detect(gene_run, "nif")  ~ "nif"
     ),
-    run_type = if_else(str_detect(gene_run, "rerun"), "rerun", "original")
+    run_type = if_else(str_detect(gene_run, "rerun"), "rerun", "original") #Create run_type grouping
   ) %>%
   select(-gene_run) %>% 
-  pivot_wider(names_from = gene, values_from = value) %>% 
-  mutate(ATX_all_ug_L = ATX_all_ug_g * 1000)  #Transform ATX units from ug/g to ug/L
+  pivot_wider(names_from = gene, values_from = value)
   
 
 #ana_C vs nif, exclude zeros
@@ -82,7 +93,7 @@ ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
   labs(x = "anaC gene (copies/ng)", y = "nif gene (copies/ng)") +
   theme_bw()
 
-#ana_C vs Anatoxins, include zeros
+#ana_C vs Anatoxins, exclude zeros
 ggplot(pcr_atx, aes(x = anaC, y = ATX_all_ug_g, color = mat)) +
   facet_wrap(~year, scales = "free") +
   geom_point( size = 2) +
@@ -95,6 +106,22 @@ ggplot(pcr_atx, aes(x = anaC, y = ATX_all_ug_g, color = mat)) +
     label.x.npc = "left",
     label.y.npc = "top") +
   labs(x = "anaC gene (copies/ng)", y = "Total anatoxin (ug/L)") +
+  scale_colour_brewer(type = "qual") +
+  theme_bw()
+
+#ana_C vs Normalized Anatoxins, exclude zeros
+ggplot(pcr_atx, aes(x = anaC, y = norm_ATX_all_ug_g, color = mat)) +
+  facet_wrap(~year, scales = "free") +
+  geom_point( size = 2) +
+  geom_smooth(data = . %>% filter(anaC != -4 & norm_ATX_all_ug_g != 0),
+              method = "lm", se = FALSE) +
+  stat_regline_equation(
+    data = . %>% filter(anaC != -4 & norm_ATX_all_ug_g != 0),
+    aes(label = paste(..rr.label..)),
+    formula = y ~ x,
+    label.x.npc = "left",
+    label.y.npc = "top") +
+  labs(x = "anaC gene (copies/ng)", y = "Total anatoxin (ug/L)", title = "Normalized ATX") +
   scale_colour_brewer(type = "qual") +
   theme_bw()
 
