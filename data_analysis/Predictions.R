@@ -10,7 +10,7 @@ library(tidyverse)
 #large to be saved with rds 
 
 #Pull out community abundances and demographics 
-x <- rstan::extract(fit.m5) #m4 = all vars, m5 = biotic only
+x <- rstan::extract(fit.m4) #m4 = all vars, m5 = biotic only
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
