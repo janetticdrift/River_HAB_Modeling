@@ -2,6 +2,7 @@
 library(ggplot2)
 library(ggpubr)
 library(tidyverse)
+library(abind)
 
 #Read in latent states, params2_all
 #source(here::here("data_analysis/model_vs_real_data.R"))
@@ -19,7 +20,7 @@ sigmas <- x[["sigma_p"]][,]
 #inputs
 runs <- nrow(abundances)
 time <- 13 #number of weeks in 2022
-n <- array(NA, dim = c(time, 4, runs)) #4 is number of species
+n <- array(NA, dim = c(runs, 4, time)) # "4" is number of species
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]][,]
@@ -48,7 +49,7 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  n[1,,z] <- abundances[z,]
+  n[z,,1] <- abundances[z,] #interations, species, time
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
@@ -62,20 +63,22 @@ for(z in 1:runs){
   
   
   for(t in 2:time){
-      # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
       
     #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-    #                          Sigma = sigma)
-    # #Remove env drivers
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-                               Sigma = sigma)
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
+    # #Biotic only
+      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+      #                          Sigma = sigma)
   }
 }
 
-#Create dataframe
+#Create datafram for model checking
+modelcheck_2022 <- n
+
+#Create dataframe for plotting
 sims2022mean <- as.data.frame(apply(n, c(1,2), mean)) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
@@ -133,7 +136,7 @@ abundances <- x[["n"]][,,14] #iterations, species #, time
 #inputs
 runs <- nrow(abundances)
 time <- 15 #number of weeks in 2023
-n <- array(NA, dim = c(time, 4, runs))
+n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
 
 #Pull out environmental effects
 nitrate <- stand_nut$nitrate_mg_N_L[14:(13+time)]
@@ -155,7 +158,7 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  n[1,,z] <- abundances[z,]
+  n[z,,1] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
@@ -170,20 +173,22 @@ for(z in 1:runs){
   
   
   for(t in 2:time){
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
     #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-    #                          Sigma = sigma)
-    # #Remove env drivers
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-                               Sigma = sigma)
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
+    #Remove env drivers
+      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
+      #                          Sigma = sigma)
 
     
   }
 }
+
+#Create datafram for model checking
+modelcheck_2023 <- n
 
 sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
@@ -222,7 +227,7 @@ abundances <- x[["n"]][,,29] #iterations, species #, time
 #inputs
 runs <- nrow(abundances)
 time <- 17 #number of weeks in 2023
-n <- array(NA, dim = c(time, 4, runs))
+n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
 
 #Pull out environmental effects
 nitrate <- stand_nut$nitrate_mg_N_L[29:(28+time)]
@@ -244,7 +249,7 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  n[1,,z] <- abundances[z,]
+  n[z,,1] <- abundances[z,]
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
@@ -258,19 +263,21 @@ for(z in 1:runs){
   
   
   for(t in 2:time){
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z], Sigma = sigma)
     
     #Everything included
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z] + nTheta*nitrate[t-1]+
-    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-    #                          Sigma = sigma)
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+                             Sigma = sigma)
     # #Remove env drivers
-      n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-                               Sigma = sigma)
+      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
+      #                          Sigma = sigma)
     
   }
 }
+
+#Create datafram for model checking
+modelcheck_2024 <- n
 
 sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
@@ -306,8 +313,9 @@ ggarrange(
 )
 
 
-
-
+#Compile model check dataframes into a single full timeseries matrix
+predictives <- abind(modelcheck_2022, modelcheck_2023, 
+                        modelcheck_2024, along = 3)
 
 
 

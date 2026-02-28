@@ -350,41 +350,7 @@ library(bayesplot)
 library(ggplot2)
 library(rstantools)
 
-#Calculate R^2 for each species
-y_micro <- alltaxatime$microcoleus
-y_rep_micro <- rstan::extract(fit.m4)[["n"]][,2,] #iterations, species #, time
-y_ana <- alltaxatime$anabaena_cylindrospermum
-y_rep_ana <- rstan::extract(fit.m4)[["n"]][,3,] #iterations, species #, time
-y_green <- alltaxatime$green_algae
-y_rep_green <- rstan::extract(fit.m4)[["n"]][,1,] #iterations, species #, time
-y_nfix <- alltaxatime$other_nfixers
-y_rep_nfix <- rstan::extract(fit.m4)[["n"]][,4,] #iterations, species #, time
-
-y_obs <- exp(y_nfix) # Plug in current species y_observed data
-y_rep <- exp(y_rep_nfix) #Plug in current species y_replicated data
-
-obs_index <- which(y_obs != -99) # Remove placeholder values from comparison
-Iter <- nrow(y_rep) # number of iterations in the model
-R2 <- numeric(Iter) # Create empty vector to be filled
-
-for (i in 1:Iter) {
-  yhat <- y_rep[i, obs_index] # Latent states
-  yobs <- y_obs[obs_index] # Observed states
-  
-  var_fit <- var(yhat) #Calculate variance of latent states
-  var_res <- var(yobs - yhat) #calculate residual variance (diff between obs and predicted)
-  
-  R2[i] <- var_fit / (var_fit + var_res)
-}
-
-# Posterior summary
-mean_R2 <- mean(R2)
-CI_R2 <- quantile(R2, c(0.025, 0.975))
-
-mean_R2
-CI_R2
-
-#Can also check posterior graphs in shinystan
+#Can check posterior graphs in shinystan
 shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 

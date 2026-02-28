@@ -1,20 +1,13 @@
-#Riverwide Model Fit Calculations, 2022
+#Riverwide Model Fit Calculations
 library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 
-#RAW DATA VS POSTERIORS
+#OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
 posteriors <- rstan::extract(fit.m4)[["n"]] #array indexed by iterations, species #, time
-
-#Pull out each species result. 
-#1 = green algae, 2 = microcoleus, 3 = anabaena, 4 = other nitrogen fixers
-y_rep_micro <- posteriors[,2,] 
-y_rep_ana <- posteriors[,3,] 
-y_rep_green <- posteriors[,1,] 
-y_rep_nfix <- posteriors[,4,] 
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
@@ -23,30 +16,79 @@ y_ana <- alltaxatime$anabaena_cylindrospermum
 y_green <- alltaxatime$green_algae
 y_nfix <- alltaxatime$other_nfixers
 
+#Put them into a single matrix
+y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
+
 ###############------------------------------------------------------------------
-#Begin calculating fit index per model iteration.
-#Plug in current species of interest
-y_obs <- y_nfix # y_observed data
-y_rep <- y_rep_nfix # y_replicated data
+#Begin calculating fit indices per species
+iter <- dim(posteriors)[1]  # Number of iterations
+species <- dim(posteriors)[2]  # Number of species
+time <- dim(posteriors)[3]  # Time steps
 
-obs_index <- which(y_obs != -99) # Remove placeholder values from comparison
-Iter <- nrow(y_rep) # number of iterations in the model
-R2 <- numeric(Iter) # Create empty vector to be filled
+R2 <- matrix(NA, iter, species) #Create empty matrix for R2 values per iteration, per species
 
-#Calculate R^2 for each species
-for (i in 1:Iter) {
-  yhat <- y_rep[i, obs_index] # Latent states
-  yobs <- y_obs[obs_index] # Observed states
+for (s in 1:species) {
   
-  var_fit <- var(yhat) #Calculate variance of latent states
-  var_res <- var(yobs - yhat) #calculate residual variance (diff between obs and predicted)
+  y_obs <- y_obs_river[s, ]
+  obs_index <- which(y_obs != -99) #Remove weeks where we did not collect field data
   
-  R2[i] <- var_fit / (var_fit + var_res)
+  for (i in 1:iter) {
+    
+    yhat <- posteriors[i, s, obs_index] #In the time index, take out weeks with no field data
+    yobs <- y_obs[obs_index]
+    
+    var_fit <- var(yhat)
+    var_res <- var(yobs - yhat)
+    
+    R2[i, s] <- var_fit / (var_fit + var_res)
+  }
 }
 
-# Posterior summary
-mean_R2 <- mean(R2)
-CI_R2 <- quantile(R2, c(0.025, 0.975))
+# Posterior summarize 
+mean_R2 <- apply(R2, 2, mean) #2 stands for applying function over the columms
+CI_R2 <- apply(R2, 2, quantile, c(0.025, 0.975))
 
 mean_R2
 CI_R2
+
+
+#POSTERIORS VS PREDICTED
+###############------------------------------------------------------------------
+#Read in simulated data. But you must check that the simulation ran the same model
+#(fit.m4, m5, m6) as the one being analyzed here
+source(here::here("data_analysis/Predictions.R"))
+
+#Comparing fit.m4: All variables included
+S <- dim(latent)[1]
+G <- dim(latent)[2]
+T <- dim(latent)[3]
+
+RMSE <- matrix(NA, S, G)
+R2 <- matrix(NA, S, G)
+
+for (g in 1:G) {
+  for (s in 1:S) {
+    
+    z_lat <- latent[s, g, ]
+    z_pred <- pred[s, g, ]
+    
+    SS_res <- sum((z_lat - z_pred)^2)
+    SS_tot <- sum((z_lat - mean(z_lat))^2)
+    
+    RMSE[s, g] <- sqrt(mean((z_lat - z_pred)^2))
+    R2[s, g] <- 1 - SS_res / SS_tot
+  }
+}
+
+#Summarize RMSE
+apply(RMSE, 2, mean)
+apply(RMSE, 2, quantile, c(0.025, 0.975))
+
+#Summarise R2
+apply(R2, 2, mean)
+apply(R2, 2, quantile, c(0.025, 0.975))
+
+
+
+
+
