@@ -79,7 +79,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(apply(n, c(1,2), mean)) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
@@ -110,7 +110,7 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
 
 #Plot
 p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  #geom_point(size = 3)+
+  geom_point(size = 3)+
   geom_line(size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
             aes(x = model_date, y = mean, colour = Species),

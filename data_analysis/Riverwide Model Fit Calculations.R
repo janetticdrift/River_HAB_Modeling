@@ -45,11 +45,10 @@ for (s in 1:species) {
 }
 
 # Posterior summarize 
-mean_R2 <- apply(R2, 2, mean) #2 stands for applying function over the columms
-CI_R2 <- apply(R2, 2, quantile, c(0.025, 0.975))
-
-mean_R2
-CI_R2
+  #Mean R2
+apply(R2, 2, mean) #2 stands for applying function over the columms
+  #Credible Interval
+apply(R2, 2, quantile, c(0.025, 0.975))
 
 
 #POSTERIORS VS PREDICTED
@@ -57,28 +56,32 @@ CI_R2
 #Read in simulated data. But you must check that the simulation ran the same model
 #(fit.m4, m5, m6) as the one being analyzed here
 source(here::here("data_analysis/Predictions.R"))
+#Relevant dataframe is "predictives"
 
 #Comparing fit.m4: All variables included
-S <- dim(latent)[1]
-G <- dim(latent)[2]
-T <- dim(latent)[3]
+iter <- dim(posteriors)[1]  # Number of iterations 
+species <- dim(posteriors)[2]  # Number of species 
+time <- dim(posteriors)[3]  # Time steps
 
-RMSE <- matrix(NA, S, G)
-R2 <- matrix(NA, S, G)
+#Create empty matrices for storing fit index values
+RMSE <- matrix(NA, iter, species)
+R2 <- matrix(NA, iter, species)
 
-for (g in 1:G) {
-  for (s in 1:S) {
+for (s in 1:species) {
+  for (i in 1:iter) {
     
-    z_lat <- latent[s, g, ]
-    z_pred <- pred[s, g, ]
+    z_lat <- posteriors[i, s, ]
+    z_pred <- predictives[i, s, ]
     
     SS_res <- sum((z_lat - z_pred)^2)
     SS_tot <- sum((z_lat - mean(z_lat))^2)
     
-    RMSE[s, g] <- sqrt(mean((z_lat - z_pred)^2))
-    R2[s, g] <- 1 - SS_res / SS_tot
+    RMSE[i, s] <- sqrt(mean((z_lat - z_pred)^2))
+    R2[i, s] <- 1 - SS_res / SS_tot
   }
 }
+
+
 
 #Summarize RMSE
 apply(RMSE, 2, mean)
@@ -88,6 +91,17 @@ apply(RMSE, 2, quantile, c(0.025, 0.975))
 apply(R2, 2, mean)
 apply(R2, 2, quantile, c(0.025, 0.975))
 
+
+
+
+# Calculate the residual sum of squares (SSres)
+ssres <- sum((posteriors[i, s, 1:13] - modelcheck_2022[i, s, ])^2)
+
+# Calculate the total sum of squares (SStot)
+sstot <- sum((modelcheck_2022[i, s, ] - mean(modelcheck_2022[i, s, ]))^2)
+
+# Calculate R-squared
+1 - (ssres / sstot)
 
 
 
