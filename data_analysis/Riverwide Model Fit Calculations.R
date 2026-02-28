@@ -70,18 +70,17 @@ R2 <- matrix(NA, iter, species)
 for (s in 1:species) {
   for (i in 1:iter) {
     
-    z_lat <- posteriors[i, s, ]
-    z_pred <- predictives[i, s, ]
+    y <- posteriors[i, s, ]
+    y_pred <- predictives[i, s, ]
     
-    SS_res <- sum((z_lat - z_pred)^2)
-    SS_tot <- sum((z_lat - mean(z_lat))^2)
+    RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
     
-    RMSE[i, s] <- sqrt(mean((z_lat - z_pred)^2))
-    R2[i, s] <- 1 - SS_res / SS_tot
+    SS_res <- sum((y - y_pred)^2)
+    SS_tot <- sum((y - mean(y))^2)
+    
+    R2[i, s] <- 1 - SS_res / SS_tot #Calculate R2 per species iteration
   }
 }
-
-
 
 #Summarize RMSE
 apply(RMSE, 2, mean)
@@ -90,19 +89,6 @@ apply(RMSE, 2, quantile, c(0.025, 0.975))
 #Summarise R2
 apply(R2, 2, mean)
 apply(R2, 2, quantile, c(0.025, 0.975))
-
-
-
-
-# Calculate the residual sum of squares (SSres)
-ssres <- sum((posteriors[i, s, 1:13] - modelcheck_2022[i, s, ])^2)
-
-# Calculate the total sum of squares (SStot)
-sstot <- sum((modelcheck_2022[i, s, ] - mean(modelcheck_2022[i, s, ]))^2)
-
-# Calculate R-squared
-1 - (ssres / sstot)
-
 
 
 
