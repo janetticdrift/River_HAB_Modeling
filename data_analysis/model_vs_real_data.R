@@ -53,23 +53,21 @@ obs_data_all <- coverpercent %>%
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
 #MODEL M.4 - ALL VARIABLES
 params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>% 
-  dplyr::select(-c(1:`chain:3.Beta_off[4,4]`)) %>% 
-  dplyr::select(-c(`chain:1.lp__`:`chain:3.lp__`)) %>% 
-  dplyr::select(-c(`chain:1.Ntheta[1]`:`chain:3.Beta[4,4]`)) %>% 
-  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
-  t 
-
-#MODEL M.5 - Biotic interactions
-params1_all <- as.data.frame(rstan::extract(fit.m5, permuted=FALSE)) %>% 
   dplyr::select(matches("n\\[")) %>% 
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
   t 
 
-#MODEL M.6 - Abiotic effects
-params1_all <- as.data.frame(rstan::extract(fit.m6, permuted=FALSE)) %>% 
-  dplyr::select(matches("n\\[")) %>% 
-  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
-  t 
+# #MODEL M.5 - Biotic interactions
+# params1_all <- as.data.frame(rstan::extract(fit.m5, permuted=FALSE)) %>% 
+#   dplyr::select(matches("n\\[")) %>% 
+#   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
+#   t 
+# 
+# #MODEL M.6 - Abiotic effects
+# params1_all <- as.data.frame(rstan::extract(fit.m6, permuted=FALSE)) %>% 
+#   dplyr::select(matches("n\\[")) %>% 
+#   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>% 
+#   t 
 
 #Set up dataframe to extract week/year info from
 yearweek <- alltaxatime %>% 
@@ -126,7 +124,7 @@ ggplot(params2_all, aes(x = model_date, y = mean)) +
   geom_line(data = obs_data_all, aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances - Only Biotic Interactions") +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Fitted Abundances - Only Abiotic Interactions") +
   labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
   scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
                                 "Other N fixers"), values = c("brown", "darkolivegreen4", 

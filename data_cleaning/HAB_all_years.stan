@@ -105,10 +105,10 @@ model {
 
 //Bare Biomass calculation
 
-generated quantities{
-vector[uniqueID] b; //100 minus everything else = bare
+//generated quantities{
+//vector[uniqueID] b; //100 minus everything else = bare
 
-    for(t in 1:uniqueID){
-      b[t] = 100 - sum(exp(n[,t]));
-    }
-}
+    //for(t in 1:uniqueID){
+      //b[t] = 100 - sum(exp(n[,t]));
+    //}
+//}
