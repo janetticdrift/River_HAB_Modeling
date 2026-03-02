@@ -29,7 +29,7 @@ parameters {
   
   vector<lower=0,upper=1>[Nspecies] Beta; //create intraspecific vector
   
-  matrix<upper=99>[uniqueID, Nspecies] n; //percent cover each week at each reach
+  matrix<upper=99>[Nspecies, uniqueID] n; //percent cover each week at each reach
   
   vector[Nspecies] Ntheta; //parameter for nitrate each week
   vector[Nspecies] Ptheta; //parameter for o phos each week
@@ -71,7 +71,7 @@ model {
     for(s in 1:Nspecies){
       
       if(firstdays[t]==1) continue;
-       n[t,s] ~ normal(Alpha[s] + Beta[s]*n[t-1, s] + Ntheta[s]*nitrate[t-1] +
+       n[s,t] ~ normal(Alpha[s] + Beta[s]*n[s, t-1] + Ntheta[s]*nitrate[t-1] +
                             Ptheta[s]*phos[t-1] + Atheta[s]*ammonium[t-1] +
                             Dtheta[s]*discharge[t-1] + Ttheta[s]*temp[t-1] +
                             Ctheta[s]*cond[t-1] + Rtheta[s]*rad[t-1], sigma_p[s]);
@@ -81,7 +81,7 @@ model {
       for(s in 1:Nspecies){
         
       if(N[t,s] >= -3){ //if the year is a year we actually have sampled data for
-        N[t,s] ~ normal(n[t,s], sigma_o[s]); //for collected data, we apply poisson dist to use for estimating unknown weeks
+        N[t,s] ~ normal(n[s,t], sigma_o[s]); //for collected data, we apply poisson dist to use for estimating unknown weeks
           //N[t,r] ~ normal(exp(n[t,r]), sigma_o); 
       }
     }

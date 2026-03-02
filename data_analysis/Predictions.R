@@ -11,7 +11,7 @@ library(abind)
 #large to be saved with rds 
 
 #Pull out community abundances and demographics 
-x <- rstan::extract(fit.m4) #m4 = all vars, m5 = biotic only
+x <- rstan::extract(fit.m5) #m4 = all vars, m5 = biotic only
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
@@ -64,14 +64,14 @@ for(z in 1:runs){
   
   for(t in 2:time){
       
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    # #Everything included
+    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
+    #Biotic only
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
                              Sigma = sigma)
-    # #Biotic only
-      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-      #                          Sigma = sigma)
   }
 }
 
@@ -174,14 +174,15 @@ for(z in 1:runs){
   
   for(t in 2:time){
     
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+    # #Everything included
+    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
+    
     #Remove env drivers
-      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
-      #                          Sigma = sigma)
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
+                             Sigma = sigma)
 
     
   }
@@ -264,14 +265,14 @@ for(z in 1:runs){
   
   for(t in 2:time){
     
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    # #Everything included
+    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+    #                            pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
+    #                            tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
+    #                          Sigma = sigma)
+    #Remove env drivers
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
                              Sigma = sigma)
-    # #Remove env drivers
-      # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-      #                          Sigma = sigma)
     
   }
 }

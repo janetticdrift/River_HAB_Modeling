@@ -7,7 +7,7 @@ library(tidyverse)
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- rstan::extract(fit.m4)[["n"]] #array indexed by iterations, species #, time
+posteriors <- rstan::extract(fit.m5)[["n"]] #array indexed by iterations, species #, time
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
@@ -20,7 +20,7 @@ y_nfix <- alltaxatime$other_nfixers
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
 
 ###############------------------------------------------------------------------
-#Begin calculating fit indices per species
+#Bayesian R2 comparing latent vs observed states
 iter <- dim(posteriors)[1]  # Number of iterations
 species <- dim(posteriors)[2]  # Number of species
 time <- dim(posteriors)[3]  # Time steps
