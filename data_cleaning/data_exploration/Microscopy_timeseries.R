@@ -67,7 +67,19 @@ microscopy <- microscopy1 %>%
   pivot_wider(names_from = Species, values_from = Abundance) %>% 
   dplyr::mutate(rare = rowSums(dplyr::select(., rare_names))) %>% 
   dplyr::select(!rare_names) %>%  #Remove rare columns now that they have been consolidated
-  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance")
+  pivot_longer(anabaena_and_cylindrospermum:rare, names_to = "Species", values_to = "Abundance") %>% 
+  dplyr::mutate(Species = case_match(Species,
+                                     "anabaena_and_cylindrospermum" ~ "Anabaena", 
+                                     "e_diatoms" ~ "Epithemia Diatoms", 
+                                     "geitlerinema" ~ "Geitlerinema", 
+                                     "green_algae" ~ "Green Algae", 
+                                     "leptolyngbya" ~ "Leptolyngbya", 
+                                     "microcoleus" ~ "Microcoleus", 
+                                     "non_e_diatoms" ~ "Non-Epithemia Diatoms", 
+                                     "nostoc" ~ "Nostoc", 
+                                     "oscillatoria" ~ "Oscillatoria",
+                                     "other_coccoids" ~ "Other Coccoids", 
+                                     "rare" ~ "Rare"))
 
 
 #Standardize TAC mats to Anabaena abundances
@@ -95,15 +107,31 @@ microscopy_TM_stand <- microscopy %>%
 
 #------Plots and Graphs---------------------------------------
 
+#Keep colors and label names consistent together 
+mycols <- brewer.pal(n = 11, name = "Set3")
+mypal <- palette(mycols)
+names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
+                 "Green Algae", "Leptolyngbya", "Microcoleus", 
+                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
+                 "Other Coccoids", "Rare")
+colScale <- scale_fill_manual(name = "Species", values = mypal)
 
 #Plot timeseries of within-mat species per year
 ggplot(subset(microscopy, sample_type %in% "TM"), aes(x = field_date, y = Abundance, fill = Species)) +
-  #facet_wrap(~year, scales = "free") +
+  facet_grid(reach ~ year, scales = "free") +
+  geom_col(position = "fill") +
+  theme(legend.position="bottom") + 
+  labs(title = "Target Microcoleus", x = "Date", y = "Proportion of Relative Abundance") +
+  colScale
+
+#Plot timeseries, but remove Microcoleus
+ggplot(subset(microscopy, sample_type %in% "TM" & !(Species %in% "Microcoleus")), 
+       aes(x = field_date, y = Abundance, fill = Species)) +
   facet_grid(reach ~ year, scales = "free") +
   geom_col(position = "fill") + #Can't see the detail well, subset per year
   theme(legend.position="bottom") + 
-  scale_fill_brewer(palette = "Set3") +
-  labs(title = "Target Microcoleus")
+  labs(title = "Target Microcoleus", x = "Date", y = "Proportion of Relative Abundance") +
+  colScale
 
 ggplot(subset(microscopy, sample_type %in% "TAC"), aes(x = field_date, y = Abundance, fill = Species)) +
   #facet_wrap(~year, scales = "free") +

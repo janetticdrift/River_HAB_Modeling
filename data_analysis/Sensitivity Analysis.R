@@ -221,6 +221,16 @@ ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "2"), aes(x = e
   theme_classic() +
   scale_color_manual(values = c("#E69F00", "#56B4E9"))
 
+#Species2: Anabaena
+ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "3"), aes(x = env_peturb, y = w_star, color = Interactions)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels)) +
+  geom_smooth(method = "loess") +
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Anabaena") +
+  guides(color = guide_legend(reverse = TRUE)) +
+  scale_x_continuous(breaks = c(-3, 0, 3)) +
+  theme_classic() +
+  scale_color_manual(values = c("#E69F00", "#56B4E9"))
+
 
 any(is.infinite(eq_abund_exclude$w_star))
 any(is.na(eq_abund$w_star))
