@@ -57,9 +57,9 @@ model {
   
   Beta ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
   
-  Ntheta ~ normal(0,1);
-  Ptheta ~ normal(0,1);
-  Atheta ~ normal(0,1);
+  //Ntheta ~ normal(0,1);
+  //Ptheta ~ normal(0,1);
+  //Atheta ~ normal(0,1);
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);
   Ctheta ~ normal(0,1);

@@ -379,13 +379,13 @@ for(z in 1:runs){
   for(t in 2:time){
     for(s in 1:4){
     
-    #Remove biotic interactions
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-                          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-                          tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+    # #Remove biotic interactions
+    #   n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
+    #                       pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
+    #                       tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
     #Remove nutrients too  
-      # n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
-      #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
+        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
     }
   }
 }
@@ -430,8 +430,8 @@ p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
             aes(x = model_date, y = mean, colour = Species),
             linewidth = 4, alpha = .25) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), alpha = 0.3) +
+  # geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+  #                 fill = Species), alpha = 0.3) +
   scale_y_continuous(breaks=c(seq(0,250,10))) +
   #coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
@@ -490,14 +490,14 @@ for(z in 1:runs){
   for(t in 2:time){
     for(s in 1:4){
     
-    #Remove biotic interactions
-    n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-      pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-      tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+    # #Remove biotic interactions
+    # n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
+    #   pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
+    #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
       
     #Remove nutrients too  
-    # n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + dTheta[s]*dis[t-1] +
-    #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+    n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
+      tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
     
   }
   }
@@ -506,7 +506,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
+sims2023 <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,
@@ -582,14 +582,14 @@ for(z in 1:runs){
   for(t in 2:time){
     for(s in 1:4){
       
-      #Remove biotic interactions
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-        pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      # #Remove biotic interactions
+      # n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
+      #   pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
+      #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
       
       #Remove nutrients too  
-      # n[t,s,z] <- Alpha[s] + Beta[s]*n[t-1,s,z] + dTheta[s]*dis[t-1] +
-      #   tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
+        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
       
     }
   }
@@ -598,7 +598,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024 <- as.data.frame(apply(n, c(1,2), mean)) %>% 
+sims2024 <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
   dplyr::rename(green_algae = V1, microcoleus = V2,
                 anabaena_cylindrospermum = V3,

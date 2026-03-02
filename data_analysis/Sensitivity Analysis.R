@@ -136,14 +136,27 @@ eq_abund_exclude <- as.data.frame.table(w_star_exclude, responseName = "w_star")
 
 #Plot outputs---------------------------------------------------------------
   #Boxplots
+env_labels <- c(
+  'N' = 'Nitrate',
+  'P' = 'Phosphate',
+  'A' = 'Ammonium',
+  'D' = 'Discharge',
+  'Tt' = 'Temperature',
+  'C' = 'Conductivity',
+  'R' = 'Light'
+)
   #Species2: Microcoleus
-ggplot(subset(eq_abund_include, species %in% "2"), aes(x = factor(env_peturb), y = w_star)) +
-  facet_wrap(~env, scales = "free") +
-  geom_boxplot(outliers = F)
+ggplot(subset(eq_abund_exclude, species %in% "2"), aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels), scales = "free") +
+  geom_boxplot(outliers = F) + 
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
+  scale_x_discrete(breaks = c(-3, 0, 3)) +
+  theme_classic() +
+  scale_fill_viridis_c(option="plasma", begin = 0.35, end = .80)
 
   #Scatterplot 
   #Species2: Microcoleus
-ggplot(subset(eq_abund_include, species %in% "2"), aes(x = factor(env_peturb), y = w_star)) +
+ggplot(subset(eq_abund_include, species %in% "2"), aes(x = env_peturb, y = w_star)) +
   facet_wrap(~env, scales = "free") +
   geom_smooth(method = "loess", method.args = list(family = "symmetric"), SE = F) 
 
