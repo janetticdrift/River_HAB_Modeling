@@ -53,7 +53,7 @@ yearmatdata_TM <- micro_indexweek %>%
   #replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
-  dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
+  dplyr::select(-c(location, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TAC") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
@@ -176,9 +176,9 @@ model.1 <- list("uniqueID" = nrow(matalltaxaM),
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaM$firstday,
                 "N" = matalltaxaM[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #subset 2024 out with 29:45
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -280,13 +280,13 @@ model.2 <- list("uniqueID" = nrow(matalltaxaA),
                 "Nspecies" = as.integer(ncol(matalltaxaA)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaA$firstday,
                 "N" = matalltaxaA[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:45)], #subset 2024 out for now
-                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:45)], #and also first two weeks of 2023
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:45)],
-                "discharge" = discharge$stand_discharge[-c(14:15, 29:45)],
-                "temp" = stand_nut$temp_C[-c(14:15, 29:45)],
-                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:45)],
-                "rad" = swradiation$stand_rad[-c(14:15, 29:45)]
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 44:45)], #Remove first weeks where TAC was not sampled
+                "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 44:45)], 
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 44:45)],
+                "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 44:45)],
+                "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 44:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 44:45)],
+                "rad" = swradiation$stand_rad[-c(1:2, 14:16, 29:31, 44:45)]
 )
 
 #-------------------------------------------------------------------------------------------------

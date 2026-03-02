@@ -107,7 +107,7 @@ microscopy_TM_stand <- microscopy %>%
 
 #------Plots and Graphs---------------------------------------
 
-#Keep colors and label names consistent together 
+#Create a color palette
 mycols <- brewer.pal(n = 11, name = "Set3")
 mypal <- palette(mycols)
 names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
@@ -128,84 +128,25 @@ ggplot(subset(microscopy, sample_type %in% "TM"), aes(x = field_date, y = Abunda
 ggplot(subset(microscopy, sample_type %in% "TM" & !(Species %in% "Microcoleus")), 
        aes(x = field_date, y = Abundance, fill = Species)) +
   facet_grid(reach ~ year, scales = "free") +
-  geom_col(position = "fill") + #Can't see the detail well, subset per year
+  geom_col(position = "fill") + 
   theme(legend.position="bottom") + 
   labs(title = "Target Microcoleus", x = "Date", y = "Proportion of Relative Abundance") +
   colScale
 
+#Plot timeseries of within-mat species per year
 ggplot(subset(microscopy, sample_type %in% "TAC"), aes(x = field_date, y = Abundance, fill = Species)) +
-  #facet_wrap(~year, scales = "free") +
   facet_grid(reach ~ year, scales = "free") +
-  geom_col(position = "fill") + #Can't see the detail well, subset per year
-  theme(legend.position="bottom")+
-  scale_fill_brewer(palette = "Set3") +
-  labs(title = "Target Anabaena")
+  geom_col(position = "fill") +
+  theme(legend.position="bottom") + 
+  labs(title = "Target Anabaena", x = "Date", y = "Proportion of Relative Abundance") +
+  colScale
 
-#Coding notes: add year %in% 2022 to subset if splitting up years again
+#Plot timeseries, but remove Anabaena
+ggplot(subset(microscopy, sample_type %in% "TAC" & !(Species %in% "Anabaena")), 
+       aes(x = field_date, y = Abundance, fill = Species)) +
+  facet_grid(reach ~ year, scales = "free") +
+  geom_col(position = "fill") + 
+  theme(legend.position="bottom") + 
+  labs(title = "Target Anabaena", x = "Date", y = "Proportion of Relative Abundance") +
+  colScale
 
-#2022
-#Histogram of Microcolus in TM samples
-ggplot(subset(microscopy1, year %in% 2022 & 
-                Species %in% "microcoleus" & 
-                sample_type %in% "TM"), 
-       aes(x = Abundance, fill = Species)) +
-  geom_histogram(binwidth = 1, position="dodge") +
-  labs(title = "2022 Counts") +
-  theme(legend.position="bottom")
-
-#Histogram of Anabaena in TA samples
-ggplot(subset(microscopy, year %in% 2022 & 
-                Species %in% "anabaena_and_cylindrospermum" &
-                sample_type %in% "TAC"), 
-       aes(x = Abundance, fill = Species)) +
-  geom_histogram(binwidth = 1, position="dodge") +
-  labs(title = "2022 Counts") +
-  scale_fill_manual(values = c("anabaena_and_cylindrospermum" = "#00BFC4")) +
-  theme(legend.position="bottom")
-
-
-
-#2023
-
-#Histogram of Microcolus in TM samples
-  ggplot(subset(microscopy, year %in% 2023 & 
-                  Species %in% "microcoleus" & 
-                  sample_type %in% "TM"), 
-         aes(x = Abundance, fill = Species)) +
-    geom_histogram(binwidth = 1, position="dodge") +
-    labs(title = "2023 Counts") +
-    theme(legend.position="bottom")
-  
-  #Histogram of Anabaena in TA samples
-  ggplot(subset(microscopy, year %in% 2023 & 
-                  Species %in% "anabaena_and_cylindrospermum" &
-                  sample_type %in% "TAC"), 
-         aes(x = Abundance, fill = Species)) +
-    geom_histogram(binwidth = 1, position="dodge") +
-    labs(title = "2023 Counts") +
-    scale_fill_manual(values = c("anabaena_and_cylindrospermum" = "#00BFC4")) +
-    theme(legend.position="bottom")
-  
-
-  
-  
-#Plots using standardized values
-  ggplot(microscopy_TAC_stand, aes(x = field_date, y = Abundance)) +
-    facet_grid(reach ~ year, scales = "free") +
-    geom_col( aes(fill = Species)) +
-    theme(legend.position="bottom")+
-    scale_fill_brewer(palette = "Set3") +
-    labs(title = "Target Anabaena") +
-    theme(panel.spacing = unit(1, "lines"))
-  
-  ggplot(microscopy_TM_stand, aes(x = field_date, y = Abundance)) +
-    facet_grid(reach ~ year, scales = "free") +
-    geom_col( aes(fill = Species)) +
-    theme(legend.position="bottom")+
-    scale_fill_brewer(palette = "Set3") +
-    labs(title = "Target Microcoleus") +
-    theme(panel.spacing = unit(1, "lines"))
-    coord_cartesian(ylim = c(0, .75))
-  
-  #code for separating out bars into more histogram-like 
-    #position = position_dodge(7), width = 7,
