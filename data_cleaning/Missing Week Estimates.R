@@ -47,21 +47,24 @@ yeardata <- cover_indexweek %>%
 yearmatdata_TM <- micro_indexweek %>% 
   dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TM") %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TM"))
   #replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
-  dplyr::select(-c(location, slide_rep, date_analyzed, method)) %>%
+  dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TAC") %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
   group_by(year) %>%
-  complete(nesting(site_reach, site, reach), week = seq(1, max(week), 1L)) %>% 
+  complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   mutate(sample_type = replace_na(sample_type, "TAC"))
   #replace(is.na(.), -99)
 
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
-  mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
+  mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
+  arrange(year, week)
 
 #-------------------------------------------------------------------------------------------------
 # #SINGLE SPECIES - Gather data into STAN list format
@@ -164,11 +167,11 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year, week) %>%
-  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean, na.rm = TRUE)) %>% 
+  dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  dplyr::mutate(across(Anabaena:Rare, log)) %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
@@ -268,11 +271,11 @@ model.1.4 <- list("uniqueID" = nrow(mat4taxa),
 matalltaxaA <- yearmatdata %>% 
   dplyr::filter(sample_type == "TAC") %>% 
   group_by(year, week) %>%
-  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean, na.rm = TRUE)) %>% 
-  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
+  mutate(firstday = if_else(week == 2 & year == 2023 | week == 3 & year == 2024, 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
+  dplyr::mutate(across(Anabaena:Rare, log)) %>%
   mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
@@ -280,13 +283,13 @@ model.2 <- list("uniqueID" = nrow(matalltaxaA),
                 "Nspecies" = as.integer(ncol(matalltaxaA)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaA$firstday,
                 "N" = matalltaxaA[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 44:45)], #Remove first weeks where TAC was not sampled
-                "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 44:45)], 
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 44:45)],
-                "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 44:45)],
-                "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 44:45)],
-                "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 44:45)],
-                "rad" = swradiation$stand_rad[-c(1:2, 14:16, 29:31, 44:45)]
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)], #Remove first weeks where TAC was not sampled
+                "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 39:45)], 
+                "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)],
+                "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 39:45)],
+                "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 39:45)],
+                "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 39:45)],
+                "rad" = swradiation$stand_rad[-c(1:2, 14:16, 29:31, 39:45)]
 )
 
 #-------------------------------------------------------------------------------------------------
@@ -300,18 +303,27 @@ options(mc.cores = parallel::detectCores())
 #####TARGET MATS
 #All years, one species, 3 reaches
 
-init_fun <- function() list(
-  sigma_p = rep(0.5, 9),     #9 is number of species in mat datasets
-  sigma_o = rep(0.5, 9),
-  Alpha   = rep(0, 9),
-  Beta_diag = rep(0, 0, 9),     # small start
-  Beta_off = matrix(0, 9, 9),
-  n_nc = matrix(0, 9, nrow(matalltaxaM))
+init_fun_M <- function() list(
+  sigma_p = rep(0.5, 11),     #11 is number of species in mat datasets
+  sigma_o = rep(0.5, 11),
+  Alpha   = rep(0, 11),
+  Beta_diag = rep(0, 0, 11),     # small start
+  Beta_off = matrix(0, 11, 11),
+  n_nc = matrix(0, 11, nrow(matalltaxaM))
+)
+
+init_fun_A <- function() list(
+  sigma_p = rep(0.5, 11),     #11 is number of species in mat datasets
+  sigma_o = rep(0.5, 11),
+  Alpha   = rep(0, 11),
+  Beta_diag = rep(0, 0, 11),     # small start
+  Beta_off = matrix(0, 11, 11),
+  n_nc = matrix(0, 11, nrow(matalltaxaA))
 )
 
 #Averaged, TM
 fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
+                warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
 #1S, TM
 fit.m1.1S <-  stan(file = "HAB_mat_community.stan", data = model.1.1S, chains = 3, iter = 10000,
@@ -320,7 +332,7 @@ fit.m1.1S <-  stan(file = "HAB_mat_community.stan", data = model.1.1S, chains = 
 
 #Averaged, TAC
 fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, init = init_fun, control = list(adapt_delta = 0.999,
+                warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
 
 ######RIVER WIDE

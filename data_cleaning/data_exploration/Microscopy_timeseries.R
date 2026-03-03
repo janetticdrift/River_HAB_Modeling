@@ -34,14 +34,14 @@ microscopy_non_avg <- microdata %>%
     relocate(slide_rep, .after = sample_type)
   #Pull out already processed slides
   processed_slides <- microscopy_non_avg %>% 
-    filter(slide_rep == "Final")
+    dplyr::filter(slide_rep == "Final")
   #Bind together dataframes
   microscopy1 <- rbind(averaged_slides, processed_slides)
   
   
 #Do TAC samples all actually contain Anabaena?
 TAC <- microscopy1 %>% 
-  filter(sample_type == "TAC" & Species == "anabaena_and_cylindrospermum")
+  dplyr::filter(sample_type == "TAC" & Species == "anabaena_and_cylindrospermum")
 
 which(TAC$Abundance < 10) #Are there any instances where Abundance is small? FALSE = no
 which(TAC$Abundance < 20)

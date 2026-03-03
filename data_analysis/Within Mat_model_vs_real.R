@@ -11,6 +11,7 @@ library(here)
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
+library(RColorBrewer)
 library(lubridate)
 
 #Necessary functions
@@ -53,22 +54,12 @@ mat_params <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>%
 
 #Set up dataframe to extract week/year info from
 yearweekTM <- matalltaxaM %>% 
-  pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
+  pivot_longer(cols = c(Anabaena:Rare),
                names_to = "Species", values_to = "mean") %>% 
-  mutate(time = rep(seq(41), each = length(unique(Species)))) %>%  #41 is mat timeseries length
-  mutate(Species = case_when(
-    Species == "anabaena_and_cylindrospermum" ~ "Anabaena",
-    Species == "e_diatoms" ~ "Epithemia Diatoms",
-    Species == "geitlerinema" ~ "Geitlerinema",
-    Species == "green_algae" ~ "Green Algae",
-    Species == "microcoleus" ~ "Microcoleus",
-    Species == "non_e_diatoms" ~ "Non-Epithemia Diatoms",
-    Species == "nostoc" ~ "Nostoc",
-    Species == "other_coccoids" ~ "Other Coccoids",
-    Species == "rare" ~ "Rare"))
+  mutate(time = rep(seq(41), each = length(unique(Species))))  #41 is mat timeseries length
 
 #Manually calculate mean posteriors for microscopy proportions
-mat_params2 <- as.data.frame(mat_params) %>% 
+mat_params2_TM <- as.data.frame(mat_params) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -76,14 +67,16 @@ mat_params2 <- as.data.frame(mat_params) %>%
   dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
                    se_mean = calcSE(c_across(starts_with("V")))) %>% 
   dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Anabaena',
-                             grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
-                             grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema',
-                             grepl("[4,", group, fixed=TRUE) ~ 'Green Algae',
-                             grepl("[5,", group, fixed=TRUE) ~ 'Microcoleus',
-                             grepl("[6,", group, fixed=TRUE) ~ 'Non-Epithemia Diatoms',
-                             grepl("[7,", group, fixed=TRUE) ~ 'Nostoc',
-                             grepl("[8,", group, fixed=TRUE) ~ 'Other Coccoids',
-                             grepl("[9,", group, fixed=TRUE) ~ 'Rare')) %>% 
+                                    grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
+                                    grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema',
+                                    grepl("[4,", group, fixed=TRUE) ~ 'Green Algae',
+                                    grepl("[5,", group, fixed=TRUE) ~ 'Leptolyngbya',
+                                    grepl("[6,", group, fixed=TRUE) ~ 'Microcoleus',
+                                    grepl("[7,", group, fixed=TRUE) ~ 'Non-Epithemia Diatoms',
+                                    grepl("[8,", group, fixed=TRUE) ~ 'Nostoc',
+                                    grepl("[9,", group, fixed=TRUE) ~ 'Oscillatoria',
+                                    grepl("[10,", group, fixed=TRUE) ~ 'Other Coccoids',
+                                    grepl("[11,", group, fixed=TRUE) ~ 'Rare')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   left_join(yearweekTM[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
   relocate(uniqueID) %>% 
@@ -125,19 +118,9 @@ mat_params_TA <- as.data.frame(rstan::extract(fit.m2, permuted=FALSE)) %>%
 
 #Set up dataframe to extract week/year info from
 yearweekTA <- matalltaxaA %>% 
-  pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
+  pivot_longer(cols = c(Anabaena:Rare),
                names_to = "Species", values_to = "mean") %>% 
-  mutate(time = rep(seq(26), each = length(unique(Species)))) %>%  #26 is mat timeseries length
-  mutate(Species = case_when(
-    Species == "anabaena_and_cylindrospermum" ~ "Anabaena",
-    Species == "e_diatoms" ~ "Epithemia Diatoms",
-    Species == "geitlerinema" ~ "Geitlerinema",
-    Species == "green_algae" ~ "Green Algae",
-    Species == "microcoleus" ~ "Microcoleus",
-    Species == "non_e_diatoms" ~ "Non-Epithemia Diatoms",
-    Species == "nostoc" ~ "Nostoc",
-    Species == "other_coccoids" ~ "Other Coccoids",
-    Species == "rare" ~ "Rare"))
+  mutate(time = rep(seq(30), each = length(unique(Species))))  #30 is mat timeseries length
 
 #Manually calculate mean posteriors for microscopy proportions
 mat_params2_TA <- as.data.frame(mat_params_TA) %>% 
@@ -151,11 +134,13 @@ mat_params2_TA <- as.data.frame(mat_params_TA) %>%
                                     grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
                                     grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema',
                                     grepl("[4,", group, fixed=TRUE) ~ 'Green Algae',
-                                    grepl("[5,", group, fixed=TRUE) ~ 'Microcoleus',
-                                    grepl("[6,", group, fixed=TRUE) ~ 'Non-Epithemia Diatoms',
-                                    grepl("[7,", group, fixed=TRUE) ~ 'Nostoc',
-                                    grepl("[8,", group, fixed=TRUE) ~ 'Other Coccoids',
-                                    grepl("[9,", group, fixed=TRUE) ~ 'Rare')) %>% 
+                                    grepl("[5,", group, fixed=TRUE) ~ 'Leptolyngbya',
+                                    grepl("[6,", group, fixed=TRUE) ~ 'Microcoleus',
+                                    grepl("[7,", group, fixed=TRUE) ~ 'Non-Epithemia Diatoms',
+                                    grepl("[8,", group, fixed=TRUE) ~ 'Nostoc',
+                                    grepl("[9,", group, fixed=TRUE) ~ 'Oscillatoria',
+                                    grepl("[10,", group, fixed=TRUE) ~ 'Other Coccoids',
+                                    grepl("[11,", group, fixed=TRUE) ~ 'Rare')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   left_join(yearweekTA[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
   relocate(uniqueID) %>% 
@@ -175,52 +160,50 @@ mat_params2_TA <- as.data.frame(mat_params_TA) %>%
 #Observed Data plots
 ###Separate out reaches for OBSERVED data
 pivot_matTM <- yearmatdata_TM %>% 
-  pivot_longer(cols = c(anabaena_and_cylindrospermum:rare),
+  pivot_longer(cols = c(Anabaena:Rare),
                names_to = "Species", values_to = "Abundance") %>% 
   na.omit()
 
-ggplot(subset(pivot_matTM, Species %in% c("microcoleus")),
+ggplot(subset(pivot_matTM, Species %in% c("Microcoleus")),
               aes(x = week, y = Abundance))+
   facet_grid(reach~year) +
   geom_point(aes(colour = Species)) +
   geom_line(aes(colour = Species))
 
-model <- aov(microcoleus ~ reach, data = subset(yearmatdata_TM, reach %in% c("1S", "3")))
+model <- aov(Microcoleus ~ reach, data = subset(yearmatdata_TM, reach %in% c("1S", "3")))
 summary(model)
 
 
 #Model data plots
-###First 6 species TM
-ggplot(subset(mat_params2, Species %in% c("anabaena_and_cylindrospermum", 
-                                       "e_diatoms", "geitlerinema", "green_algae",
-                                       "microcoleus")),
+
+#Create a color palette
+mycols <- brewer.pal(n = 11, name = "Set3")
+mypal <- palette(mycols)
+names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
+                 "Green Algae", "Leptolyngbya", "Microcoleus", 
+                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
+                 "Other Coccoids", "Rare")
+colScale <- scale_color_manual(name = "Modeled", values = mypal)
+
+###TM: Ana + Geit + Epithemia
+ggplot(subset(mat_params2, Species %in% c("Anabaena", 
+                                       "Epithemia Diatoms", "Geitlerinema")),
               aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
   geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = .7) +
-  geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
-  geom_point(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
-                                                           "e_diatoms", "geitlerinema", "green_algae",
-                                                           "microcoleus")), 
+  geom_point(data = subset(obs_data_mat_TM, Species %in% c("Anabaena", 
+                                                           "Epithemia Diatoms", "Geitlerinema")), 
                            aes(x = model_date, y = obs_mean, shape = Species), #shape = Species in aes
              size = 2.5) +
-  geom_line(data = subset(obs_data_mat_TM, Species %in% c("anabaena_and_cylindrospermum", 
-                                                          "e_diatoms", "geitlerinema", "green_algae",
-                                                         "microcoleus")),
+  geom_line(data = subset(obs_data_mat_TM, Species %in% c("Anabaena", 
+                                                          "Epithemia Diatoms", "Geitlerinema")),
             aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
-  labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
-  labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
-  scale_colour_brewer(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
-                                 "Green Algae", "Microcoleus",
-                                 "Non-Epithemia", "Nostoc", "Other Coccoids",
-                                 "Rare"), palette = "Set3") +
-  scale_shape_manual(labels = c("Anabaena", "Epithemia", "Geitlerinema", 
-                                "Green Algae", "Microcoleus",
-                                "Non-Epithemia", "Nostoc", "Other Coccoids",
-                                "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
-  coord_cartesian(ylim = c(0,15)) 
+  labs(x = "Date", y = "Relative Abundance (%)", title = "Target Microcoleus") +
+  coord_cartesian(ylim = c(0,15)) +
+  colScale
 
 
 ###Last 5 species TM#########################################################################
