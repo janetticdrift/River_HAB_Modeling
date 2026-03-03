@@ -105,12 +105,22 @@ posteriors_mat <- rstan::extract(fit.m1)[["n"]] #array indexed by iterations, sp
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
-y_ana <- matalltaxaM$Anabaena
-y_epi <- matalltaxaM$`Epithemia Diatoms`
-y_geit <- matalltaxaM$Geitlerinema
+y_ana <- matalltaxaM$Anabaena                  #1
+y_epi <- matalltaxaM$`Epithemia Diatoms`       #2
+y_geit <- matalltaxaM$Geitlerinema             #3
+y_green <- matalltaxaM$`Green Algae`           #4
+y_lep <- matalltaxaM$Leptolyngbya              #5
+y_micro <- matalltaxaM$Microcoleus             #6
+y_nonepi <- matalltaxaM$`Non-Epithemia Diatoms`#7
+y_nos <- matalltaxaM$Nostoc                    #8
+y_osc <- matalltaxaM$Oscillatoria              #9
+y_cocc <- matalltaxaM$`Other Coccoids`         #10
+y_rare <- matalltaxaM$Rare                     #11
 
 #Put them into a single matrix
-y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
+y_obs_mat <- rbind(y_ana, y_epi, y_geit, y_green, y_lep, y_micro,
+                   y_nonepi, y_nos, y_osc, y_cocc, y_rare) #Dimensions: Species, time
+
 
 ###############------------------------------------------------------------------
 #Bayesian R2 comparing latent vs observed states
@@ -118,7 +128,12 @@ iter <- dim(posteriors_mat)[1]  # Number of iterations
 species <- dim(posteriors_mat)[2]  # Number of species
 time <- dim(posteriors_mat)[3]  # Time steps
 
-R2 <- matrix(NA, iter, species) #Create empty matrix for R2 values per iteration, per species
+names<- c("Anabaena", "Epithemia", "Geitlerinema", 
+          "Green Algae", "Leptolyngbya", "Microcoleus",
+          "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+          "Rare")
+
+R2 <- matrix(NA, iter, species, dimnames = list(NULL, names)) #Create empty matrix for R2 values per iteration, per species
 
 for (s in 1:species) {
   
@@ -139,7 +154,7 @@ for (s in 1:species) {
 
 # Posterior summarize 
 #Mean R2
-apply(R2, 2, mean) #2 stands for applying function over the columms
+apply(R2, 2, mean)[c(4,6,7)] #2 stands for applying function over the columms
 #Credible Interval
 apply(R2, 2, quantile, c(0.025, 0.975))
 
@@ -151,20 +166,25 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 source(here::here("data_analysis/Predictions.R"))
 #Relevant dataframe is "predictives"
 
-#Comparing fit.m4: All variables included
-iter <- dim(posteriors)[1]  # Number of iterations 
-species <- dim(posteriors)[2]  # Number of species 
-time <- dim(posteriors)[3]  # Time steps
+#Comparing fit.m1: All variables included
+iter <- dim(posteriors_mat)[1]  # Number of iterations 
+species <- dim(posteriors_mat)[2]  # Number of species 
+time <- dim(posteriors_mat)[3]  # Time steps
+
+names<- c("Anabaena", "Epithemia", "Geitlerinema", 
+          "Green Algae", "Leptolyngbya", "Microcoleus",
+          "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+          "Rare")
 
 #Create empty matrices for storing fit index values
-RMSE <- matrix(NA, iter, species)
-R2 <- matrix(NA, iter, species)
+RMSE <- matrix(NA, iter, species, dimnames = list(NULL, names))
+R2 <- matrix(NA, iter, species, dimnames = list(NULL, names))
 
 for (s in 1:species) {
   for (i in 1:iter) {
     
-    y <- posteriors[i, s, ]
-    y_pred <- predictives[i, s, ]
+    y <- posteriors_mat[i, s, ]
+    y_pred <- predictives_mats[i, s, ]
     
     RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
     

@@ -45,7 +45,7 @@ obs_data_mat_TM <- microscopy %>%
 
 #Clean dataframe of MODEL data
 #Initial cleaning of model outputs
-mat_params <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>% 
+mat_params_TM <- as.data.frame(rstan::extract(fit.m1, permuted=FALSE)) %>% 
   dplyr::select(matches("n\\[")) %>% 
   dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[9,41]`, exp)) %>%  #backtransform n
   t 
@@ -59,7 +59,7 @@ yearweekTM <- matalltaxaM %>%
   mutate(time = rep(seq(41), each = length(unique(Species))))  #41 is mat timeseries length
 
 #Manually calculate mean posteriors for microscopy proportions
-mat_params2_TM <- as.data.frame(mat_params) %>% 
+mat_params2_TM <- as.data.frame(mat_params_TM) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -177,7 +177,9 @@ summary(model)
 #Model data plots
 
 #Create a color palette
-mycols <- brewer.pal(n = 11, name = "Set3")
+mycols <- c("brown", "chartreuse3", "goldenrod", "darkolivegreen4", 
+            "lavender", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
+            "darkorange", "lightblue1")
 mypal <- palette(mycols)
 names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
                  "Green Algae", "Leptolyngbya", "Microcoleus", 
@@ -186,7 +188,7 @@ names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema",
 colScale <- scale_color_manual(name = "Modeled", values = mypal)
 
 ###TM: Ana + Geit + Epithemia
-ggplot(subset(mat_params2, Species %in% c("Anabaena", 
+ggplot(subset(mat_params2_TM, Species %in% c("Anabaena", 
                                        "Epithemia Diatoms", "Geitlerinema")),
               aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
@@ -200,38 +202,33 @@ ggplot(subset(mat_params2, Species %in% c("Anabaena",
                                                           "Epithemia Diatoms", "Geitlerinema")),
             aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
-  scale_y_continuous(breaks=c(seq(0,100,10))) +
+  scale_y_continuous(breaks=c(seq(0,100,5))) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Target Microcoleus") +
   coord_cartesian(ylim = c(0,15)) +
+  labs(shape = "Observed") +
   colScale
 
 
-###Last 5 species TM#########################################################################
-
-ggplot(subset(mat_params2, Species %in% c("non_e_diatoms", "nostoc",
-                                          "other_coccoids", "rare")),
+###TM: Micro + Green + Non-Epithemia
+ggplot(subset(mat_params2_TM, Species %in% c("Microcoleus", "Green Algae",
+                                          "Non-Epithemia Diatoms")),
        aes(x = model_date, y = mean)) + 
   facet_wrap(~year, scales = "free") + 
   geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = .7) +
-  geom_errorbar(aes(ymin=mean-se_mean, ymax=mean+se_mean), width=.1) +
-  geom_point(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc",
-                                                           "other_coccoids", "rare")), 
-             aes(x = model_date, y = obs_mean, shape = Species), 
+  geom_point(data = subset(obs_data_mat_TM, Species %in% c("Microcoleus", "Green Algae",
+                                                           "Non-Epithemia Diatoms")), 
+             aes(x = model_date, y = obs_mean, shape = Species), #shape = Species in aes
              size = 2.5) +
-  geom_line(data = subset(obs_data_mat_TM, Species %in% c("non_e_diatoms", "nostoc",
-                                                          "other_coccoids", "rare")),
+  geom_line(data = subset(obs_data_mat_TM, Species %in% c("Microcoleus", "Green Algae",
+                                                          "Non-Epithemia Diatoms")),
             aes(x = model_date, y = obs_mean, group = Species),
             size = .5) +
   scale_y_continuous(breaks=c(seq(0,100,10))) +
-  labs(x = "Date", y = "Proportion (%)", title = "Target Microcoleus:Averaged Reaches") +
-  labs(color = "Modeled", fill = "Modeled", shape = "Observed") +
-  scale_colour_brewer(labels = c("Non-Epithemia", "Nostoc",  "Other Coccoids",
-                                 "Rare"), palette = "Set3") +
-  scale_shape_manual(labels = c("Non-Epithemia", "Nostoc",  "Other Coccoids",
-                                "Rare"), values = c(16, 17, 15, 3, 5, 10)) +
-  coord_cartesian(ylim = c(0,40)) 
-
+  labs(x = "Date", y = "Relative Abundance (%)", title = "Target Microcoleus") +
+  coord_cartesian(ylim = c(0,90)) +
+  labs(shape = "Observed") +
+  colScale
 
 ###First 6 species TAC---------------------------
 

@@ -54,12 +54,12 @@ transformed parameters{
 
   //t = 1: no previous state available. As a transformed param, every aspect of it must be 
   //explicity computed. n[,1] no longer has an implicit prior like it used to
-  n[,1] = Alpha + sigma_p .* n_nc[,1];
+  n[,1] = n_nc[,1];
 
   //t >= 2
   for (t in 2:uniqueID) {
     if (firstdays[t] == 1){
-      n[,t] = Alpha + sigma_p .* n_nc[,t];
+      n[,t] = n_nc[,t];
      continue; //continue ends current operation and returns to top of loop
     }
     n[,t] = Alpha + Beta * n[,t-1] + 

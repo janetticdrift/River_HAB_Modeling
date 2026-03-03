@@ -12,14 +12,18 @@ library(RColorBrewer)
 
 pseudocount <- 1e-4 #Set a small number for 0s, so as to not return error when logging
 
-pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins_forGoel.csv")) %>% 
-  filter(!grepl("analysis", UNR_Notes)) %>%  #Remove samples noted as not for analysis ("floating" and "gravel")
+pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>% 
+  dplyr::filter(!grepl("analysis", UNR_Notes)) %>%  #Remove samples noted as not for analysis ("floating" and "gravel")
   rename(field_date = date) %>% 
-  mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  # Fix date data type
-  mutate(
+  dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  # Fix date data type
+  dplyr::mutate(
+    across(c(ana_C.uL:dhATXa_ug_g),
+           ~ case_when(. == "bdl" ~ '0',
+                       . != "bdl" ~ .))) %>% # Convert non-detects to zeros
+  dplyr::mutate(
     across(c(ana_C.uL, ana_C.uL_rerun,
              nif.uL, nif.uL_rerun),
-           ~ log10(.x + pseudocount))  #Add small pseudocount to all numbers, then log transform
+           ~ log10(.x + pseudocount))  #Add small pseudocount to all copy numbers, then log transform
   ) %>% 
   pivot_longer(   #Pivot dataframe to create a group for run vs. rerun in the next function
     cols = c(ana_C.uL, ana_C.uL_rerun,
@@ -27,7 +31,7 @@ pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins_forGoel.csv")) %>%
     names_to = "gene_run",
     values_to = "value"
   ) %>%
-  mutate(
+  dplyr::mutate(
     gene = case_when(                     #Remove extra characters from gene name category names
       str_detect(gene_run, "ana_C") ~ "anaC",
       str_detect(gene_run, "nif")  ~ "nif"
@@ -35,14 +39,8 @@ pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins_forGoel.csv")) %>%
     run_type = if_else(str_detect(gene_run, "rerun"), "rerun", "original") #Create run_type grouping
   ) %>%
   select(-gene_run) %>% #Remove redundant column
-  pivot_wider(names_from = gene, values_from = value) %>% 
-  mutate(
-    across(c(ATX_all_ug_g, ATXa_ug_g,    #Set any "bdl" ATX values to 0, to be plotted
-             HTXa_ug_g, dhATXa_ug_g),
-           ~ case_when(. == "bdl" ~ '0',
-                       . != "bdl" ~ .))
-  ) %>% 
-  mutate(
+  pivot_wider(names_from = gene, values_from = value) %>%
+  dplyr::mutate(
     across(c(ATX_all_ug_g, ATXa_ug_g,    #Convert ATX values from character to numeric
              HTXa_ug_g, dhATXa_ug_g),
            ~ as.numeric(.))
