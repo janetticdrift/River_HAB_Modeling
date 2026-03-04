@@ -120,13 +120,13 @@
 7/2/24,2024,3,Microcoleus,Y,53,,384.8,,bdl,,bdl,,bdl,bdl,bdl,bdl,0.6055,,
 7/2/24,2024,4,Microcoleus,Y,54,,365.1,,0.589,,4.66,,bdl,bdl,bdl,bdl,0.6045,,
 7/2/24,2024,1S,Microcoleus,Y,51,,60.3,,bdl,,17562,,bdl,bdl,bdl,bdl,0.5929,,
-7/17/24,2024,2,Microcoleus,Y,11,,216.1,,15.7,,29.1,,bdl,bdl,bdl,bdl,0.395,,
-7/17/24,2024,3,Microcoleus,Y,12,,208.3,,0.426,271,bdl,,bdl,bdl,bdl,bdl,0.6139,,qPCR reruns for 2024 performed on the same samples as before
+7/17/24,2024,2,Microcoleus,Y,11,,216.1,,15.7,,29.1,,bdl,bdl,bdl,bdl,0.395,,qPCR reruns for 2024 performed on the same samples as before
+7/17/24,2024,3,Microcoleus,Y,12,,208.3,,0.426,271,bdl,,bdl,bdl,bdl,bdl,0.6139,,PCR duplicate
 7/17/24,2024,3,Microcoleus,Y,13,,223.4,,17,1065,30,,bdl,bdl,bdl,bdl,0.6139,,PCR duplicate
 7/17/24,2024,4,Microcoleus,Y,14,,228.3,,22.1,,bdl,,bdl,bdl,bdl,bdl,0.0963,,
 7/17/24,2024,1S,Microcoleus,Y,15,,188.8,,117,,629,,0.053,bdl,bdl,0.053,0.5604,,ATX triplicate
 7/31/24,2024,2,Microcoleus,Y,30,,219.1,,17,,7.05,,bdl,0.363,bdl,bdl,0.0981,,
-7/31/24,2024,3,Microcoleus,Y,32,,347,,bdl,10.67,bdl,,0.059,bdl,bdl,0.059,0.7599,,
+7/31/24,2024,3,Microcoleus,Y,32,,347,,bdl,10.67,bdl,,0.059,bdl,bdl,0.059,0.7599,,PCR duplicate
 7/31/24,2024,3,Microcoleus,Y,33,,294.3,,0.388,20.5,bdl,,0.059,bdl,bdl,0.059,0.7599,,PCR duplicate
 7/31/24,2024,4,Microcoleus,Y,36,,140.8,,2.01,,46.6,,bdl,bdl,bdl,bdl,0.0694,,ATX triplicate
 7/31/24,2024,1S,Microcoleus,Y,28,,183.1,,0.226,,bdl,,0.38,0.602,bdl,0.0995,0.6154,,ATX duplicate
@@ -155,7 +155,7 @@
 7/17/24,2024,4,Anabaena,N,,,,,,,,,,,,,,,
 7/17/24,2024,1S,Anabaena,Y,16,,97.4,,48.1,,28883,,,,,,0.3351,,
 7/31/24,2024,2,Anabaena,Y,31,,45.4,,18072,,83867,,4.878,3.489,bdl,1.389,0.4409,,
-7/31/24,2024,3,Anabaena,Y,34,,125.1,,124000000,904,bdl,,1.241,1.005,bdl,0.236,0.5027,,
+7/31/24,2024,3,Anabaena,Y,34,,125.1,,124000000,904,bdl,,1.241,1.005,bdl,0.236,0.5027,,PCR duplicate
 7/31/24,2024,3,Anabaena,Y,35,,35.2,,1.12,10590,bdl,,,,,,0.5027,,PCR duplicate
 7/31/24,2024,4,Anabaena,Y,37,,30,,2445,,34938,,1.111333333,0.898333333,bdl,0.213666667,0.3123,,ATX triplicate
 7/31/24,2024,1S,Anabaena,Y,29,,82,,1316,,1196,,3.0275,2.71,bdl,0.3175,0.1409,,ATX duplicate

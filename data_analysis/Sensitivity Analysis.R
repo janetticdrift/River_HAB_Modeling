@@ -214,7 +214,7 @@ ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x =
   #Species2: Microcoleus
 ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "2"), aes(x = env_peturb, y = w_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
-  geom_smooth(method = "loess") +
+  geom_smooth(method = "loess", se = F) +
   labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Microcoleus") +
   guides(color = guide_legend(reverse = TRUE)) +
   scale_x_continuous(breaks = c(-3, 0, 3)) +
