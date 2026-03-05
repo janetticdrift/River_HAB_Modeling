@@ -12,147 +12,6 @@ library(ggplot2)
 library(ggpubr)
 library(RColorBrewer)
 
-#First examine relationships between anaC genes and anatoxin quantities
-pseudocount <- 1e-4 #Set small number for 0s, to not return error when log-transformed
-
-pcr_atx <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>% 
-  filter(!grepl("analysis", Notes)) %>%  #Remove samples not for analysis ("floating" and "gravel")
-  rename(field_date = date) %>% 
-  mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
-  mutate(
-    # # Normalized anaC gene copies (copies per ng DNA)
-    # normalized_anaC = ana_C.uL / DNA_conc_ng_uL,
-    # normalized_anaC_rerun = ana_C.uL_rerun / DNA_conc_rerun,
-    # # Normalized nif gene copies (copies per ng DNA)
-    # normalized_nif = nif.uL / DNA_conc_ng_uL,
-    # normalized_nif_rerun = nif.uL_rerun / DNA_conc_rerun,
-    
-    # Set any "bdl" values to 0
-    across(c(ana_C.uL, ana_C.uL_rerun, nif.uL, nif.uL_rerun,
-             ATX_all_ug_g, ATXa_ug_g, HTXa_ug_g, dhATXa_ug_g),
-           ~ case_when(. == "bdl" ~ '0',
-                       . != "bdl" ~ .)),
-    
-    # Convert values from character to numeric
-      across(c(ana_C.uL, ana_C.uL_rerun, nif.uL, nif.uL_rerun,
-               ATX_all_ug_g, ATXa_ug_g, HTXa_ug_g, dhATXa_ug_g),
-             ~ as.numeric(.)),
-    
-    # Log10 gene counts
-    across(c(ana_C.uL, ana_C.uL_rerun,
-             nif.uL, nif.uL_rerun),
-           ~ log10(.x + pseudocount)),
-    
-    # Calculate ATX normalized with Ash-Free Dry Mass
-    norm_ATX_all_ug_g = ATX_all_ug_g / org_matter_percent
-    
-  ) %>% 
-  pivot_longer(   #Pivot dataframe to create a group for run vs. rerun in the next function
-    cols = c(ana_C.uL, ana_C.uL_rerun,
-             nif.uL, nif.uL_rerun),
-    names_to = "gene_run",
-    values_to = "value"
-  ) %>%
-  mutate(
-    gene = case_when(           #Remove extra characters from gene name category names
-      str_detect(gene_run, "ana_C") ~ "anaC",
-      str_detect(gene_run, "nif")  ~ "nif"
-    ),
-    run_type = if_else(str_detect(gene_run, "rerun"), "rerun", "original") #Create run_type grouping
-  ) %>%
-  select(-gene_run) %>% 
-  pivot_wider(names_from = gene, values_from = value)
-  
-
-#ana_C vs nif, exclude zeros
-ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
-  facet_wrap(~year, scales = "free") +
-  geom_point(aes(shape = run_type), size = 2) +
-  geom_smooth(data = . %>% filter(anaC != -4 & nif != -4), # filter out 0 values
-    method = "lm", se = FALSE) +
-  stat_regline_equation(
-    data = . %>% filter(anaC != -4 & nif != -4),
-    aes(label = paste(..rr.label..)),
-    formula = y ~ x,
-    parse = TRUE,
-    label.x.npc = "left",
-    label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "nif gene (copies/ng)") +
-  theme_bw()
-
-#ana_C vs nif, include zeros
-ggplot(pcr_atx, aes(x = anaC, y = nif, color = mat)) +
-  facet_wrap(~year, scales = "free") +
-  geom_point(aes(shape = run_type), size = 2) +
-  geom_smooth(method = "lm", se = FALSE) +
-  stat_regline_equation(
-     aes(label = paste(..rr.label..)),
-     formula = y ~ x,
-     label.x.npc = "middle",
-     label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "nif gene (copies/ng)") +
-  theme_bw()
-
-#ana_C vs Anatoxins, exclude zeros
-ggplot(pcr_atx, aes(x = anaC, y = ATX_all_ug_g, color = mat)) +
-  facet_wrap(~year, scales = "free") +
-  geom_point( size = 2) +
-  geom_smooth(data = . %>% filter(anaC != -4 & ATX_all_ug_g != 0),
-              method = "lm", se = FALSE) +
-  stat_regline_equation(
-    data = . %>% filter(anaC != -4 & ATX_all_ug_g != 0),
-    aes(label = paste(..rr.label..)),
-    formula = y ~ x,
-    label.x.npc = "left",
-    label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "Total anatoxin (ug/L)") +
-  scale_colour_brewer(type = "qual") +
-  theme_bw()
-
-#ana_C vs Normalized Anatoxins, exclude zeros
-ggplot(pcr_atx, aes(x = anaC, y = norm_ATX_all_ug_g, color = mat)) +
-  facet_wrap(~year, scales = "free") +
-  geom_point( size = 2) +
-  geom_smooth(data = . %>% filter(anaC != -4 & norm_ATX_all_ug_g != 0),
-              method = "lm", se = FALSE) +
-  stat_regline_equation(
-    data = . %>% filter(anaC != -4 & norm_ATX_all_ug_g != 0),
-    aes(label = paste(..rr.label..)),
-    formula = y ~ x,
-    label.x.npc = "left",
-    label.y.npc = "top") +
-  labs(x = "anaC gene (copies/ng)", y = "Total anatoxin (ug/L)", title = "Normalized ATX") +
-  scale_colour_brewer(type = "qual") +
-  theme_bw()
-
-
-
-
-#Compare nif presence with epithemia
-nif_ediatoms <- microscopy %>%
-  rename(mat = sample_type) %>% 
-  mutate(mat = case_when(
-    mat == "TAC" ~ "Anabaena",
-    mat == "TM" ~ "Microcoleus")) %>% 
-  inner_join(pcr_atx, by = c("field_date", "year", "mat")) %>%
-  select(field_date, nif, e_diatoms, year, mat)
-
-ggplot(nif_ediatoms, aes(x = nif, y = e_diatoms, color = mat)) +
-  facet_wrap(~year, scales = "free") +
-  geom_point() +
-  geom_smooth(data = . %>% filter(nif != -4 & e_diatoms != 0),
-              method = "lm", se = FALSE) +
-  stat_regline_equation(
-    data = . %>% filter(nif != -4 & e_diatoms != 0),
-    aes(label = paste(..rr.label..)),
-    formula = y ~ x,
-    label.x.npc = "left",
-    label.y.npc = "top") +
-  labs(x = "Log nif gene (copies/ug)", y = "Epithemia (% cover microscopy)", 
-       title = "Epithemia Diatoms and nif gene") +
-  scale_colour_brewer(palette = "Dark2")
-  
-
 #Read in environmental and microscopy data
 source(here::here("data_cleaning/cleaning_HAB.R"))
 #Read in anatoxin data
@@ -172,19 +31,6 @@ anaCsplit <- toxins %>%
 year1 <- anaCsplit[[1]]
 year2 <- anaCsplit[[2]]
 year3 <- anaCsplit[[3]]
-
-week_from_step <- function(x) {
-  case_when(
-    timestep == 1 ~ 1,
-    timestep == 2 ~ 3,
-    timestep == 3 ~ 5,
-    timestep == 4 ~ 7,
-    timestep == 5 ~ 9,
-    timestep == 6 ~ 11,
-    timestep == 7 ~ 13,
-    timestep == 8 ~ 15
-  )
-}
 
 #year 2022
 year1_index <- year1 %>% 
@@ -264,6 +110,6 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 
 #Estimate anatoxins in TM mats
-fit.toxin <-  stan(file = "HAB_toxins.stan", data = model.anaC, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+fit.toxin <-  stan(file = "HAB_toxins.stan", data = model.anaC, chains = 3, iter = 5000,
+                warmup = 2000, refresh=100, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))

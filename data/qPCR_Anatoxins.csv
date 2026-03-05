@@ -23,42 +23,42 @@
 7/24/23,2023,3,Microcoleus,Y,10,,52,,866,,2313,,0.09,0.09,bdl,bdl,0.628,,
 7/24/23,2023,4,Microcoleus,Y,,9,,120,,13777,,5096,,,,,,,
 7/24/23,2023,1S,Microcoleus,Y,4,,38,,30.4,,158,,bdl,bdl,bdl,bdl,0.71,,
-7/31/23,2023,2,Microcoleus,Y,,80,,75.3,,bdl,,bdl,0.081,0.081,bdl,bdl,0.26,,
-7/31/23,2023,3,Microcoleus,Y,15,96,28,99.8,NA,bdl,NA,bdl,0.313,0.268,bdl,0.045,0.77,,
+7/31/23,2023,2,Microcoleus,Y,,80,,75.3,,nd,,nd,0.081,0.081,bdl,bdl,0.26,,
+7/31/23,2023,3,Microcoleus,Y,15,96,28,99.8,NA,nd,NA,nd,0.313,0.268,bdl,0.045,0.77,,
 7/31/23,2023,4,Microcoleus,Y,85,,67,,48598,,3917,,,,,,,,
-7/31/23,2023,1S,Microcoleus,Y,12,75,48,54,NA,bdl,NA,bdl,0.178,0.178,bdl,bdl,0.704,,
-8/7/23,2023,2,Microcoleus,Y,20,86,98,64.8,NA,4857,NA,bdl,2.758,2.42,bdl,0.338,0.37,,
-8/7/23,2023,3,Microcoleus,Y,19,148,35,199,NA,bdl,NA,bdl,1.888,1.536,bdl,0.352,0.68,,
+7/31/23,2023,1S,Microcoleus,Y,12,75,48,54,NA,nd,NA,nd,0.178,0.178,bdl,bdl,0.704,,
+8/7/23,2023,2,Microcoleus,Y,20,86,98,64.8,NA,4857,NA,nd,2.758,2.42,bdl,0.338,0.37,,
+8/7/23,2023,3,Microcoleus,Y,19,148,35,199,NA,nd,NA,nd,1.888,1.536,bdl,0.352,0.68,,
 8/7/23,2023,4,Microcoleus,Y,127,,61.8,,2210,,1452,,0.253,0.253,bdl,bdl,0.09,,
-8/7/23,2023,1S,Microcoleus,Y,16,77,19,88.7,NA,bdl,NA,bdl,0.3643,0.2943,bdl,0.07,0.69,,
-8/14/23,2023,2,Microcoleus,Y,23,,87,,141,,bdl,,1.932,1.643,bdl,0.289,0.59,,
-8/14/23,2023,3,Microcoleus,Y,13,102,63,82.4,NA,bdl,NA,bdl,6.6467,5.499,bdl,1.1477,0.751,,
+8/7/23,2023,1S,Microcoleus,Y,16,77,19,88.7,NA,nd,NA,nd,0.3643,0.2943,bdl,0.07,0.69,,
+8/14/23,2023,2,Microcoleus,Y,23,,87,,141,,nd,,1.932,1.643,bdl,0.289,0.59,,
+8/14/23,2023,3,Microcoleus,Y,13,102,63,82.4,NA,nd,NA,nd,6.6467,5.499,bdl,1.1477,0.751,,
 8/14/23,2023,4,Microcoleus,Y,,145,,131.5,,2700,,3047,,,,,,,
-8/14/23,2023,1S,Microcoleus,Y,21,120,74,NA,bdl,NA,NA,NA,0.5315,0.482,bdl,0.0495,0.75,Rerun Bad Quality,
-8/22/23,2023,2,Microcoleus,Y,22,,90,,3.37,,bdl,,17.29,14.72,bdl,2.57,0.56,,
-8/22/23,2023,3,Microcoleus,Y,27,110,116,154.9,NA,bdl,NA,bdl,7.3623,6.2913,bdl,1.071,0.76,,
-8/22/23,2023,4,Microcoleus,Y,,111,,95,,7161,,bdl,99.066,83.438,bdl,15.628,0.4,,
+8/14/23,2023,1S,Microcoleus,Y,21,120,74,NA,nd,NA,NA,NA,0.5315,0.482,bdl,0.0495,0.75,Rerun Bad Quality,
+8/22/23,2023,2,Microcoleus,Y,22,,90,,3.37,,nd,,17.29,14.72,bdl,2.57,0.56,,
+8/22/23,2023,3,Microcoleus,Y,27,110,116,154.9,NA,nd,NA,nd,7.3623,6.2913,bdl,1.071,0.76,,
+8/22/23,2023,4,Microcoleus,Y,,111,,95,,7161,,nd,99.066,83.438,bdl,15.628,0.4,,
 8/22/23,2023,1S,Microcoleus,Y,26,109,26,NA,18465,NA,NA,NA,2.7725,2.3365,bdl,0.436,0.68,Rerun Bad Quality,
-8/24/23,2023,2,Microcoleus,Y,34,,49,,bdl,,bdl,,,,,,,,"PCR site had ""gravel"" in name. Do not use for analysis"
+8/24/23,2023,2,Microcoleus,Y,34,,49,,nd,,nd,,,,,,,,"PCR site had ""gravel"" in name. Do not use for analysis"
 8/24/23,2023,3,Microcoleus,N,,,,,,,,,,,,,,,Do not use for analysis
 8/24/23,2023,4,Microcoleus,N,,,,,,,,,,,,,,,Do not use for analysis
 8/24/23,2023,1S,Microcoleus,N,,,,,,,,,,,,,,,Do not use for analysis
-8/28/23,2023,2,Microcoleus,Y,32,167,116,68,bdl,4930,NA,3327,16.61,14.081,bdl,2.529,0.48,,
-8/28/23,2023,3,Microcoleus,Y,31,,19,,bdl,,bdl,,,,,,,,"PCR site had ""floating"" in name. Do not use for analysis"
+8/28/23,2023,2,Microcoleus,Y,32,167,116,68,nd,4930,NA,3327,16.61,14.081,bdl,2.529,0.48,,
+8/28/23,2023,3,Microcoleus,Y,31,,19,,nd,,nd,,,,,,,,"PCR site had ""floating"" in name. Do not use for analysis"
 8/28/23,2023,3,Microcoleus,Y,36,,97,,53951,,4798,,20.534,17.336,bdl,3.198,0.79,,
 8/28/23,2023,4,Microcoleus,Y,,163,,117.4,,4302,,78.3,,,,,,,
 8/28/23,2023,1S,Microcoleus,Y,25,,82,,179,,237,,6.252,5.09085,bdl,1.16115,0.73,,
-9/4/23,2023,2,Microcoleus,Y,37,,86,,85.1,,bdl,,18.032,16,bdl,2.032,0.44,,
-9/4/23,2023,3,Microcoleus,Y,38,,31,,43.9,,bdl,,25.83,22.963,bdl,2.867,0.73,,
+9/4/23,2023,2,Microcoleus,Y,37,,86,,85.1,,nd,,18.032,16,bdl,2.032,0.44,,
+9/4/23,2023,3,Microcoleus,Y,38,,31,,43.9,,nd,,25.83,22.963,bdl,2.867,0.73,,
 9/4/23,2023,4,Microcoleus,Y,,156,,NA,,NA,,NA,1.937,1.699,bdl,0.238,0.34,Rerun Bad Quality,
 9/4/23,2023,1S,Microcoleus,Y,33,,38,,72074,,448,,15.452,12.91665,bdl,2.53535,0.757,,
-9/12/23,2023,2,Microcoleus,Y,41,159,115,114.2,6.38,6388,NA,bdl,9.897,8.982,bdl,0.915,0.613,,"Original file said 6.38 for ana_C/uL, but newer file from 1/2026 says NA"
-9/12/23,2023,3,Microcoleus,Y,40,158,43,105.5,5404,bdl,NA,bdl,19.99,18.323,bdl,1.667,0.73,,"Original file said 5404 for ana_C/ul, but newer file from 1/2026 says 43.9"
-9/12/23,2023,4,Microcoleus,Y,44,153,36,57.3,bdl,20904,NA,892,1.252,1.157,bdl,0.095,0.46,,
+9/12/23,2023,2,Microcoleus,Y,41,159,115,114.2,6.38,6388,NA,nd,9.897,8.982,bdl,0.915,0.613,,"Original file said 6.38 for ana_C/uL, but newer file from 1/2026 says NA"
+9/12/23,2023,3,Microcoleus,Y,40,158,43,105.5,5404,nd,NA,nd,19.99,18.323,bdl,1.667,0.73,,"Original file said 5404 for ana_C/ul, but newer file from 1/2026 says 43.9"
+9/12/23,2023,4,Microcoleus,Y,44,153,36,57.3,nd,20904,NA,892,1.252,1.157,bdl,0.095,0.46,,
 9/12/23,2023,1S,Microcoleus,Y,42,169,50,NA,1772,NA,NA,NA,9.087,8.2675,bdl,0.8195,0.76,Rerun Bad Quality,
 9/18/23,2023,2,Microcoleus,Y,43,174,63,NA,427,NA,NA,NA,5.895,5.437,bdl,0.458,0.55,Rerun Bad Quality,
-9/18/23,2023,3,Microcoleus,Y,48,183,18,114.5,103,bdl,NA,bdl,12.81,11.662,bdl,1.148,0.74,,
-9/18/23,2023,4,Microcoleus,Y,47,187,22,96.1,bdl,22269,NA,581,0.7697,0.7077,bdl,0.062,0.5,,
+9/18/23,2023,3,Microcoleus,Y,48,183,18,114.5,103,nd,NA,nd,12.81,11.662,bdl,1.148,0.74,,
+9/18/23,2023,4,Microcoleus,Y,47,187,22,96.1,nd,22269,NA,581,0.7697,0.7077,bdl,0.062,0.5,,
 9/18/23,2023,1S,Microcoleus,Y,45,196,52,55.7,8259,760,NA,1269,25.037,22.0535,bdl,2.9835,0.75,,
 9/24/23,2023,2,Microcoleus,Y,51,186,64,130,41816,3870,NA,2513,3.0674,2.7717,bdl,0.2957,0.576,,
 9/24/23,2023,3,Microcoleus,Y,52,198,24,NA,NA,NA,NA,NA,5.638,5.312,bdl,0.326,0.76,Rerun Bad Quality,
@@ -67,34 +67,34 @@
 7/10/23,2023,2,Anabaena,Y,,31,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
 7/10/23,2023,3,Anabaena,Y,,16,,NA,,NA,,NA,,,,,,Rerun Empty,
 7/10/23,2023,4,Anabaena,Y,,2,,NA,,NA,,NA,0.042,0.042,bdl,bdl,0.67,Rerun Bad Quality,
-7/10/23,2023,1S,Anabaena,Y,,47,,58.1,,bdl,,870,bdl,bdl,bdl,bdl,0.64,,
+7/10/23,2023,1S,Anabaena,Y,,47,,58.1,,nd,,870,bdl,bdl,bdl,bdl,0.64,,
 7/17/23,2023,2,Anabaena,Y,,13,,43,,5178,,6690,,,,,,,
 7/17/23,2023,3,Anabaena,Y,,34,,127.8,,3768,,17670,,,,,,,
-7/17/23,2023,4,Anabaena,Y,,53,,84.6,,bdl,,1299,0.015,0.015,bdl,bdl,0.41,,
+7/17/23,2023,4,Anabaena,Y,,53,,84.6,,nd,,1299,0.015,0.015,bdl,bdl,0.41,,
 7/17/23,2023,1S,Anabaena,Y,,11,,83.4,,110.5,,255,0.0237,0.0237,bdl,bdl,0.543,,
 7/24/23,2023,2,Anabaena,Y,,54,,148.5,,754,,22976,1.588,1.423,bdl,0.165,0.33,,
-7/24/23,2023,3,Anabaena,Y,,12,,65.2,,bdl,,bdl,0.088,0.026,bdl,0.062,0.32,,
-7/24/23,2023,4,Anabaena,Y,,24,,59.9,,bdl,,bdl,0.778,0.605,bdl,0.173,0.39,,
+7/24/23,2023,3,Anabaena,Y,,12,,65.2,,nd,,nd,0.088,0.026,bdl,0.062,0.32,,
+7/24/23,2023,4,Anabaena,Y,,24,,59.9,,nd,,nd,0.778,0.605,bdl,0.173,0.39,,
 7/24/23,2023,1S,Anabaena,N,,,,,,,,,0.1485,0.124,bdl,0.0245,0.4,,
-7/31/23,2023,2,Anabaena,Y,,76,,159,,bdl,,bdl,5.019,4.227,bdl,0.792,0.34,,
-7/31/23,2023,3,Anabaena,Y,,70,,80.7,,bdl,,bdl,0.763,0.588,bdl,0.175,0.42,,
+7/31/23,2023,2,Anabaena,Y,,76,,159,,nd,,nd,5.019,4.227,bdl,0.792,0.34,,
+7/31/23,2023,3,Anabaena,Y,,70,,80.7,,nd,,nd,0.763,0.588,bdl,0.175,0.42,,
 7/31/23,2023,4,Anabaena,Y,,98,,NA,,NA,,NA,4.988,3.862,bdl,1.126,0.42,Rerun Empty,
-7/31/23,2023,1S,Anabaena,Y,,72,,282.6,,12.8,,bdl,3.692,3.132,bdl,0.56,0.413,,
-8/7/23,2023,2,Anabaena,Y,,131,,132,,bdl,,29532,1.232,1.144,bdl,0.088,0.13,,
+7/31/23,2023,1S,Anabaena,Y,,72,,282.6,,12.8,,nd,3.692,3.132,bdl,0.56,0.413,,
+8/7/23,2023,2,Anabaena,Y,,131,,132,,nd,,29532,1.232,1.144,bdl,0.088,0.13,,
 8/7/23,2023,3,Anabaena,Y,,118,,56.4,,22879,,467,4.813,4.13,bdl,0.683,0.45,,
-8/7/23,2023,4,Anabaena,Y,,129,,76.2,,bdl,,bdl,38.588,34.248,bdl,4.34,0.44,,
-8/7/23,2023,1S,Anabaena,Y,,73,,147.1,,37339,,bdl,7.132,6.37365,bdl,0.75835,0.386,,
-8/14/23,2023,2,Anabaena,Y,,130,,58.6,,bdl,,bdl,51.352,45.657,bdl,5.695,0.29,,
-8/14/23,2023,3,Anabaena,Y,,108,,58.8,,16234,,bdl,24.8473,21.7983,bdl,3.049,0.568,,
-8/14/23,2023,4,Anabaena,Y,,142,,47.9,,bdl,,bdl,25.082,21.478,bdl,3.604,0.37,,
-8/14/23,2023,1S,Anabaena,Y,,116,,188.1,,bdl,,bdl,36.5015,32.276,0.019,4.2065,0.51,,
+8/7/23,2023,4,Anabaena,Y,,129,,76.2,,nd,,nd,38.588,34.248,bdl,4.34,0.44,,
+8/7/23,2023,1S,Anabaena,Y,,73,,147.1,,37339,,nd,7.132,6.37365,bdl,0.75835,0.386,,
+8/14/23,2023,2,Anabaena,Y,,130,,58.6,,nd,,nd,51.352,45.657,bdl,5.695,0.29,,
+8/14/23,2023,3,Anabaena,Y,,108,,58.8,,16234,,nd,24.8473,21.7983,bdl,3.049,0.568,,
+8/14/23,2023,4,Anabaena,Y,,142,,47.9,,nd,,nd,25.082,21.478,bdl,3.604,0.37,,
+8/14/23,2023,1S,Anabaena,Y,,116,,188.1,,nd,,nd,36.5015,32.276,0.019,4.2065,0.51,,
 8/22/23,2023,2,Anabaena,Y,,113,,102,,11785,,39.5,6.923,5.981,bdl,0.942,0.2,,
 8/22/23,2023,3,Anabaena,Y,,103,,102,,1005,,579,17.0943,13.9683,bdl,3.126,0.434,,
-8/22/23,2023,4,Anabaena,Y,,147,,28.2,,bdl,,bdl,32.741,28.817,bdl,3.924,0.5,,
-8/22/23,2023,1S,Anabaena,Y,,150,,151.8,,bdl,,bdl,15.9715,13.9875,bdl,1.984,0.38,,
+8/22/23,2023,4,Anabaena,Y,,147,,28.2,,nd,,nd,32.741,28.817,bdl,3.924,0.5,,
+8/22/23,2023,1S,Anabaena,Y,,150,,151.8,,nd,,nd,15.9715,13.9875,bdl,1.984,0.38,,
 8/28/23,2023,2,Anabaena,Y,,178,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
 8/28/23,2023,3,Anabaena,Y,,164,,NA,,NA,,NA,0.616,0.463,bdl,0.153,0.38,Rerun Bad Quality,
-8/28/23,2023,4,Anabaena,Y,,175,,63.7,,bdl,,bdl,,,,,,,
+8/28/23,2023,4,Anabaena,Y,,175,,63.7,,nd,,nd,,,,,,,
 8/28/23,2023,1S,Anabaena,Y,,119,,NA,,NA,,NA,12.598,10.67,bdl,1.928,1.2,Rerun Bad Quality,
 9/4/23,2023,2,Anabaena,Y,,171,,67,,3049,,4106,0.013,0.013,bdl,bdl,0.14,,
 9/4/23,2023,3,Anabaena,Y,,176,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
@@ -113,56 +113,56 @@
 9/24/23,2023,4,Anabaena,Y,,202,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
 9/24/23,2023,1S,Anabaena,Y,,188,,47,,1178,,875,0.561,0.5155,bdl,0.0455,0.42,,
 6/19/24,2024,2,Microcoleus,N,,,,,,,,,,,,,,,"For ATXs in 2024, duplicates were averaged, and EXT samples were averaged"
-6/19/24,2024,3,Microcoleus,Y,1m46,,59.1,,175,,497,,,,,,,,
+6/19/24,2024,3,Microcoleus,Y,1m46,,59.1,,175,,497,,,,,,,,qPCR reruns for 2024 performed on the same samples as before
 6/19/24,2024,4,Microcoleus,Y,1m47,,273,,2.01,,7.38,,bdl,bdl,bdl,bdl,0.7353,,
-6/19/24,2024,1S,Microcoleus,Y,1m45,,315,,5.31,,bdl,,bdl,bdl,bdl,bdl,0.76,,
+6/19/24,2024,1S,Microcoleus,Y,1m45,,315,,5.31,,nd,,bdl,bdl,bdl,bdl,0.76,,
 7/2/24,2024,2,Microcoleus,N,,,,,,,,,bdl,bdl,bdl,bdl,0.3528,,ATX triplicate
-7/2/24,2024,3,Microcoleus,Y,53,,384.8,,bdl,,bdl,,bdl,bdl,bdl,bdl,0.6055,,
+7/2/24,2024,3,Microcoleus,Y,53,,384.8,,nd,,nd,,bdl,bdl,bdl,bdl,0.6055,,
 7/2/24,2024,4,Microcoleus,Y,54,,365.1,,0.589,,4.66,,bdl,bdl,bdl,bdl,0.6045,,
-7/2/24,2024,1S,Microcoleus,Y,51,,60.3,,bdl,,17562,,bdl,bdl,bdl,bdl,0.5929,,
-7/17/24,2024,2,Microcoleus,Y,11,,216.1,,15.7,,29.1,,bdl,bdl,bdl,bdl,0.395,,qPCR reruns for 2024 performed on the same samples as before
-7/17/24,2024,3,Microcoleus,Y,12,,208.3,,0.426,271,bdl,,bdl,bdl,bdl,bdl,0.6139,,PCR duplicate
-7/17/24,2024,3,Microcoleus,Y,13,,223.4,,17,1065,30,,bdl,bdl,bdl,bdl,0.6139,,PCR duplicate
-7/17/24,2024,4,Microcoleus,Y,14,,228.3,,22.1,,bdl,,bdl,bdl,bdl,bdl,0.0963,,
+7/2/24,2024,1S,Microcoleus,Y,51,,60.3,,nd,,17562,,bdl,bdl,bdl,bdl,0.5929,,
+7/17/24,2024,2,Microcoleus,Y,11,,216.1,,15.7,,29.1,,bdl,bdl,bdl,bdl,0.395,,
+7/17/24,2024,3,Microcoleus,Y,12,12.1,208.3,,0.426,271,nd,nd,bdl,bdl,bdl,bdl,0.6139,,"PCR duplicate, no DNA_conc for rerun"
+7/17/24,2024,3,Microcoleus,Y,13,13.1,223.4,,17,1065,30,30,bdl,bdl,bdl,bdl,0.6139,,"PCR duplicate, no DNA_conc for rerun"
+7/17/24,2024,4,Microcoleus,Y,14,,228.3,,22.1,,nd,,bdl,bdl,bdl,bdl,0.0963,,
 7/17/24,2024,1S,Microcoleus,Y,15,,188.8,,117,,629,,0.053,bdl,bdl,0.053,0.5604,,ATX triplicate
 7/31/24,2024,2,Microcoleus,Y,30,,219.1,,17,,7.05,,bdl,0.363,bdl,bdl,0.0981,,
-7/31/24,2024,3,Microcoleus,Y,32,,347,,bdl,10.67,bdl,,0.059,bdl,bdl,0.059,0.7599,,PCR duplicate
-7/31/24,2024,3,Microcoleus,Y,33,,294.3,,0.388,20.5,bdl,,0.059,bdl,bdl,0.059,0.7599,,PCR duplicate
+7/31/24,2024,3,Microcoleus,Y,32,32.1,347,,nd,10.67,nd,nd,0.059,bdl,bdl,0.059,0.7599,,"PCR duplicate, no DNA_conc for rerun"
+7/31/24,2024,3,Microcoleus,Y,33,33.1,294.3,,0.388,20.5,nd,nd,0.059,bdl,bdl,0.059,0.7599,,"PCR duplicate, no DNA_conc for rerun"
 7/31/24,2024,4,Microcoleus,Y,36,,140.8,,2.01,,46.6,,bdl,bdl,bdl,bdl,0.0694,,ATX triplicate
-7/31/24,2024,1S,Microcoleus,Y,28,,183.1,,0.226,,bdl,,0.38,0.602,bdl,0.0995,0.6154,,ATX duplicate
-8/14/24,2024,2,Microcoleus,Y,40,,315.8,,48100,,bdl,,0.594,0.594,bdl,bdl,0.3016,,
-8/14/24,2024,3,Microcoleus,Y,42,,139.6,,bdl,,bdl,,0.081,bdl,bdl,0.081,0.7358,,
+7/31/24,2024,1S,Microcoleus,Y,28,,183.1,,0.226,,nd,,0.38,0.602,bdl,0.0995,0.6154,,ATX duplicate
+8/14/24,2024,2,Microcoleus,Y,40,,315.8,,48100,,nd,,0.594,0.594,bdl,bdl,0.3016,,
+8/14/24,2024,3,Microcoleus,Y,42,,139.6,,nd,,nd,,0.081,bdl,bdl,0.081,0.7358,,
 8/14/24,2024,4,Microcoleus,Y,44,,134.9,,41.3,,223,,0.88,0.614,bdl,0.266,0.3468,,
-8/14/24,2024,1S,Microcoleus,Y,38,,234.2,,1236,,bdl,,2.514,1.9825,bdl,0.532,0.6084,,ATX duplicate
-8/26/24,2024,2,Microcoleus,Y,75,,180.7,,1.04,,bdl,,0.341,0.262,bdl,0.078,0.2411,,
-8/26/24,2024,3,Microcoleus,Y,73,,195.7,,bdl,,bdl,,1.697,1.23,bdl,0.466,0.7167,,
-8/26/24,2024,4,Microcoleus,Y,77,,52.2,,bdl,,bdl,,1.067,0.663,bdl,0.404,0.5627,,
+8/14/24,2024,1S,Microcoleus,Y,38,,234.2,,1236,,nd,,2.514,1.9825,bdl,0.532,0.6084,,ATX duplicate
+8/26/24,2024,2,Microcoleus,Y,75,,180.7,,1.04,,nd,,0.341,0.262,bdl,0.078,0.2411,,
+8/26/24,2024,3,Microcoleus,Y,73,,195.7,,nd,,nd,,1.697,1.23,bdl,0.466,0.7167,,
+8/26/24,2024,4,Microcoleus,Y,77,,52.2,,nd,,nd,,1.067,0.663,bdl,0.404,0.5627,,
 8/26/24,2024,1S,Microcoleus,Y,71,,23.2,,4.44,,194,,2.051,1.436,bdl,0.616,0.5808,,
 9/14/24,2024,2,Microcoleus,Y,84,,19,,203,,209,,0.032666667,bdl,bdl,0.032666667,0.6058,,ATX triplicate
 9/14/24,2024,3,Microcoleus,Y,82,,216.8,,5.87,,118,,0.096,bdl,bdl,0.096,0.1457,,
 9/14/24,2024,4,Microcoleus,Y,80,,136,,128,,2.57,,0.086,bdl,bdl,0.086,0.5352,,
 9/14/24,2024,1S,Microcoleus,Y,86,,259.8,,31.5,,2.91,,bdl,bdl,bdl,bdl,0.6882,,
-9/27/24,2024,2,Microcoleus,Y,101,,321.3,,bdl,,bdl,,,,,,1.1057,,
+9/27/24,2024,2,Microcoleus,Y,101,,321.3,,nd,,nd,,,,,,1.1057,,
 9/27/24,2024,3,Microcoleus,N,,,,,,,,,,,,,,,
 9/27/24,2024,4,Microcoleus,Y,103,,38.9,,117,,7.91,,,,,,0.5743,,
-9/27/24,2024,1S,Microcoleus,Y,100,,159.5,,0.728,,bdl,,bdl,bdl,bdl,bdl,0.5275,,
+9/27/24,2024,1S,Microcoleus,Y,100,,159.5,,0.728,,nd,,bdl,bdl,bdl,bdl,0.5275,,
 10/10/24,2024,2,Microcoleus,Y,106,,57.7,,1.68,,7.78,,,,,,0.6274,,
 10/10/24,2024,3,Microcoleus,N,,,,,,,,,,,,,,,
-10/10/24,2024,4,Microcoleus,Y,108,,142,,bdl,,bdl,,,,,,,,
-10/10/24,2024,1S,Microcoleus,Y,105,,327.3,,bdl,,13.3,,bdl,bdl,bdl,bdl,0.6482,,ATX duplicate
+10/10/24,2024,4,Microcoleus,Y,108,,142,,nd,,nd,,,,,,,,
+10/10/24,2024,1S,Microcoleus,Y,105,,327.3,,nd,,13.3,,bdl,bdl,bdl,bdl,0.6482,,ATX duplicate
 7/17/24,2024,2,Anabaena,N,,,,,,,,,,,,,,,
 7/17/24,2024,3,Anabaena,N,,,,,,,,,,,,,,,
 7/17/24,2024,4,Anabaena,N,,,,,,,,,,,,,,,
 7/17/24,2024,1S,Anabaena,Y,16,,97.4,,48.1,,28883,,,,,,0.3351,,
 7/31/24,2024,2,Anabaena,Y,31,,45.4,,18072,,83867,,4.878,3.489,bdl,1.389,0.4409,,
-7/31/24,2024,3,Anabaena,Y,34,,125.1,,124000000,904,bdl,,1.241,1.005,bdl,0.236,0.5027,,PCR duplicate
-7/31/24,2024,3,Anabaena,Y,35,,35.2,,1.12,10590,bdl,,,,,,0.5027,,PCR duplicate
+7/31/24,2024,3,Anabaena,Y,34,34.1,125.1,,124000000,904,nd,nd,1.241,1.005,bdl,0.236,0.5027,,"PCR duplicate, no DNA_conc for rerun"
+7/31/24,2024,3,Anabaena,Y,35,35.1,35.2,,1.12,10590,nd,nd,,,,,0.5027,,"PCR duplicate, no DNA_conc for rerun"
 7/31/24,2024,4,Anabaena,Y,37,,30,,2445,,34938,,1.111333333,0.898333333,bdl,0.213666667,0.3123,,ATX triplicate
 7/31/24,2024,1S,Anabaena,Y,29,,82,,1316,,1196,,3.0275,2.71,bdl,0.3175,0.1409,,ATX duplicate
 8/14/24,2024,2,Anabaena,Y,41,,48.1,,47300,,6.53,,bdl,0.204,0.093,bdl,0.3194,,
-8/14/24,2024,3,Anabaena,Y,43,,114.2,,bdl,,bdl,,bdl,bdl,bdl,bdl,0.204,,
-8/14/24,2024,4,Anabaena,Y,45,,324.4,,bdl,,3910000,8489,1.988,1.218,bdl,0.77,0.1016,,
-8/14/24,2024,1S,Anabaena,Y,39,,206.2,,bdl,,1990000,652,0.538,0.448333333,bdl,0.089666667,0.3376,,ATX triplicate
+8/14/24,2024,3,Anabaena,Y,43,,114.2,,nd,,nd,,bdl,bdl,bdl,bdl,0.204,,
+8/14/24,2024,4,Anabaena,Y,45,45.1,324.4,,nd,nd,3910000,8489,1.988,1.218,bdl,0.77,0.1016,,No given DNA_conc for rerun
+8/14/24,2024,1S,Anabaena,Y,39,39.1,206.2,,nd,nd,1990000,652,0.538,0.448333333,bdl,0.089666667,0.3376,,ATX triplicate
 8/26/24,2024,2,Anabaena,Y,74,,57.8,,0.931,,52.6,,2.242,1.424,bdl,0.818,0.35,,
 8/26/24,2024,3,Anabaena,Y,76,,59,,2940000,,1202,,6.578,4.731666667,bdl,1.846,0.4688,,ATX triplicate
 8/26/24,2024,4,Anabaena,N,,,,,,,,,1.172,0.746,bdl,0.426,0.3505,,
