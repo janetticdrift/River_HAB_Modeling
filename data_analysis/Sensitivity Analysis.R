@@ -1,9 +1,13 @@
 ###########################
 #Sensitivity Analyses: Finding Equilibrium Abundance
 ###########################
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(patchwork)
 
 #Read in model output
-x <- readRDS("Riverwide_AllVariables.rds") #Model used includes all biotic and abiotic variables
+fit.m4 <- readRDS(here:here("Riverwide_AllVariables.rds")) #Model used includes all biotic and abiotic variables
 x <- rstan::extract(fit.m4) #m4 = all vars
 
 #Pull out species demographics
@@ -86,7 +90,7 @@ eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star")
 
 #Read in model output-------------------------------------------------------------
 #Model used includes only abiotic variables
-fit.m6 <- readRDS("Riverwide_Abiotic.rds") #Model used includes all biotic and abiotic variables
+fit.m6 <- readRDS(here:here("Riverwide_Abiotic.rds")) #Model used includes all biotic and abiotic variables
 x <- rstan::extract(fit.m6) #m6 = Abiotic Vars
 
 
@@ -188,9 +192,8 @@ any(is.na(eq_abund$w_star))
 
 
 #Plot outputs---------------------------------------------------------------
-#########  
-#Boxplots
-######### 
+
+#Create an object that renames the environmental variables from their abbreviations
 env_labels <- c(
   'N' = 'Nitrate',
   'P' = 'Phosphate',
@@ -200,6 +203,10 @@ env_labels <- c(
   'C' = 'Conductivity',
   'R' = 'Light'
 )
+
+#########  
+#Boxplots
+######### 
   #Species2: Microcoleus
 ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), 
        aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
