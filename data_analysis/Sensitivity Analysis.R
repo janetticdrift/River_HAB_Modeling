@@ -3,7 +3,7 @@
 ###########################
 
 #Read in model output
-fit.m4 <- readRDS("Riverwide_AllVariables.rds") #Model used includes all biotic and abiotic variables
+x <- readRDS("Riverwide_AllVariables.rds") #Model used includes all biotic and abiotic variables
 x <- rstan::extract(fit.m4) #m4 = all vars
 
 #Pull out species demographics
@@ -86,10 +86,9 @@ eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star")
 
 #Read in model output-------------------------------------------------------------
 #Model used includes only abiotic variables
-fit.m6 <- readRDS("Riverwide_AllVariables.rds") #Model used includes all biotic and abiotic variables
+fit.m6 <- readRDS("Riverwide_Abiotic.rds") #Model used includes all biotic and abiotic variables
 x <- rstan::extract(fit.m6) #m6 = Abiotic Vars
 
-Riverwide_Abiotic.rds
 
 #Pull out species demographics
 betas <- as.array(x[["Beta"]])[,]
