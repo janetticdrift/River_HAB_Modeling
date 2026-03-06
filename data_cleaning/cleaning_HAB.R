@@ -208,16 +208,16 @@ nut_data[145, "cond_uS_cm"] <- 237 #Fix glitch reading from sensor with lowest H
 nutrients <- nut_data %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!c("time", 15:length(unique(nut_data)))) %>% #remove uninteresting nutrients
-  mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
-  mutate(year = year(field_date)) %>% 
+  dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
+  dplyr::mutate(year = year(field_date)) %>% 
   group_by(year) %>% 
-  mutate(real_week = week(field_date), week = real_week - first(real_week) + 1) %>% 
+  dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1) %>% 
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% #per year week
   ungroup() %>% 
-  mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
+  dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
                 ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 

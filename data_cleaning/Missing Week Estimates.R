@@ -23,9 +23,9 @@ weekdata <- cover_indexweek %>%
   replace(is.na(.), -99) %>% 
   ungroup() %>% 
   #dplyr::filter(year == "2022") %>% 
-  mutate(reach = as.numeric(factor(reach))) %>% 
+  dplyr::mutate(reach = as.numeric(factor(reach))) %>% 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
-  mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
+  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
 
 # Eventually I should log-transform data here first, when cleaning up code
 #Fills in missing weeks for years that sampled bimonthly, and sets missing entries to -99
@@ -36,9 +36,9 @@ yeardata <- cover_indexweek %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   replace(is.na(.), -99) %>% 
   ungroup() %>% 
-  mutate(reach = as.numeric(factor(reach))) %>% 
+  dplyr::mutate(reach = as.numeric(factor(reach))) %>% 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
-  mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
+  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
 
 #####
 #This dataframe (yearmatdata) is created for HAB_mat_community.stan
@@ -49,7 +49,7 @@ yearmatdata_TM <- micro_indexweek %>%
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
-  mutate(sample_type = replace_na(sample_type, "TM"))
+  dplyr::mutate(sample_type = replace_na(sample_type, "TM"))
   #replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
@@ -57,11 +57,11 @@ yearmatdata_TAC <- micro_indexweek %>%
   dplyr::filter(sample_type == "TAC") %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
-  mutate(sample_type = replace_na(sample_type, "TAC"))
+  dplyr::mutate(sample_type = replace_na(sample_type, "TAC"))
   #replace(is.na(.), -99)
 
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
-  mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
+  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
   arrange(year, week)
 
 #-------------------------------------------------------------------------------------------------
@@ -136,11 +136,11 @@ alltaxatime <- yeardata %>%
                    anabaena_cylindrospermum = mean(anabaena_cylindrospermum), 
                    bare_biofilm = mean(bare_biofilm),
                    other_nfixers = mean(other_nfixers)) %>% #Average across reaches
-  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  dplyr::mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday, bare_biofilm) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  mutate(across(green_algae:other_nfixers, log)) %>%
-  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(green_algae:other_nfixers, log)) %>%
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 #mutate(across(1:5, round, 0)) #green_algae:microcoleus to pull out, comment out if logging
 
 
@@ -170,7 +170,7 @@ matalltaxaM <- yearmatdata %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
-  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
 model.1 <- list("uniqueID" = nrow(matalltaxaM),
@@ -200,7 +200,7 @@ matalltaxaA <- yearmatdata %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
-  mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
 
 model.2 <- list("uniqueID" = nrow(matalltaxaA),
@@ -246,31 +246,31 @@ init_fun_A <- function() list(
 )
 
 #Averaged, TM
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 5000,
-                warmup = 2000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
 #Averaged, TAC
-fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 5000,
-                warmup = 2000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
+fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 10000,
+                warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
 
 ######RIVER WIDE
 
 #All years, all species, averaged reach
-fit.m4 <- stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 5000,
-                warmup = 2000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m4 <- stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
 #Only biotic variables, all species, averaged reach
-fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 5000,
-                warmup = 2000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
 #Only abiotic variables, all species, averaged reach
-fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 5000,
-                warmup = 2000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10000,
+                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
@@ -282,7 +282,7 @@ library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.m5)
+shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 
 
