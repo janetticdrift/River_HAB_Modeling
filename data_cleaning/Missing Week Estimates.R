@@ -287,12 +287,10 @@ print(fit.m4, par = "Ptheta")
 
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-avg.reach.output <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE))
+saveRDS(fit.m4, 
+  file = "data/Riverwide_AllVariables.rds")
 
+saveRDS(fit.m6, 
+        file = "data/Riverwide_Abiotic.rds")
 
-#Save raw parameter estimates
-saveRDS(
-  avg.reach.output, 
-  file = here::here("data/Bayes_avg_reach_output.rds")
-) 
 #To read: object <- readRDS(here:here("data/Bayes_avg_reach_output.rds"))
