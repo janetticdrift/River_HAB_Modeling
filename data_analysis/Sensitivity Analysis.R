@@ -56,15 +56,15 @@ for(z in 1:15000){
   #Include species interactions
   M_inverse <- solve(ID - Beta)    #solve() takes the inverse of matrices
   
-  for(v in seq_along(env_names)){     #Use seq_along for iterating along characters
+  for(v in seq_along(env_names)){     #Use seq_along for iterating along character vectors
     
     theta_matrix <- theta_list[[v]]   #Pull out current env var of interest
-    theta_vec <- theta_matrix[z,]     #Pull out theta vector of z iteration
+    theta_vec <- theta_matrix[z,]     #Pull out env theta coefficients of z iteration
     
     for(e in seq_along(env_range)){
       
-      A <- (theta_vec * env_range[e]) + Alpha     #Multiply coef by std dev, then add intercept
-      w_star_include[z, v, e, ] <- as.vector(M_inverse %*% A) #Switch between M_inverse and M_inv_intra
+      A <- (theta_vec * env_range[e]) + Alpha  #Multiply env coef by perturbation amount, then add intercept
+      w_star_include[z, v, e, ] <- as.vector(M_inverse %*% A) #Calculate w*
       
     }
   }
@@ -72,18 +72,17 @@ for(z in 1:15000){
 
 #Clean output for plotting
 eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star") %>%
-  mutate(
+  dplyr::mutate(
     env_peturb = as.numeric(as.character(env_peturb)),
     iteration = as.integer(iteration),
     species = factor(species), # Green algae, Microcoleus, Anabaena, Other N-fixers
     env = factor(env)
     ) %>% 
-  select(!iteration) %>% 
-  mutate(Interactions = "include") %>% 
-  mutate(w_star = exp(w_star)) %>%  # Back transform w_star from logged values
-                               #About 200 values were removed for being too large: exp 
-                               #returns Inf on values over 710
-  filter(is.finite(w_star)) #Remove those Inf values
+  dplyr::select(!iteration) %>% 
+  dplyr::mutate(Interactions = "include") %>% #Add a category column for including/excluding species interactions
+  dplyr::mutate(w_star = exp(w_star)) %>%  # Back transform w_star from logged values
+                               # Values over 710 result in -Inf values when exp'ed for being too large
+  dplyr::filter(is.finite(w_star)) #Remove those Inf values
 
 #Read in model output-------------------------------------------------------------
 #Model used includes only abiotic variables
@@ -127,10 +126,11 @@ w_star_exclude <- array(        # iteration, env_var, perturbation, species
 for(z in 1:15000){
   
   Alpha <- alphas[z,]   #Current iteration of Alpha: baseline growth
-  Beta <- betas[z,]    #Current iteration of Beta: species interactions
-
+  Beta_vec <- betas[z,]    #Current iteration of Beta: species interactions
+  Beta <- diag(Beta_vec)  #Convert interactions into matrix form
+  
   #Exclude species interactions
-  M_inverse <- solve(ID - B_intra)
+  M_inverse <- solve(ID - Beta)
   
   for(v in seq_along(env_names)){     #Use seq_along for iterating along characters
     
@@ -140,7 +140,7 @@ for(z in 1:15000){
     for(e in seq_along(env_range)){
       
       A <- (theta_vec * env_range[e]) + Alpha     #Multiply coef by env_peturb, then add intercept
-      w_star_exclude[z, v, e, ] <- as.vector(M_inverse %*% A) #Switch between M_inverse and M_inv_intra
+      w_star_exclude[z, v, e, ] <- as.vector(M_inverse %*% A) 
       
     }
   }
@@ -148,17 +148,18 @@ for(z in 1:15000){
 
 #Clean output for plotting
 eq_abund_exclude <- as.data.frame.table(w_star_exclude, responseName = "w_star") %>%
-  mutate(
+  dplyr::mutate(
     env_peturb = as.numeric(as.character(env_peturb)),
     iteration = as.integer(iteration),
-    species = factor(species), # Green algae, Microcoleus, Anabaena, Other N-fixers
+    species = factor(species), 
     env = factor(env)) %>% 
-  select(!iteration) %>% 
-  mutate(Interactions = "exclude") %>% 
-  mutate(w_star = exp(w_star)) #Model excluding sp interaction did not return values too large
+  dplyr::select(!iteration) %>% 
+  dplyr::mutate(Interactions = "exclude") %>% 
+  dplyr::mutate(w_star = exp(w_star)) %>% 
+  dplyr::filter(is.finite(w_star))
 
-#Bind together predictions where species were included or excluded in predictions
-  # Function for ID'ing outliers
+
+# Function for ID'ing outliers
 outlier <- function(x) {
   # Calculate first and third quartiles
   Q1 <- quantile(x, probs = .25, na.rm = TRUE)
@@ -171,14 +172,23 @@ outlier <- function(x) {
   # Return vector indicating which values are NOT outliers
   x >= lower_bound & x <= upper_bound
 }
+
+#Bind together predictions where species were included or excluded in predictions
 eq_abund <- rbind(eq_abund_include, eq_abund_exclude) %>% 
-  group_by(Interactions) %>% 
-  filter(outlier(w_star))
+  group_by(Interactions)
+  # dplyr::filter(outlier(w_star)) #Do not remove outliers
+
+
+#Checking for errors
+any(is.infinite(eq_abund_exclude$w_star))
+any(is.na(eq_abund$w_star))
 
 
 
 #Plot outputs---------------------------------------------------------------
-  #Boxplots
+#########  
+#Boxplots
+######### 
 env_labels <- c(
   'N' = 'Nitrate',
   'P' = 'Phosphate',
@@ -189,8 +199,9 @@ env_labels <- c(
   'R' = 'Light'
 )
   #Species2: Microcoleus
-ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
-  facet_wrap(~env, labeller = labeller(env = env_labels)) +
+ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), 
+       aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
+  facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
   scale_x_discrete(breaks = c(-3, 0, 3)) +
@@ -201,7 +212,7 @@ ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), aes(x =
 
 #Species2: Anabaena
 ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
-  facet_wrap(~env, labeller = labeller(env = env_labels)) +
+  facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
   scale_x_discrete(breaks = c(-3, 0, 3)) +
@@ -210,11 +221,13 @@ ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x =
   scale_fill_viridis_c(option="viridis", begin = 0.5, end = .90)+
   theme(legend.position = "none")
 
-  #Regression plot 
+######### 
+#Regression plot 
+######### 
   #Species2: Microcoleus
-ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "2"), aes(x = env_peturb, y = w_star, color = Interactions)) +
+ggplot(subset(eq_abund %>% slice_sample(n = 100000), species %in% "2"), aes(x = env_peturb, y = w_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
-  geom_smooth(method = "loess", se = F) +
+  geom_smooth(method = "loess", se = F) + #Will not work unless outliers are removed
   labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Microcoleus") +
   guides(color = guide_legend(reverse = TRUE)) +
   scale_x_continuous(breaks = c(-3, 0, 3)) +
@@ -222,16 +235,12 @@ ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "2"), aes(x = e
   scale_color_manual(values = c("#E69F00", "#56B4E9"))
 
 #Species2: Anabaena
-ggplot(subset(eq_abund %>% slice_sample(n = 10000), species %in% "3"), aes(x = env_peturb, y = w_star, color = Interactions)) +
+ggplot(subset(eq_abund %>% slice_sample(n = 50000), species %in% "3"), aes(x = env_peturb, y = w_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
-  geom_smooth(method = "loess") +
+  geom_smooth(method = "loess", se = F) + #Will not work unless outliers are removed
   labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Anabaena") +
   guides(color = guide_legend(reverse = TRUE)) +
   scale_x_continuous(breaks = c(-3, 0, 3)) +
   theme_classic() +
   scale_color_manual(values = c("#E69F00", "#56B4E9"))
-
-
-any(is.infinite(eq_abund_exclude$w_star))
-any(is.na(eq_abund$w_star))
 

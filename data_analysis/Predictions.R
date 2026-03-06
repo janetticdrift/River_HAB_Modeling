@@ -81,48 +81,55 @@ modelcheck_2022 <- n
 #Create dataframe for plotting
 sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
-  dplyr::rename(green_algae = V1, microcoleus = V2,
-                anabaena_cylindrospermum = V3,
-                other_nfixers = V4) %>% 
-  mutate(time = 1:time) %>%
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>% 
+  dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
-  dplyr::rename(green_algae = V1, microcoleus = V2,
-                anabaena_cylindrospermum = V3,
-                other_nfixers = V4) %>% 
-  mutate(time = 1:time) %>% 
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>%  
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
-  dplyr::rename(green_algae = V1, microcoleus = V2,
-                anabaena_cylindrospermum = V3,
-                other_nfixers = V4) %>% 
-  mutate(time = 1:time) %>% 
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
                         left_join(., sims2022uquant, by=c("Species", "time")) %>% 
-  mutate(real_week = time + 25, year = 2022) %>% 
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(real_week = time + 25, year = 2022) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
+#Create a color palette
+mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
+mypal <- palette(mycols)
+names(mypal) = c("Anabaena", "Green Algae", "Microcoleus", 
+                 "Other N Fixers")
+colScale <- scale_color_manual(values = mypal)
+filScale <- scale_fill_manual(values = mypal)
+linScale <- scale_linetype_manual(name = "Model",
+                                  values = c("Latent" = "11",
+                                             "Predicted" = "solid"))
 
 #Plot
-p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  #geom_point(size = 3)+
-  geom_line(size = 1.5) +
+ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
+  geom_line(aes(linetype = "Predicted"), size = 1.5) +
   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .25) +
+            aes(x = model_date, y = mean, colour = Species, linetype = "Latent"), 
+            linewidth = 2) +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), alpha = 0.3) +
-  scale_y_continuous(breaks=c(seq(0,2000,20))) +
-  #coord_cartesian(ylim = c(0,70)) +
+                  fill = Species), color = NA, alpha = 0.2) +
+  scale_y_continuous(breaks=c(seq(0,2000,5))) +
+  coord_cartesian(ylim = c(0,65)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
-  scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
-                                                              "darkcyan", "darkorange"))
+  colScale + filScale + linScale
   
 
 

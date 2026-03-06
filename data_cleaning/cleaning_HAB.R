@@ -36,27 +36,27 @@ atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 percover <- percover1 %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!(10:14)) %>%
-  mutate(field_date = as.Date(field_date)) %>% 
-  mutate(year = year(field_date))
+  dplyr::mutate(field_date = as.Date(field_date)) %>% 
+  dplyr::mutate(year = year(field_date))
 
 percoverplot <- percover %>% 
   pivot_longer(green_algae:other_nfixers, names_to = "Species", values_to = "Abundance")
 
 cleanpercover <- newpercover %>% 
-  mutate(site_reach = case_when(Site == "Eel-4S" ~ "SFE-M-1S",
+  dplyr::mutate(site_reach = case_when(Site == "Eel-4S" ~ "SFE-M-1S",
                                 Site == "Eel-BUG" ~ "SFE-M-2",
                                 Site == "Eel-3UP" ~ "SFE-M-3",
                                 Site == "Eel-2UP" ~ "SFE-M-4")) %>% 
   dplyr::rename(green_algae = "GA", microcoleus = "M", anabaena_cylindrospermum = "A",
                 other_nfixers = "O", bare_biofilm = "B") %>% 
-  mutate(field_date = as.Date(format(mdy(Date), '%Y-%m-%d'))) %>% 
+  dplyr::mutate(field_date = as.Date(format(mdy(Date), '%Y-%m-%d'))) %>% 
   group_by(field_date, site_reach) %>% 
   dplyr::summarise(green_algae = mean(green_algae), microcoleus = mean(microcoleus),
                    anabaena_cylindrospermum = mean(anabaena_cylindrospermum), 
                    other_nfixers = mean(other_nfixers), bare_biofilm = mean(bare_biofilm)) %>% 
   tidyr::separate(site_reach, into = c("site", "M", "reach"), sep="-", remove = FALSE) %>% 
   tidyr::unite("site", c("site", "M"), sep = "-") %>% 
-  mutate(year = year(field_date))
+  dplyr::mutate(year = year(field_date))
 
 cleanpercoverplot <- cleanpercover %>% 
   pivot_longer(green_algae:bare_biofilm, names_to = "Species", values_to = "Abundance")
@@ -71,8 +71,8 @@ microscopy_non_avg <- microdata %>%
   separate(site_reach, into=c("site", "location", "reach"), 
            sep="-") %>% #Split location columns into separate categories
   dplyr::filter(grepl("M", location)) %>% #Keep Miranda sites, remove Standish-Hicky (SH) sites
-  mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
-  mutate(year = year(field_date)) %>%  #create year column
+  dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix date data type
+  dplyr::mutate(year = year(field_date)) %>%  #create year column
   relocate(year, .after = field_date) %>%   #reorganize column order
   dplyr::select(!non_algal) %>% #Remove column measuring sediment amount
   dplyr::filter(!reach == 2) %>% #Remove the added reach
@@ -134,34 +134,34 @@ year3micro <- micro_indexdate[[3]]
 
 #year 2022
 year1_indexdate <- year1cover %>% 
-  mutate(timestep = dense_rank(field_date)) %>% 
-  mutate(week = rep(seq(1, 13, 2), times = length(unique(reach))))
+  dplyr::mutate(timestep = dense_rank(field_date)) %>% 
+  dplyr::mutate(week = rep(seq(1, 13, 2), times = length(unique(reach))))
 
 year1_indexmicro <- year1micro %>% 
-  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
+  dplyr::mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
   relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
 
 #year 2023
 year2_indexdate <- year2cover %>% 
-  mutate(timestep = dense_rank(field_date)) %>% 
-  mutate(week = timestep)
+  dplyr::mutate(timestep = dense_rank(field_date)) %>% 
+  dplyr::mutate(week = timestep)
 
 year2_indexmicro <- year2micro %>% 
-  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
+  dplyr::mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
   relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
 
 #year 2024
 year3_indexdate <- year3cover %>% 
-  mutate(timestep = dense_rank(field_date)) %>% 
+  dplyr::mutate(timestep = dense_rank(field_date)) %>% 
   arrange(reach) %>% 
-  mutate(week = rep(seq(1, 17, 2), times = length(unique(reach))))
+  dplyr::mutate(week = rep(seq(1, 17, 2), times = length(unique(reach))))
 
 year3_indexmicro <- year3micro %>% 
-  mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
+  dplyr::mutate(real_week = week(field_date), week = real_week - min(real_week) + 1) %>%
   arrange(reach, field_date) %>% 
   relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
@@ -222,7 +222,7 @@ nutrients <- nut_data %>%
 
 
 stand_nut <- nutrients %>% 
-  mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
+  dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
   group_by(model_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
@@ -308,7 +308,7 @@ miranda2022 <- renameNWISColumns(readNWISuv(
   parameterCd = "00060", #discharge code, cubic feet per second!
   startDate = "2022-06-26",
   endDate = "2022-09-18")) %>% 
-  mutate(date = as.Date(dateTime)) %>% 
+  dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
   dplyr::filter(row_number() %% 7 == 1)
@@ -319,7 +319,7 @@ miranda2023 <- renameNWISColumns(readNWISuv(
   parameterCd = "00060", #discharge code
   startDate = "2023-06-20",
   endDate = "2023-09-25")) %>% 
-  mutate(date = as.Date(dateTime)) %>% 
+  dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
   dplyr::filter(row_number() %% 7 == 1)
@@ -330,16 +330,16 @@ miranda2024 <- renameNWISColumns(readNWISuv(
   parameterCd = "00060", #discharge code
   startDate = "2024-06-19",
   endDate = "2024-10-10")) %>% 
-  mutate(date = as.Date(dateTime)) %>% 
+  dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
   dplyr::filter(row_number() %% 7 == 1)
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
-  mutate(year = factor(year(date))) %>% 
+  dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
-  mutate(log_discharge = log(discharge)) %>% 
-  mutate(stand_discharge = c(scale(discharge)))
+  dplyr::mutate(log_discharge = log(discharge)) %>% 
+  dplyr::mutate(stand_discharge = c(scale(discharge)))
 
 
 #Quick plot of discharge data
@@ -393,9 +393,9 @@ PAR2024 <- PAR %>%
 
 #Bind together yearly PAR data
 swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
-  mutate(year = factor(year(date))) %>% 
+  dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
-  mutate(stand_rad = c(scale(radiation)))
+  dplyr::mutate(stand_rad = c(scale(radiation)))
 
 #Quick plot of radiation data
 ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
@@ -411,7 +411,7 @@ atx2223clean <- atx2223 %>%
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
   dplyr::select(!c(site, site_reach)) %>% 
   dplyr::select(!c(Chla_ug_g:12)) %>%  #Remove toxins that weren't analyzed in 2024
-  mutate(field_date = as.Date(field_date))
+  dplyr::mutate(field_date = as.Date(field_date))
 
 #WHAT ARE THE EXT SAMPLES--I ignored them for now!
 atx24clean <- atx2024 %>% 
@@ -434,7 +434,7 @@ atx <- rbind(atx2223clean, atx24clean) %>%
   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-  mutate(year = year(field_date))
+  dplyr::mutate(year = year(field_date))
 
 # #For Joanna cleaning
 # HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>% 

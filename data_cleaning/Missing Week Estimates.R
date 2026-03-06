@@ -141,7 +141,6 @@ alltaxatime <- yeardata %>%
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(green_algae:other_nfixers, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
-#mutate(across(1:5, round, 0)) #green_algae:microcoleus to pull out, comment out if logging
 
 
 model.4 <- list("uniqueID" = nrow(alltaxatime), 
