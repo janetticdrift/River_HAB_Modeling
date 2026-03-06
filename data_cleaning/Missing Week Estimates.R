@@ -291,6 +291,6 @@ saveRDS(rstan::extract(fit.m4),
         file = here::here("data/Riverwide_AllVariables.rds"))
 
 saveRDS(rstan::extract(fit.m6), 
-        file = "data/Riverwide_Abiotic.rds")
+        file = here::here("data/Riverwide_Abiotic.rds"))
 
 #To read: object <- readRDS(here:here("data/Bayes_avg_reach_output.rds"))
