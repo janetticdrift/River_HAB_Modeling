@@ -7,8 +7,6 @@ library(abind)
 #Read in latent states, params2_all
 #source(here::here("data_analysis/model_vs_real_data.R"))
 
-#Note to janette: you'll probably have to read in the fit.m4 file since it's too
-#large to be saved with rds 
 
 #Pull out community abundances and demographics 
 x <- fit.m4 #m4 = all vars, m5 = biotic only

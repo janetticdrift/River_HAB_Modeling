@@ -273,6 +273,12 @@ fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 60
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
+#Only abiotic variables, no nutrients, all species, averaged reach
+fit.m7 <-  stan(file = "HAB_abiotic_nonut.stan", data = model.4, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                           stepsize = 0.001,
+                                                           max_treedepth = 13))
+
  #-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
 library(shinystan)
@@ -304,19 +310,45 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+#For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m4, permuted=FALSE), 
         file = here::here("data/Riverwide_AllVariables.rds"))
-saveRDS(rstan::extract(fit.m4)[["n"]], 
-        file = here::here("data/fitcheck_Riverwide_AllVariables.rds"))
+#For building the latent state vs predictions plots
+saveRDS(rstan::extract(fit.m4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/Riverwide_AllVar_predictions.rds"))
 
+#For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m5, permuted=FALSE), 
         file = here::here("data/Riverwide_Biotic.rds"))
-saveRDS(rstan::extract(fit.m5)[["n"]], 
-        file = here::here("data/fitcheck_Riverwide_Biotic.rds"))
+#For building the latent state vs predictions plots, and calculating fit indices
+saveRDS(rstan::extract(fit.m5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/Riverwide_Biotic_predictions.rds"))
 
+#For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m6, permuted=FALSE), 
         file = here::here("data/Riverwide_Abiotic.rds"))
-saveRDS(rstan::extract(fit.m6)[["n"]], 
-        file = here::here("data/fitcheck_Riverwide_Abiotic.rds"))
+#For building the latent state vs predictions plots, and calculating fit indices
+saveRDS(rstan::extract(fit.m6, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/Riverwide_Abiotic_predictions.rds"))
 
-#To read: object <- readRDS(here:here("data/Bayes_avg_reach_output.rds"))
+#For building the observation vs latent state plots
+saveRDS(rstan::extract(fit.m7, permuted=FALSE), 
+        file = here::here("data/Riverwide_Abiotic_nonut.rds"))
+#For building the latent state vs predictions plots, and calculating fit indices
+saveRDS(rstan::extract(fit.m7, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+
+
+#To read: object <- readRDS(here::here("data/Riverwide_AllVariables.rds"))

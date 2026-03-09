@@ -6,19 +6,7 @@ library(tidyverse)
 
 #RIVERWIDE
 
-#Read in data
-fit.m4 <- readRDS(here::here("data/fitcheck_Riverwide_AllVariables.rds"))
-fit.m5 <- readRDS(here::here("data/fitcheck_Riverwide_Biotic.rds"))
-fit.m6 <- readRDS(here::here("data/fitcheck_Riverwide_Abiotic.rds"))
-
 #OBSERVED DATA VS POSTERIORS
-###############------------------------------------------------------------------
-#Extract the relevant model here. fit.m4 = all variables,
-#fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- rstan::extract(fit.m4)[["n"]] #array indexed by iterations, species #, time
-
-
-
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
 y_micro <- alltaxatime$microcoleus
@@ -28,6 +16,18 @@ y_nfix <- alltaxatime$other_nfixers
 
 #Put them into a single matrix
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
+
+###############------------------------------------------------------------------
+#Read in modeled data
+allfit <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+
+#Extract the relevant model here. fit.m4 = all variables,
+#fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
+posteriors <- allfit[["n"]] #array indexed by iterations, species #, time
+
 
 ###############------------------------------------------------------------------
 #Bayesian R2 comparing latent vs observed states

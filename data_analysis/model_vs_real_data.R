@@ -24,6 +24,7 @@ coverpercent <- readRDS(here::here("data/allcoverdataplot.rds"))
 fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
 fit.m5 <- readRDS(here::here("data/Riverwide_Biotic.rds"))
 fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
+fit.m7 <- readRDS(here::here("data/Riverwide_Abiotic_nonut.rds"))
 
 #Read in join-matching data (from Missing Week Estimates)
 # alltaxatime <- readRDS(here::here("data/alltaxatime.rds"))
@@ -48,7 +49,7 @@ obs_data_all <- coverpercent %>%
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
 
 #MODEL M.4 - ALL VARIABLES
-params1_all <- as.data.frame(rstan::extract(fit.m4, permuted=FALSE)) %>%
+params1_all <- as.data.frame(fit.m4) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -180,7 +181,7 @@ ggplot(obs_data_all, aes(x = model_date, y = obs_mean, fill = Species)) +
   
 #Latent states for biotic-only model
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(rstan::extract(fit.m5, permuted=FALSE)) %>%
+params1_all <- as.data.frame(fit.m5) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -286,7 +287,7 @@ p4 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
   
 #Latent states for abiotic-only model
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(rstan::extract(fit.m6, permuted=FALSE)) %>%
+params1_all <- as.data.frame(fit.m6) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -391,7 +392,7 @@ p6 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
 
 #Latent states for abiotic-only model minus nutrients
 #Manually calculate mean posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(rstan::extract(fit.m7, permuted=FALSE)) %>%
+params1_all <- as.data.frame(fit.m7) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -459,7 +460,7 @@ p7 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions") +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions - No Nutrients") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
 
