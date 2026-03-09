@@ -14,24 +14,19 @@ library(ggplot2)
 library(lubridate)
 library(patchwork)
 
+#Read in functions
+here::here("data/Functions.R")
+
 #Read in real data (from allcoverdataplot dataset in SFE_raw_analysis)
 coverpercent <- readRDS(here::here("data/allcoverdataplot.rds"))
 
 #Read in model data (from Missing Week Estimates)
-#fit.m4 <- readRDS(here::here("data/Bayes_all_year_fit.rds"))
+fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
+fit.m5 <- readRDS(here::here("data/Riverwide_Biotic.rds"))
+fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
 
 #Read in join-matching data (from Missing Week Estimates)
 # alltaxatime <- readRDS(here::here("data/alltaxatime.rds"))
-
-#Necessary functions
-#SE function
-calcSE <- function(x){
-  x <- x[!is.na(x)]
-  sd(x)/sqrt(length(x))
-}
-
-#View traceplots for multiple parameters
-#traceplot(fit.m2, pars = c("Beta0", "sigma_p"))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
 #OBSERVED DATA

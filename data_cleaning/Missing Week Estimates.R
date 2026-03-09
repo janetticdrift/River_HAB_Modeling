@@ -281,7 +281,7 @@ library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.m4)
+shinystan::launch_shinystan(fit.m1)
 print(fit.m4, par = "Ptheta")
 
 
@@ -289,26 +289,28 @@ print(fit.m4, par = "Ptheta")
 saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+                                        'Rtheta'),
+                       permuted=FALSE), 
         file = here::here("data/WithinMat_Micro.rds"))
 
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+                                        'Rtheta'),
+                       permuted=FALSE), 
         file = here::here("data/WithinMat_Ana.rds"))
 
 #^^^^^^^^must add sigma_p, oops^^^^^^^^^^^^^
 
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-saveRDS(rstan::extract(fit.m4), 
+saveRDS(rstan::extract(fit.m4, permuted=FALSE), 
         file = here::here("data/Riverwide_AllVariables.rds"))
 
-saveRDS(rstan::extract(fit.m5), 
+saveRDS(rstan::extract(fit.m5, permuted=FALSE), 
         file = here::here("data/Riverwide_Biotic.rds"))
 
-saveRDS(rstan::extract(fit.m6), 
+saveRDS(rstan::extract(fit.m6, permuted=FALSE), 
         file = here::here("data/Riverwide_Abiotic.rds"))
 
 #To read: object <- readRDS(here:here("data/Bayes_avg_reach_output.rds"))
