@@ -245,12 +245,12 @@ init_fun_A <- function() list(
 )
 
 #Averaged, TM
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 8000,
+                warmup = 4000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
 #Averaged, TAC
-fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 10000,
-                warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
+fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 8000,
+                warmup = 4000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
 
 ######RIVER WIDE
@@ -284,9 +284,15 @@ library(rstantools)
 shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 
+test <- rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
+                                        'Ptheta', 'Atheta', 'Dtheta',
+                                        'Ttheta', 'Ctheta', 'Rtheta'))
+
 
 #Save within-mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-saveRDS(rstan::extract(fit.m1), 
+saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
+                                        'Ptheta', 'Atheta', 'Dtheta',
+                                        'Ttheta', 'Ctheta', 'Rtheta')), 
         file = here::here("data/WithinMat_Micro.rds"))
 
 saveRDS(rstan::extract(fit.m2), 
