@@ -1,6 +1,6 @@
 #Data cleaning of SFE algae cover data per year
 
-#Packages for cleaning data
+#Packages for cleaning and visualizing data
 library(plyr)
 library(tidyverse)
 library(dplyr)
@@ -10,6 +10,9 @@ library(devtools)
 library(here)
 library(lubridate)
 library(dataRetrieval)
+library(patchwork)
+library(ggpubr)
+library(gridExtra)
 
 #Packages for radiation data
 library("StreamLightUtils")
@@ -217,14 +220,14 @@ nutrients <- nut_data %>%
   ungroup() %>% 
   dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
                 ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
 stand_nut <- nutrients %>% 
   dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
-  group_by(model_date, year) %>% 
+  group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
                    ammonium_mg_N_L = mean(ammonium_mg_N_L),temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
@@ -232,13 +235,13 @@ stand_nut <- nutrients %>%
 
 #Averaged by reach 
 nutrients_avg <- nutrients %>% 
-  group_by(model_date, year) %>% 
+  group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
                    ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
 #Prelim plot: Nitrate
-ggplot(nutrients, aes(x = model_date, y = nitrate_mg_N_L, colour = reach)) +
+ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -246,7 +249,7 @@ ggplot(nutrients, aes(x = model_date, y = nitrate_mg_N_L, colour = reach)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = model_date, y = nitrate_mg_N_L)) +
+ggplot(nutrients_avg, aes(x = date, y = nitrate_mg_N_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -255,14 +258,14 @@ ggplot(nutrients_avg, aes(x = model_date, y = nitrate_mg_N_L)) +
   theme_bw()
 
 #Prelim plot: Phosphate
-ggplot(nutrients, aes(x = model_date, y = oPhos_ug_P_L, colour = reach)) +
+ggplot(nutrients, aes(x = date, y = oPhos_ug_P_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = model_date, y = oPhos_ug_P_L)) +
+ggplot(nutrients_avg, aes(x = date, y = oPhos_ug_P_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -270,14 +273,14 @@ ggplot(nutrients_avg, aes(x = model_date, y = oPhos_ug_P_L)) +
   theme_bw()
 
 #Prelim plot: Ammonium
-ggplot(nutrients, aes(x = model_date, y = ammonium_mg_N_L, colour = reach)) +
+ggplot(nutrients, aes(x = date, y = ammonium_mg_N_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = model_date, y = ammonium_mg_N_L)) +
+ggplot(nutrients_avg, aes(x = date, y = ammonium_mg_N_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -285,14 +288,14 @@ ggplot(nutrients_avg, aes(x = model_date, y = ammonium_mg_N_L)) +
   theme_bw()
 
 #Prelim plot: Conductivity
-ggplot(nutrients, aes(x = model_date, y = cond_uS_cm, colour = reach)) +
+ggplot(nutrients, aes(x = date, y = cond_uS_cm, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = model_date, y = cond_uS_cm)) +
+ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -339,7 +342,8 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
   dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   dplyr::mutate(log_discharge = log(discharge)) %>% 
-  dplyr::mutate(stand_discharge = c(scale(discharge)))
+  dplyr::mutate(stand_discharge = c(scale(discharge))) %>% 
+  dplyr::mutate(year = as.numeric(as.character(year)))
 
 
 #Quick plot of discharge data
@@ -395,7 +399,9 @@ PAR2024 <- PAR %>%
 swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
-  dplyr::mutate(stand_rad = c(scale(radiation)))
+  dplyr::mutate(stand_rad = c(scale(radiation))) %>% 
+  dplyr::mutate(date = as.Date(date),
+                year = as.numeric(as.character(year)))
 
 #Quick plot of radiation data
 ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
@@ -436,37 +442,76 @@ atx <- rbind(atx2223clean, atx24clean) %>%
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
   dplyr::mutate(year = year(field_date))
 
-# #For Joanna cleaning
-# HABS_anatoxins <- rbind(atx2223clean, atx24clean) %>% 
-#   mutate(site = "SFE-M") %>% 
-#   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
-#   group_by(field_date, reach, sample_type, anatoxins) %>% 
-#   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-#   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
-#   mutate(year = year(field_date)) %>% 
-#   mutate(site = "SFE-M") %>% 
-#   relocate(year, .after = field_date) %>% 
-#   relocate(site, .after = year)
-# 
-# write.csv(HABS_anatoxins,"~/Downloads/HABS_anatoxins.csv", row.names = FALSE)
-
 #Plot data
 TAC <- ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
-  facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
+  facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
   geom_point() +
   geom_line() +
-  labs(title = "Target Anabaena")
+  ylim(0, 100) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  labs(title = "Target Anabaena", x = "Date", y = "Anatoxin Concentration (ug/g)") +
+  scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
+                               "Homoanatoxin-a"),
+                     values = c("red", "blue", "goldenrod", "purple"),
+                     name = "Congeners")
 
 TM <- ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concentration, color = anatoxins)) +
-  facet_grid(reach~year, scales = "free") + #facet_grid for multiple variables
+  facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
   geom_point() +
   geom_line() +
-  labs(title = "Target Microcoleus")
+  labs(title = "Target Microcoleus", x = "Date", y = "Anatoxin Concentration (ug/g)") +
+  scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
+                                "Homoanatoxin-a"),
+                     values = c("red", "blue", "goldenrod", "purple"),
+                     name = "Congeners")
 
 ggarrange(TM, TAC, common.legend = TRUE, legend = "bottom")
 
 
 #----------------------------------------
+#Check for non-normality in environmental data
+nutrients_avg$date <- discharge$date
+envdata <- left_join(nutrients_avg, discharge, by = c("date", "year")) %>% 
+  left_join(swradiation, by = c("date", "year")) %>% 
+  pivot_longer(cols = c(3:8, 10:12, 14), names_to = "Env_Var", values_to = "value")
+
+#Test for Normality
+#Nitrate
+shapiro.test(nutrients_avg$nitrate_mg_N_L)
+#Phosphate
+shapiro.test(nutrients_avg$oPhos_ug_P_L) 
+#Ammonium
+shapiro.test(nutrients_avg$ammonium_mg_N_L)
+#Discharge
+shapiro.test(discharge$discharge)
+#Temperature
+shapiro.test(nutrients_avg$temp_C)
+#Conductivity
+shapiro.test(nutrients_avg$cond_uS_cm)
+#Incoming light
+shapiro.test(swradiation$radiation)
+
+ggplot(envdata, aes(x = value, fill = Env_Var)) +
+  facet_wrap(~Env_Var, scales = "free") +
+  geom_histogram() +
+  labs(title = "Histograms for Different Env Variables", x = "Value", y = "Frequency") +
+  scale_fill_hue(labels = c("Ammonium", "Conductivity", "Discharge",
+                            "Log Discharge", "Nitrate", "Phosphate",
+                            "Incoming Light", "Standardized Discharge",
+                            "Standardized Radiaton","Temperature"))
+
+stand_nut_long <- stand_nut %>% 
+  pivot_longer(cols = c(3:7), names_to = "Chem_Var", values_to = "value")
+
+
+ggplot(stand_nut_long, aes(x = value, fill = Chem_Var)) +
+  facet_wrap(~Chem_Var, scales = "free") +
+  geom_histogram() +
+  labs(title = "Histograms for Standardized Chemical Env Variables", x = "Value", y = "Frequency") +
+  scale_fill_hue(labels = c("Standardized Ammonium", "Standardized Conductivity",
+                            "Standardized Nitrate", "Standardized Phosphate",
+                            "Standardized Temperature"))
+
 #Calculation of average temperature
 calcSE<-function(x){
   x <- x[is.na(x)==F] 
