@@ -7,9 +7,9 @@ library(tidyverse)
 #RIVERWIDE
 
 #Read in data
-fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
-fit.m5 <- readRDS(here::here("data/Riverwide_Biotic.rds"))
-fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
+fit.m4 <- readRDS(here::here("data/fitcheck_Riverwide_AllVariables.rds"))
+fit.m5 <- readRDS(here::here("data/fitcheck_Riverwide_Biotic.rds"))
+fit.m6 <- readRDS(here::here("data/fitcheck_Riverwide_Abiotic.rds"))
 
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------

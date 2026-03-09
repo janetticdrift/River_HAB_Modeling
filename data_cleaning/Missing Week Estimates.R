@@ -306,11 +306,17 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 saveRDS(rstan::extract(fit.m4, permuted=FALSE), 
         file = here::here("data/Riverwide_AllVariables.rds"))
+saveRDS(rstan::extract(fit.m4)[["n"]], 
+        file = here::here("data/fitcheck_Riverwide_AllVariables.rds"))
 
 saveRDS(rstan::extract(fit.m5, permuted=FALSE), 
         file = here::here("data/Riverwide_Biotic.rds"))
+saveRDS(rstan::extract(fit.m5)[["n"]], 
+        file = here::here("data/fitcheck_Riverwide_Biotic.rds"))
 
 saveRDS(rstan::extract(fit.m6, permuted=FALSE), 
         file = here::here("data/Riverwide_Abiotic.rds"))
+saveRDS(rstan::extract(fit.m6)[["n"]], 
+        file = here::here("data/fitcheck_Riverwide_Abiotic.rds"))
 
 #To read: object <- readRDS(here:here("data/Bayes_avg_reach_output.rds"))
