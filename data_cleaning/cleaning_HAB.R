@@ -13,6 +13,7 @@ library(dataRetrieval)
 library(patchwork)
 library(ggpubr)
 library(gridExtra)
+library(MASS)
 
 #Packages for radiation data
 library("StreamLightUtils")
@@ -22,6 +23,9 @@ library(ncdf4)
 library(CFtime)
 library(lattice)
 library(httr)
+
+#Read in functions
+here::here("data/Functions.R")
 
 #Read in river-wide raw data for percent cover by reach and year
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
@@ -223,6 +227,21 @@ nutrients <- nut_data %>%
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
+#Test for Normality, and transform data
+#Nitrate
+MASS::boxcox(lm(nutrients$nitrate_mg_N_L ~ 1)) #Determine ideal lambda
+nutrients$nitrate_mg_N_L <- boxcox_transform(nutrients$nitrate_mg_N_L, 0.35) #Transform variable
+shapiro.test(nutrients$nitrate_mg_N_L) #Test for Normality
+
+#Phosphate
+MASS::boxcox(lm(nutrients$oPhos_ug_P_L ~ 1)) #Determine ideal lambda
+nutrients$oPhos_ug_P_L <- boxcox_transform(nutrients$oPhos_ug_P_L, -1.1) #Transform variable
+shapiro.test(nutrients$oPhos_ug_P_L) #Test for Normality
+
+#Ammonium
+MASS::boxcox(lm(nutrients$ammonium_mg_N_L ~ 1)) #Determine ideal lambda
+nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L) #Transform variable
+shapiro.test(nutrients$ammonium_mg_N_L) #Test for Normality
 
 stand_nut <- nutrients %>% 
   dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
@@ -342,7 +361,7 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
   dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
   dplyr::mutate(log_discharge = log(discharge)) %>% 
-  dplyr::mutate(stand_discharge = c(scale(discharge))) %>% 
+  dplyr::mutate(stand_discharge = c(scale(log_discharge))) %>% 
   dplyr::mutate(year = as.numeric(as.character(year)))
 
 
@@ -396,12 +415,21 @@ PAR2024 <- PAR %>%
   dplyr::filter(row_number() %% 7 == 1)
 
 #Bind together yearly PAR data
-swradiation <- rbind(PAR2022, PAR2023, PAR2024) %>% 
+swradiation_raw <- rbind(PAR2022, PAR2023, PAR2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
-  dplyr::mutate(stand_rad = c(scale(radiation))) %>% 
   dplyr::mutate(date = as.Date(date),
                 year = as.numeric(as.character(year)))
+
+#Test for Normality, and transform data
+#Nitrate
+MASS::boxcox(lm(swradiation_raw$radiation ~ 1)) #Determine ideal lambda
+swradiation_raw$radiation <- boxcox_transform(swradiation_raw$radiation, 2.6) #Transform variable
+shapiro.test(swradiation_raw$radiation) #Test for Normality
+
+#Scale radiation data
+swradiation <- swradiation_raw %>% 
+  dplyr::mutate(stand_rad = c(scale(radiation)))
 
 #Quick plot of radiation data
 ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
@@ -468,61 +496,6 @@ TM <- ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concent
 ggarrange(TM, TAC, common.legend = TRUE, legend = "bottom")
 
 
-#----------------------------------------
-#Check for non-normality in environmental data
-nutrients_avg$date <- discharge$date
-envdata <- left_join(nutrients_avg, discharge, by = c("date", "year")) %>% 
-  left_join(swradiation, by = c("date", "year")) %>% 
-  dplyr::mutate(log_nitrate = log(nitrate_mg_N_L), 
-                log_phosphate = log(oPhos_ug_P_L),
-                log_ammonium = log(ammonium_mg_N_L),
-                log_radiation = log(radiation)) %>% 
-  pivot_longer(cols = c(3:8, 10:12, 14:18), names_to = "Env_Var", values_to = "value") 
-
-#Test for Normality
-#Nitrate
-shapiro.test(nutrients_avg$nitrate_mg_N_L)
-shapiro.test(envdata$log_nitrate)
-#Phosphate
-shapiro.test(nutrients_avg$oPhos_ug_P_L) 
-shapiro.test(envdata$log_phosphate)
-#Ammonium
-shapiro.test(nutrients_avg$ammonium_mg_N_L)
-shapiro.test(envdata$log_ammonium)
-#Discharge
-shapiro.test(discharge$log_discharge)
-#Temperature
-shapiro.test(nutrients_avg$temp_C)
-#Conductivity
-shapiro.test(nutrients_avg$cond_uS_cm)
-#Incoming light
-shapiro.test(swradiation$radiation)
-shapiro.test(envdata$log_radiation)
-
-ggplot(envdata, aes(x = value, fill = Env_Var)) +
-  facet_wrap(~Env_Var, scales = "free") +
-  geom_histogram() +
-  labs(title = "Histograms for Different Env Variables", x = "Value", y = "Frequency") +
-  scale_fill_hue(labels = c("Ammonium", "Conductivity", "Discharge",
-                            "Log Discharge", "Nitrate", "Phosphate",
-                            "Incoming Light", "Standardized Discharge",
-                            "Standardized Radiaton","Temperature"))
-
-stand_nut_long <- stand_nut %>% 
-  pivot_longer(cols = c(3:7), names_to = "Chem_Var", values_to = "value")
-
-
-ggplot(stand_nut_long, aes(x = value, fill = Chem_Var)) +
-  facet_wrap(~Chem_Var, scales = "free") +
-  geom_histogram() +
-  labs(title = "Histograms for Standardized Chemical Env Variables", x = "Value", y = "Frequency") +
-  scale_fill_hue(labels = c("Standardized Ammonium", "Standardized Conductivity",
-                            "Standardized Nitrate", "Standardized Phosphate",
-                            "Standardized Temperature"))
 
 #Calculation of average temperature
-calcSE<-function(x){
-  x <- x[is.na(x)==F] 
-  sd(x)/sqrt(length(x))
-}
 calcSE(nutrients_avg$temp_C)

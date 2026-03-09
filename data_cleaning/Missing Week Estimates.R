@@ -245,35 +245,35 @@ init_fun_A <- function() list(
 )
 
 #Averaged, TM
-fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 8000,
-                warmup = 4000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
+fit.m1 <-  stan(file = "HAB_mat_community.stan", data = model.1, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                            max_treedepth = 15))
 #Averaged, TAC
-fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 8000,
-                warmup = 4000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
+fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                             max_treedepth = 15))
 
 ######RIVER WIDE
 
 #All years, all species, averaged reach
-fit.m4 <- stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m4 <- stan(file = "HAB_all_years.stan", data = model.4, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
 #Only biotic variables, all species, averaged reach
-fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m5 <-  stan(file = "HAB_biotic.stan", data = model.4, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
 #Only abiotic variables, all species, averaged reach
-fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 10000,
-                warmup = 5000, refresh=100, control = list(adapt_delta = 0.999,
+fit.m6 <-  stan(file = "HAB_abiotic.stan", data = model.4, chains = 3, iter = 6000,
+                warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
-#-------------------------------------------------------------------------------------------------
+ #-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
@@ -286,15 +286,19 @@ print(fit.m4, par = "Ptheta")
 
 
 #Save within-mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
-saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
-                                        'Ptheta', 'Atheta', 'Dtheta',
-                                        'Ttheta', 'Ctheta', 'Rtheta')), 
+saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
         file = here::here("data/WithinMat_Micro.rds"))
 
-saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
-                                        'Ptheta', 'Atheta', 'Dtheta',
-                                        'Ttheta', 'Ctheta', 'Rtheta')), 
+saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
         file = here::here("data/WithinMat_Ana.rds"))
+
+#^^^^^^^^must add sigma_p, oops^^^^^^^^^^^^^
 
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R

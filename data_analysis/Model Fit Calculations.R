@@ -3,13 +3,19 @@ library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 
+
 #RIVERWIDE
+
+#Read in data
+fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
+fit.m5 <- readRDS(here::here("data/Riverwide_Biotic.rds"))
+fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
 
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- rstan::extract(fit.m6)[["n"]] #array indexed by iterations, species #, time
+posteriors <- fit.m4[["n"]] #array indexed by iterations, species #, time
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
@@ -77,10 +83,7 @@ for (s in 1:species) {
     
     RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
     
-    SS_res <- sum((y - y_pred)^2)
-    SS_tot <- sum((y - mean(y))^2)
-    
-    R2[i, s] <- 1 - SS_res / SS_tot #Calculate R2 per species iteration
+    R2[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
   }
 }
 
@@ -98,6 +101,11 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 #####################################################################################
 
 #WITHIN MAT
+
+#Read in data
+fit.m1 <- readRDS(here::here("data/WithinMat_Micro.rds"))
+fit.m2 <- readRDS(here::here("data/WithinMat_Ana.rds"))
+
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m1 = microcoleus, fit.m2 = anabaena.
@@ -109,17 +117,15 @@ y_ana <- matalltaxaM$Anabaena                  #1
 y_epi <- matalltaxaM$`Epithemia Diatoms`       #2
 y_geit <- matalltaxaM$Geitlerinema             #3
 y_green <- matalltaxaM$`Green Algae`           #4
-y_lep <- matalltaxaM$Leptolyngbya              #5
-y_micro <- matalltaxaM$Microcoleus             #6
-y_nonepi <- matalltaxaM$`Non-Epithemia Diatoms`#7
-y_nos <- matalltaxaM$Nostoc                    #8
-y_osc <- matalltaxaM$Oscillatoria              #9
-y_cocc <- matalltaxaM$`Other Coccoids`         #10
-y_rare <- matalltaxaM$Rare                     #11
+y_micro <- matalltaxaM$Microcoleus             #5
+y_nonepi <- matalltaxaM$`Non-Epithemia Diatoms`#6
+y_nos <- matalltaxaM$Nostoc                    #7
+y_cocc <- matalltaxaM$`Other Coccoids`         #8
+y_rare <- matalltaxaM$Rare                     #9
 
 #Put them into a single matrix
-y_obs_mat <- rbind(y_ana, y_epi, y_geit, y_green, y_lep, y_micro,
-                   y_nonepi, y_nos, y_osc, y_cocc, y_rare) #Dimensions: Species, time
+y_obs_mat <- rbind(y_ana, y_epi, y_geit, y_green, y_micro,
+                   y_nonepi, y_nos, y_cocc, y_rare) #Dimensions: Species, time
 
 
 ###############------------------------------------------------------------------
@@ -129,8 +135,8 @@ species <- dim(posteriors_mat)[2]  # Number of species
 time <- dim(posteriors_mat)[3]  # Time steps
 
 names<- c("Anabaena", "Epithemia", "Geitlerinema", 
-          "Green Algae", "Leptolyngbya", "Microcoleus",
-          "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+          "Green Algae", "Microcoleus",
+          "Non-Epithemia", "Nostoc", "Other Coccoids",
           "Rare")
 
 R2 <- matrix(NA, iter, species, dimnames = list(NULL, names)) #Create empty matrix for R2 values per iteration, per species
@@ -172,8 +178,8 @@ species <- dim(posteriors_mat)[2]  # Number of species
 time <- dim(posteriors_mat)[3]  # Time steps
 
 names<- c("Anabaena", "Epithemia", "Geitlerinema", 
-          "Green Algae", "Leptolyngbya", "Microcoleus",
-          "Non-Epithemia", "Nostoc", "Oscillatoria", "Other Coccoids",
+          "Green Algae", "Microcoleus",
+          "Non-Epithemia", "Nostoc", "Other Coccoids",
           "Rare")
 
 #Create empty matrices for storing fit index values
@@ -188,10 +194,7 @@ for (s in 1:species) {
     
     RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
     
-    SS_res <- sum((y - y_pred)^2)
-    SS_tot <- sum((y - mean(y))^2)
-    
-    R2[i, s] <- 1 - SS_res / SS_tot #Calculate R2 per species iteration
+    R2[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
   }
 }
 
