@@ -284,10 +284,6 @@ library(rstantools)
 shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 
-test <- rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
-                                        'Ptheta', 'Atheta', 'Dtheta',
-                                        'Ttheta', 'Ctheta', 'Rtheta'))
-
 
 #Save within-mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
@@ -295,7 +291,9 @@ saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
                                         'Ttheta', 'Ctheta', 'Rtheta')), 
         file = here::here("data/WithinMat_Micro.rds"))
 
-saveRDS(rstan::extract(fit.m2), 
+saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'Ntheta',
+                                        'Ptheta', 'Atheta', 'Dtheta',
+                                        'Ttheta', 'Ctheta', 'Rtheta')), 
         file = here::here("data/WithinMat_Ana.rds"))
 
 
