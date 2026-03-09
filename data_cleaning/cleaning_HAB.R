@@ -473,23 +473,31 @@ ggarrange(TM, TAC, common.legend = TRUE, legend = "bottom")
 nutrients_avg$date <- discharge$date
 envdata <- left_join(nutrients_avg, discharge, by = c("date", "year")) %>% 
   left_join(swradiation, by = c("date", "year")) %>% 
-  pivot_longer(cols = c(3:8, 10:12, 14), names_to = "Env_Var", values_to = "value")
+  dplyr::mutate(log_nitrate = log(nitrate_mg_N_L), 
+                log_phosphate = log(oPhos_ug_P_L),
+                log_ammonium = log(ammonium_mg_N_L),
+                log_radiation = log(radiation)) %>% 
+  pivot_longer(cols = c(3:8, 10:12, 14:18), names_to = "Env_Var", values_to = "value") 
 
 #Test for Normality
 #Nitrate
 shapiro.test(nutrients_avg$nitrate_mg_N_L)
+shapiro.test(envdata$log_nitrate)
 #Phosphate
 shapiro.test(nutrients_avg$oPhos_ug_P_L) 
+shapiro.test(envdata$log_phosphate)
 #Ammonium
 shapiro.test(nutrients_avg$ammonium_mg_N_L)
+shapiro.test(envdata$log_ammonium)
 #Discharge
-shapiro.test(discharge$discharge)
+shapiro.test(discharge$log_discharge)
 #Temperature
 shapiro.test(nutrients_avg$temp_C)
 #Conductivity
 shapiro.test(nutrients_avg$cond_uS_cm)
 #Incoming light
 shapiro.test(swradiation$radiation)
+shapiro.test(envdata$log_radiation)
 
 ggplot(envdata, aes(x = value, fill = Env_Var)) +
   facet_wrap(~Env_Var, scales = "free") +
