@@ -132,7 +132,7 @@ p1 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
   geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  scale_y_continuous(breaks = seq(0, 200, 10)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale

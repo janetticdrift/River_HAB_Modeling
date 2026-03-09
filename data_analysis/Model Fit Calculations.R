@@ -15,7 +15,9 @@ fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- fit.m4[["n"]] #array indexed by iterations, species #, time
+posteriors <- rstan::extract(fit.m4)[["n"]] #array indexed by iterations, species #, time
+
+
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
