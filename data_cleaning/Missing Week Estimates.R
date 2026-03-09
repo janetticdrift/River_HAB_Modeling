@@ -285,10 +285,20 @@ shinystan::launch_shinystan(fit.m4)
 print(fit.m4, par = "Ptheta")
 
 
+#Save within-mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+saveRDS(rstan::extract(fit.m1), 
+        file = here::here("data/WithinMat_Micro.rds"))
+
+saveRDS(rstan::extract(fit.m2), 
+        file = here::here("data/WithinMat_Ana.rds"))
+
 
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
 saveRDS(rstan::extract(fit.m4), 
         file = here::here("data/Riverwide_AllVariables.rds"))
+
+saveRDS(rstan::extract(fit.m5), 
+        file = here::here("data/Riverwide_Biotic.rds"))
 
 saveRDS(rstan::extract(fit.m6), 
         file = here::here("data/Riverwide_Abiotic.rds"))
