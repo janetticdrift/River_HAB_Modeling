@@ -118,7 +118,7 @@ names(mypal) = c("Anabaena", "Green Algae", "Microcoleus",
                  "Other N Fixers")
 colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
-linScale <- scale_linetype_manual(name = "Model",
+linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
@@ -356,11 +356,70 @@ sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
 #   common.legend = TRUE, legend = "bottom"
 # )
 
-simsallyears <- rbind(sims2022, sims2023, sims2024)
+#Join together simulation data
+simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
+  dplyr::rename(mean = Abundance)
+
+#Plot simulated predictions against latent states
+# Plot 1: Only show Green Algae + Other N Fixers
+p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
+              alpha = 0.3,
+              data = transform(simsallyears,
+                               mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA),
+                               CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
+                               CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
+  # Predicted points/lines
+  geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
+             data = transform(simsallyears,
+                              mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
+                                            mean, NA))) +
+  # Latent points/lines
+  geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
+            data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 10)) +
+  coord_cartesian(ylim = c(0,100)) +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  colScale + filScale + linScale
+
+# Plot 2: Only show Anabaena + Microcoleus
+p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
+              alpha = 0.3,
+              data = transform(simsallyears,
+                               mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA),
+                               CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
+                               CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
+  # Predicted points/lines
+  geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
+            data = transform(simsallyears,
+                             mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
+                                           mean, NA))) +
+  # Latent points/lines
+  geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
+            data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 10)) +
+  coord_cartesian(ylim = c(0,60)) +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  colScale + filScale + linScale
+  
+
+# Combine plots and collect legends
+(p1 / p2) +
+  plot_layout(guides = "collect", axes = "collect") &
+  theme(legend.position = "right", legend.box = "vertical")
+
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives <- abind(modelcheck_2022, modelcheck_2023, 
+predictives.river.all <- abind(modelcheck_2022, modelcheck_2023, 
                         modelcheck_2024, along = 3)
+predictives.river.all <- exp(predictives.river.all)
+
+#Save predictive output of All Variables model
+saveRDS(predictives.river.all, 
+        file = here::here("data/Riverwide_Pred_AllVar.rds"))
 
 
 

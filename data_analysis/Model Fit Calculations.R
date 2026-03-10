@@ -67,15 +67,20 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 ###############------------------------------------------------------------------
 #LATENT VS PREDICTION RMSE & R2 CALCULATIONS
 
-#Read in simulated data. But you must check that the simulation ran the same model
-#(fit.m4, m5, m6) as the one being analyzed here
-source(here::here("data_analysis/Predictions.R"))
-#Relevant dataframe is "predictives"
+#Read in simulated data
+predallfit <- readRDS(here::here("data/Riverwide_Pred_AllVar.rds"))
 
-#Comparing fit.m4: All variables included
-iter <- dim(posteriors)[1]  # Number of iterations 
-species <- dim(posteriors)[2]  # Number of species 
-time <- dim(posteriors)[3]  # Time steps
+#Set current predictive data
+predictives <- predallfit
+
+#Back-transform latent abundance data
+logposteriors <- exp(posteriors)
+
+
+#Comparing All variables included
+iter <- dim(logposteriors)[1]  # Number of iterations 
+species <- dim(logposteriors)[2]  # Number of species 
+time <- dim(logposteriors)[3]  # Time steps
 
 #Create empty matrices for storing fit index values
 RMSE <- matrix(NA, iter, species)
@@ -84,7 +89,7 @@ R2 <- matrix(NA, iter, species)
 for (s in 1:species) {
   for (i in 1:iter) {
     
-    y <- posteriors[i, s, ]
+    y <- logposteriors[i, s, ]
     y_pred <- predictives[i, s, ]
     
     RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
@@ -94,12 +99,13 @@ for (s in 1:species) {
 }
 
 #Summarize RMSE
-apply(RMSE, 2, mean)
+apply(RMSE, 2, median)
 apply(RMSE, 2, quantile, c(0.025, 0.975))
 
 #Summarise R2
-apply(R2, 2, mean)
+apply(R2, 2, median)
 apply(R2, 2, quantile, c(0.025, 0.975))
+
 
 
 #####################################################################################
