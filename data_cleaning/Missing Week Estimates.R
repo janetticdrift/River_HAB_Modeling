@@ -292,6 +292,7 @@ print(fit.m4, par = "Ptheta")
 
 
 #Save within-mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+
 saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
@@ -306,10 +307,10 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                        permuted=FALSE), 
         file = here::here("data/WithinMat_Ana.rds"))
 
-#^^^^^^^^must add sigma_p, oops^^^^^^^^^^^^^
 
-
+################
 #Save river-wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m4, permuted=FALSE), 
         file = here::here("data/Riverwide_AllVariables.rds"))

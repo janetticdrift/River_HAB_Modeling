@@ -7,8 +7,13 @@ library(ggplot2)
 library(patchwork)
 
 #Read in model output
-fit.m4 <- readRDS(here:here("Riverwide_AllVariables.rds")) #Model used includes all biotic and abiotic variables
-x <- rstan::extract(fit.m4) #m4 = all vars
+allvar <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds")) #Model used includes all biotic and abiotic variables
+abiotic <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds")) #Model used includes all biotic and abiotic variables
+
+
+###############
+#Calculate w* for model including biotic interactions
+x <- allvar
 
 #Pull out species demographics
 betas <- as.array(x[["Beta"]])[,,]
@@ -42,7 +47,7 @@ env_names <- names(theta_list)      #Names of env variables
 
 w_star_include <- array(        # iteration, env_var, perturbation, species
   NA, 
-  dim = c(15000, length(env_names), length(env_range), 4),
+  dim = c(9000, length(env_names), length(env_range), 4),
   dimnames = list(
     iteration = NULL,
     env = env_names,
@@ -52,7 +57,7 @@ w_star_include <- array(        # iteration, env_var, perturbation, species
 )
 
 #Run model
-for(z in 1:15000){
+for(z in 1:9000){
   
   Alpha <- alphas[z,]   #Current iteration of Alpha: baseline growth
   Beta <- betas[z,,]    #Current iteration of Beta: species interactions
@@ -90,9 +95,8 @@ eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star")
 
 #Read in model output-------------------------------------------------------------
 #Model used includes only abiotic variables
-fit.m6 <- readRDS(here:here("Riverwide_Abiotic.rds")) #Model used includes all biotic and abiotic variables
-x <- rstan::extract(fit.m6) #m6 = Abiotic Vars
 
+x <- abiotic 
 
 #Pull out species demographics
 betas <- as.array(x[["Beta"]])[,]
@@ -119,7 +123,7 @@ theta_list <- list(
 
 w_star_exclude <- array(        # iteration, env_var, perturbation, species
   NA, 
-  dim = c(15000, length(env_names), length(env_range), 4),
+  dim = c(9000, length(env_names), length(env_range), 4),
   dimnames = list(
     iteration = NULL,
     env = env_names,
@@ -129,7 +133,7 @@ w_star_exclude <- array(        # iteration, env_var, perturbation, species
 )
 
 #Run model
-for(z in 1:15000){
+for(z in 1:9000){
   
   Alpha <- alphas[z,]   #Current iteration of Alpha: baseline growth
   Beta_vec <- betas[z,]    #Current iteration of Beta: species interactions
@@ -164,20 +168,6 @@ eq_abund_exclude <- as.data.frame.table(w_star_exclude, responseName = "w_star")
   dplyr::mutate(w_star = exp(w_star)) %>% 
   dplyr::filter(is.finite(w_star))
 
-
-# Function for ID'ing outliers
-outlier <- function(x) {
-  # Calculate first and third quartiles
-  Q1 <- quantile(x, probs = .25, na.rm = TRUE)
-  Q3 <- quantile(x, probs = .75, na.rm = TRUE)
-  # Calculate the Interquartile Range (IQR)
-  IQR <- Q3 - Q1
-  # Define lower and upper bounds
-  lower_bound <- Q1 - (1.5 * IQR)
-  upper_bound <- Q3 + (1.5 * IQR)
-  # Return vector indicating which values are NOT outliers
-  x >= lower_bound & x <= upper_bound
-}
 
 #Bind together predictions where species were included or excluded in predictions
 eq_abund <- rbind(eq_abund_include, eq_abund_exclude) %>% 
