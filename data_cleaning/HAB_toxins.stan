@@ -21,7 +21,7 @@ parameters {
   real<lower= 0> sigma_p; //var w/ process model
   real<lower= 0> sigma_o; //var w/ observation model
   
-  vector[uniqueID] tox;  //estimated anatoxin state
+  vector[uniqueID] tox_nc;  //estimated anatoxin state, non-centered
   
   real Beta0;            // intercept
   vector[Nspecies] Beta1;// species effects
@@ -36,6 +36,28 @@ parameters {
   vector[Nspecies] Rtheta; //parameter for shortwave radiation each species
 }
 
+transformed parameters {
+
+  vector[uniqueID] tox;
+
+  tox[1] = tox_nc[1];
+
+  for(t in 2:uniqueID){
+    if(firstdays[t]==1){
+      tox[t] = tox_nc[t]; 
+      continue;
+    }
+    tox[t] = Beta0 + Beta_tox*tox[t-1] + dot_product(Beta1, N[t-1]) + 
+                            Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + 
+                            Atheta*ammonium[t-1] + Dtheta*discharge[t-1] + 
+                            Ttheta*temp[t-1] + Ctheta*cond[t-1] + 
+                            Rtheta*rad[t-1] +
+                            sigma_p * tox_nc[t];
+
+  }
+
+}
+
 model {
 	
   //priors
@@ -46,7 +68,7 @@ model {
   Beta1 ~ normal(0,1);    //population coefficient
   Beta_tox ~ normal(0,1); //Toxin coefficient
   
-  //tox[1] ~ normal(0,5);  // initial state prior
+  tox_nc ~ normal(0,1);
   
   Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
@@ -56,21 +78,11 @@ model {
   Ctheta ~ normal(0,1);
   Rtheta ~ normal(0,1);
 
-  
-  //Population process models
-    for(t in 2:uniqueID){
-      if(firstdays[t]==1) continue;
-        tox[t] ~ normal(Beta0 + Beta_tox*tox[t-1] + dot_product(Beta1, N[t-1]) + 
-                            Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + 
-                            Atheta*ammonium[t-1] + Dtheta*discharge[t-1] + 
-                            Ttheta*temp[t-1] + Ctheta*cond[t-1] + 
-                            Rtheta*rad[t-1], sigma_p);
-      //dot product returns a single value comparing two vectors, Beta1 houses the effects of all N species at t-1 time
-  }
 
+// ----------------- Observation model -----------------
     for(t in 1:uniqueID){
-      if(Toxins[t] >= -3){ //if the week is a week we actually have sampled data for
-        Toxins[t] ~ normal(tox[t], sigma_o); //for collected data
+    if(Toxins[t] >= -3){ //If t is a week we actually have collected data for
+      Toxins[t] ~ normal(tox[t], sigma_o);
         
       }
     }
