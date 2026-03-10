@@ -7,9 +7,15 @@ library(abind)
 #Read in latent states, params2_all
 #source(here::here("data_analysis/model_vs_real_data.R"))
 
+#Read in latent states and effect coefficients
+allfit <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+
 
 #Pull out community abundances and demographics 
-x <- fit.m4 #m4 = all vars, m5 = biotic only
+x <- allfit #m4 = all vars, m5 = biotic only
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
@@ -116,18 +122,18 @@ linScale <- scale_linetype_manual(name = "Model",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-#Plot
-ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_line(aes(linetype = "Predicted"), size = 1.5) +
-  geom_line(data=params2_all[params2_all$year %in% "2022", ], 
-            aes(x = model_date, y = mean, colour = Species, linetype = "Latent"), 
-            linewidth = 2) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), color = NA, alpha = 0.2) +
-  scale_y_continuous(breaks=c(seq(0,2000,5))) +
-  coord_cartesian(ylim = c(0,65)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
-  colScale + filScale + linScale
+# #Plot
+# p22 <- ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
+#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
+#   geom_line(data=params2_all[params2_all$year %in% "2022", ], 
+#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"), 
+#             linewidth = 2) +
+#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+#                   fill = Species), color = NA, alpha = 0.2) +
+#   scale_y_continuous(breaks=c(seq(0,100,5))) +
+#   coord_cartesian(ylim = c(0,100)) +
+#   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
+#   colScale + filScale + linScale
   
 
 
@@ -196,32 +202,50 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023 <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
-  dplyr::rename(green_algae = V1, microcoleus = V2,
-                anabaena_cylindrospermum = V3,
-                other_nfixers = V4) %>% 
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>% 
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
+  dplyr::mutate(across(1:4, exp)) %>%
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>%  
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
+  dplyr::mutate(across(1:4, exp)) %>%
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>% 
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
+
+sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+  left_join(., sims2023uquant, by=c("Species", "time")) %>% 
+  #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
 
-p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
-  #geom_point(size = 3)+
-  geom_line(size = 1.5) +
-  geom_line(data=params2_all[params2_all$year %in% "2023", ], 
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .25) +
-  scale_y_continuous(breaks=c(seq(0,100,5))) +
-  #coord_cartesian(ylim = c(0,50)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
-  scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
-                                                              "darkcyan", "darkorange"))
-
+# p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
+#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
+#   geom_line(data=params2_all[params2_all$year %in% "2023", ], 
+#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"), 
+#             linewidth = 2) +
+#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+#                   fill = Species), color = NA, alpha = 0.2) +
+#   scale_y_continuous(breaks=c(seq(0,100,5))) +
+#   coord_cartesian(ylim = c(0,50)) +
+#   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
+#   colScale + filScale + linScale
 
 
 #####################################
@@ -285,39 +309,54 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024 <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
   dplyr::mutate(across(1:4, exp)) %>%
-  dplyr::rename(green_algae = V1, microcoleus = V2,
-                anabaena_cylindrospermum = V3,
-                other_nfixers = V4) %>% 
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>% 
+  dplyr::mutate(time = 1:time) %>%
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
+  dplyr::mutate(across(1:4, exp)) %>%
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
+  dplyr::mutate(across(1:4, exp)) %>%
+  dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
+                "Anabaena" = V3,
+                "Other N Fixers" = V4) %>% 
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
+
+sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+  left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
+# p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
+#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
+#   geom_line(data=params2_all[params2_all$year %in% "2024", ],
+#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"),
+#             linewidth = 2) +
+#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
+#                   fill = Species), color = NA, alpha = 0.2) +
+#   scale_y_continuous(breaks=c(seq(0,100,5))) +
+#   coord_cartesian(ylim = c(0,50)) +
+#   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
+#   colScale + filScale + linScale
+# 
+# 
+# ggarrange(
+#   p22, p23, p24, labels = c("A", "B", "C"), ncol = 3,
+#   common.legend = TRUE, legend = "bottom"
+# )
 
-p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
-  #geom_point(size = 3)+
-  geom_line(size = 1.5) +
-  geom_line(data=params2_all[params2_all$year %in% "2024", ], 
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .25) +
-  scale_y_continuous(breaks=c(seq(0,100,5))) +
-  #coord_cartesian(ylim = c(0,45)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2024 Predictions") +
-  scale_color_manual(labels = c("Anabaena", "Green Algae", "Microcoleus", 
-                                "Other N Fixers"), values = c("brown", "darkolivegreen4", 
-                                                              "darkcyan", "darkorange"))
-
-
-
-ggarrange(
-  p22, p23, p24, labels = c("A", "B", "C"), ncol = 3,
-  common.legend = TRUE, legend = "bottom"
-)
-
+simsallyears <- rbind(sims2022, sims2023, sims2024)
 
 #Compile model check dataframes into a single full timeseries matrix
 predictives <- abind(modelcheck_2022, modelcheck_2023, 

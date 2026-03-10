@@ -30,6 +30,8 @@ posteriors <- allfit[["n"]] #array indexed by iterations, species #, time
 
 
 ###############------------------------------------------------------------------
+#BAYESIAN R2 CALCULATIONS
+
 #Bayesian R2 comparing latent vs observed states
 iter <- dim(posteriors)[1]  # Number of iterations
 species <- dim(posteriors)[2]  # Number of species
@@ -63,6 +65,8 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 
 #POSTERIORS VS PREDICTED
 ###############------------------------------------------------------------------
+#LATENT VS PREDICTION RMSE & R2 CALCULATIONS
+
 #Read in simulated data. But you must check that the simulation ran the same model
 #(fit.m4, m5, m6) as the one being analyzed here
 source(here::here("data_analysis/Predictions.R"))
