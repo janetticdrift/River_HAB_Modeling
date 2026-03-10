@@ -7,13 +7,13 @@ data {
   vector[uniqueID] Toxins; //Vector of known toxin concentrations
   matrix[uniqueID, Nspecies] N; //microscopy abundances per week
   
-  // vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
-  // vector [uniqueID] phos; //Vector of o phos levels, standardized
-  // vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
-  // vector [uniqueID] discharge; //Vector of discharge levels, logged
-  // vector [uniqueID] temp; //Vector of temperatures, Celsius
-  // vector [uniqueID] cond; //Vector of conductivity, standardized
-  // vector [uniqueID] rad; //Vector of shortwave radiation, standardized
+  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  vector [uniqueID] phos; //Vector of o phos levels, standardized
+  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
+  vector [uniqueID] discharge; //Vector of discharge levels, logged
+  vector [uniqueID] temp; //Vector of temperatures, Celsius
+  vector [uniqueID] cond; //Vector of conductivity, standardized
+  vector [uniqueID] rad; //Vector of shortwave radiation, standardized
 }
 
 parameters {
@@ -27,13 +27,13 @@ parameters {
   vector[Nspecies] Beta1;// species effects
   real Beta_tox;         // Toxin effect
   
-  // vector[Nspecies] Ntheta; //parameter for nitrate each week
-  // vector[Nspecies] Ptheta; //parameter for o phos each week
-  // vector[Nspecies] Atheta; //parameter for ammonium each week
-  // vector[Nspecies] Dtheta; //parameter for discharge each week
-  // vector[Nspecies] Ttheta; //parameter for temps each week
-  // vector[Nspecies] Ctheta; //parameter for conductivity each week
-  // vector[Nspecies] Rtheta; //parameter for shortwave radiation each week
+  vector[Nspecies] Ntheta; //parameter for nitrate each species
+  vector[Nspecies] Ptheta; //parameter for o phos each species
+  vector[Nspecies] Atheta; //parameter for ammonium each species
+  vector[Nspecies] Dtheta; //parameter for discharge each species
+  vector[Nspecies] Ttheta; //parameter for temps each species
+  vector[Nspecies] Ctheta; //parameter for conductivity each species
+  vector[Nspecies] Rtheta; //parameter for shortwave radiation each species
 }
 
 model {
@@ -48,19 +48,23 @@ model {
   
   //tox[1] ~ normal(0,5);  // initial state prior
   
-  // Ntheta ~ normal(0,1);
-  // Ptheta ~ normal(0,1);
-  // Atheta ~ normal(0,1);
-  // Dtheta ~ normal(0,1);
-  // Ttheta ~ normal(0,1);
-  // Ctheta ~ normal(0,1);
-  // Rtheta ~ normal(0,1);
+  Ntheta ~ normal(0,1);
+  Ptheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  Dtheta ~ normal(0,1);
+  Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
+  Rtheta ~ normal(0,1);
 
   
   //Population process models
     for(t in 2:uniqueID){
       if(firstdays[t]==1) continue;
-        tox[t] ~ normal(Beta0 + Beta_tox*tox[t-1] + dot_product(Beta1, N[t-1]), sigma_p);
+        tox[t] ~ normal(Beta0 + Beta_tox*tox[t-1] + dot_product(Beta1, N[t-1]) + 
+                            Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + 
+                            Atheta*ammonium[t-1] + Dtheta*discharge[t-1] + 
+                            Ttheta*temp[t-1] + Ctheta*cond[t-1] + 
+                            Rtheta*rad[t-1], sigma_p);
       //dot product returns a single value comparing two vectors, Beta1 houses the effects of all N species at t-1 time
   }
 

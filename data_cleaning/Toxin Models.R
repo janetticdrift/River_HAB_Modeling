@@ -91,7 +91,7 @@ anatoxin_data <- atx %>%
 
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
                 "firstdays" = anatoxin_data$firstday,
-                "Toxins" = anatoxin_data[,3],
+                "Toxins" = anatoxin_data$ATX_all_ug_g,
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                 "N" = matalltaxaM[,-(1:2)],
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
@@ -112,6 +112,16 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 options(mc.cores = parallel::detectCores())
 
 #Estimate anatoxins in TM mats
-fit.atx <-  stan(file = "HAB_toxins.stan", data = model.anaC, chains = 3, iter = 1000,
-                warmup = 1000, refresh=100, control = list(adapt_delta = 0.999,
-                                                                            max_treedepth = 15))
+fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                            max_treedepth = 15))
+
+#Model checks and evaluation
+library(shinystan)
+library(bayesplot)
+library(ggplot2)
+library(rstantools)
+
+#Can check posterior graphs in shinystan
+shinystan::launch_shinystan(fit.atx)
+
