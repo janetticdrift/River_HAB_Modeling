@@ -26,7 +26,7 @@ abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.r
 
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- allfit[["n"]] #array indexed by iterations, species #, time
+posteriors <- abioticnonutfit[["n"]] #array indexed by iterations, species #, time
 
 
 ###############------------------------------------------------------------------
@@ -68,10 +68,13 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 #LATENT VS PREDICTION RMSE & R2 CALCULATIONS
 
 #Read in simulated data
-predallfit <- readRDS(here::here("data/Riverwide_Pred_AllVar.rds"))
+pred.all.fit <- readRDS(here::here("data/Riverwide_Pred_AllVar.rds"))
+pred.biotic.fit <- readRDS(here::here("data/Riverwide_Pred_Biotic.rds"))
+pred.abiotic.fit <- readRDS(here::here("data/Riverwide_Pred_Abiotic.rds"))
+pred.abioticnonut.fit <- readRDS(here::here("data/Riverwide_Pred_AbioticNoNut.rds"))
 
 #Set current predictive data
-predictives <- predallfit
+predictives <- pred.abioticnonut.fit
 
 #Back-transform latent abundance data
 logposteriors <- exp(posteriors)
@@ -105,7 +108,6 @@ apply(RMSE, 2, quantile, c(0.025, 0.975))
 #Summarise R2
 apply(R2, 2, median)
 apply(R2, 2, quantile, c(0.025, 0.975))
-
 
 
 #####################################################################################

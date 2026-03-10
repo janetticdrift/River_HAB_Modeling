@@ -324,11 +324,9 @@ saveRDS(rstan::extract(fit.m4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 saveRDS(rstan::extract(fit.m5, permuted=FALSE), 
         file = here::here("data/Riverwide_Biotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
-saveRDS(rstan::extract(fit.m5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+saveRDS(rstan::extract(fit.m5, pars = c('Alpha', 'Beta', 'n', 'sigma_p')), 
         file = here::here("data/Riverwide_Biotic_predictions.rds"))
+
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m6, permuted=FALSE), 
@@ -345,7 +343,6 @@ saveRDS(rstan::extract(fit.m7, permuted=FALSE),
         file = here::here("data/Riverwide_Abiotic_nonut.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m7, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Riverwide_AbioticNonut_predictions.rds"))
