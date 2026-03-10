@@ -32,13 +32,13 @@ parameters {
   
   matrix<upper=99>[Nspecies, uniqueID] n; //percent cover each week at each reach
   
-  vector[Nspecies] Ntheta; //parameter for nitrate each week
-  vector[Nspecies] Ptheta; //parameter for o phos each week
-  vector[Nspecies] Atheta; //parameter for ammonium each week
-  vector[Nspecies] Dtheta; //parameter for discharge each week
-  vector[Nspecies] Ttheta; //parameter for temps each week
-  vector[Nspecies] Ctheta; //parameter for conductivity each week
-  vector[Nspecies] Rtheta; //parameter for shortwave radiation each week
+  vector[Nspecies] Ntheta; //parameter for nitrate each species
+  vector[Nspecies] Ptheta; //parameter for o phos each species
+  vector[Nspecies] Atheta; //parameter for ammonium each species
+  vector[Nspecies] Dtheta; //parameter for discharge each species
+  vector[Nspecies] Ttheta; //parameter for temps each species
+  vector[Nspecies] Ctheta; //parameter for conductivity each species
+  vector[Nspecies] Rtheta; //parameter for shortwave radiation each species
 }
 transformed parameters{
   matrix[Nspecies, Nspecies] ID = diag_matrix(sigma_p);
