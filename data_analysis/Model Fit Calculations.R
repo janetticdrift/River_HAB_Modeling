@@ -181,15 +181,20 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 
 #POSTERIORS VS PREDICTED
 ###############------------------------------------------------------------------
-#Read in simulated data. But you must check that the simulation ran the same model
-#(fit.m4, m5, m6) as the one being analyzed here
-source(here::here("data_analysis/Predictions.R"))
-#Relevant dataframe is "predictives"
+#Read in simulated data. Already back-transformed 
+TM.pred <- readRDS(here::here("data/WithinMat_Pred_TM.rds"))
+
+#Set current predictive data
+predictives.mats <- TM.pred
+
+#Back-transform latent abundance data
+logposteriors.mats <- exp(posteriors_mat)
+
 
 #Comparing fit.m1: All variables included
-iter <- dim(posteriors_mat)[1]  # Number of iterations 
-species <- dim(posteriors_mat)[2]  # Number of species 
-time <- dim(posteriors_mat)[3]  # Time steps
+iter <- dim(logposteriors.mats)[1]  # Number of iterations 
+species <- dim(logposteriors.mats)[2]  # Number of species 
+time <- dim(logposteriors.mats)[3]  # Time steps
 
 names<- c("Anabaena", "Epithemia", "Geitlerinema", 
           "Green Algae", "Microcoleus",
@@ -203,8 +208,8 @@ R2 <- matrix(NA, iter, species, dimnames = list(NULL, names))
 for (s in 1:species) {
   for (i in 1:iter) {
     
-    y <- posteriors_mat[i, s, ]
-    y_pred <- predictives_mats[i, s, ]
+    y <- logposteriors.mats[i, s, ]
+    y_pred <- predictives.mats[i, s, ]
     
     RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
     
@@ -219,3 +224,28 @@ apply(RMSE, 2, quantile, c(0.025, 0.975))
 #Summarise R2
 apply(R2, 2, mean)
 apply(R2, 2, quantile, c(0.025, 0.975))
+
+
+
+#Correlation between latent Anabaena and Epithemia
+cors <- apply(logposteriors.mats[, c(1,2), ], 1, function(x){
+  cor(x[1,], x[2,])
+})
+mean(cors)
+
+#Correlation between predicted Anabaena and Epithemia
+cors <- apply(predictives.mats[, c(1,2), ], 1, function(x){
+  cor(x[1,], x[2,])
+})
+mean(cors)
+
+# sync_fun <- function(mat) {
+#   # mat = species × time
+#   total <- colSums(mat)
+#   var(total) / (sum(apply(mat, 1, sd))^2)
+# }
+# 
+# sync <- apply(logposteriors.mats[, c(1,2), 1:13], 1, function(x) sync_fun(x))
+# mean(sync)
+
+

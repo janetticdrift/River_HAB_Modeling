@@ -15,12 +15,12 @@ pseudocount <- 1e-2 #Set a small number for 0s, so as to not return error when l
 
 pcr_atx_df <- read.csv(here::here("data/qPCR_Anatoxins.csv")) %>% 
   dplyr::filter(!grepl("analysis", UNR_Notes)) %>%  #Remove samples not for analysis ("floating" and "gravel")
-  rename(field_date = date) %>% 
+  dplyr::rename(field_date = date) %>% 
   dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) %>%  #Fix data type
   mutate(samp_rerun = as.character(samp_rerun),
          sample = ifelse(sample == "", NA, sample),
          ana_C.uL = ifelse(sample == "", NA, ana_C.uL),
-         nif.uL = ifelse(sample == "", NA, nif.uL))
+         nif.uL = ifelse(sample == "", NA, nif.uL)). #Fill in NAs for samples that were not collected
 
 
 pcr_combine <- pcr_atx_df %>% 
@@ -28,20 +28,20 @@ pcr_combine <- pcr_atx_df %>%
   dplyr::select(field_date, year, site, mat,
                 sample, DNA_conc_ng_uL, ana_C.uL, nif.uL, 
                 ATX_all_ug_g:org_matter_percent, UNR_Notes) %>%
-  mutate(run_type = "original") %>%
+  dplyr::mutate(run_type = "original") %>%
   bind_rows(
     pcr_atx_df %>%
       dplyr::select(field_date, year, site, mat,
                     samp_rerun, DNA_conc_rerun, ana_C.uL_rerun, nif.uL_rerun, 
                     ATX_all_ug_g:org_matter_percent, UNR_Notes) %>% 
-      mutate(run_type = "rerun",
+      dplyr::mutate(run_type = "rerun",
              sample = samp_rerun,
              DNA_conc_ng_uL = DNA_conc_rerun,
              ana_C.uL = ana_C.uL_rerun,
              nif.uL = nif.uL_rerun)) %>%
   dplyr::filter(!(is.na(sample) & is.na(DNA_conc_ng_uL) & is.na(ana_C.uL) & is.na(nif.uL))) %>% #Find duplicates by removing NA rows
   group_by(field_date, year, site, mat) %>%
-  mutate(UNR_Notes = ifelse(n() > 1, "qPCR duplicate", NA)) %>% #Note duplicates (grouped by the above cols)
+  dplyr::mutate(UNR_Notes = ifelse(n() > 1, "qPCR duplicate", NA)) %>% #Note duplicates (grouped by the above cols)
   ungroup() %>% 
   dplyr::select(1:15) #Keep combined columns
 
@@ -50,7 +50,7 @@ sus_anaC <- c("12", "13", "32", "33", "34", "35")
 sus_nif <- c("45", "39")
   
 pcr_atx <- pcr_combine %>% 
-  mutate(
+  dplyr::mutate(
     # # Normalized anaC gene copies (copies per ng DNA)
     # normalized_anaC = ana_C.uL / DNA_conc_ng_uL,
     # # Normalized nif gene copies (copies per ng DNA)
@@ -75,7 +75,7 @@ pcr_atx <- pcr_combine %>%
     # Calculate ATX normalized with Ash-Free Dry Mass
     norm_ATX_all_ug_g = (ATX_all_ug_g / org_matter_percent) + pseudocount
   )  %>% 
-  filter(!c(year == "2024" & sample %in% sus_anaC),
+  dplyr::filter(!c(year == "2024" & sample %in% sus_anaC),
          !c(year == "2024" & sample %in% sus_nif))
 
 
@@ -88,7 +88,7 @@ pcr_atx <- pcr_combine %>%
 ################
 
 #nif ~ anaC, exclude zeros from regression line
-ggplot(pcr_atx, aes(x = ana_C.uL, y = nif.uL, color = mat)) +
+ggplot(pcr_atx, aes(y = ana_C.uL, x = nif.uL, color = mat)) +
   facet_wrap(~year, scales = "free") +  #Split plot between the two years, scales = "free" means each year has its own Y axis 
   geom_point(aes(shape = run_type), size = 2) +
   geom_smooth(data = . %>% dplyr::filter(ana_C.uL != -2 & nif.uL != -2), # filter out pseudo "0" values
@@ -100,7 +100,7 @@ ggplot(pcr_atx, aes(x = ana_C.uL, y = nif.uL, color = mat)) +
     label.x.npc = "left",
     label.y.npc = "top",
     show.legend = FALSE) +
-  labs(x = "Log10 anaC gene (copies/ng)", y = "Log10 nif gene (copies/ng)") +
+  labs(y = "Log10 anaC gene (copies/ng)", x = "Log10 nif gene (copies/ng)") +
   theme_bw()
 
 #nif ~ anaC, include zeros in regression line
