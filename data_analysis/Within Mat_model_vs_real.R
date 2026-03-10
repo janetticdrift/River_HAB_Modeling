@@ -218,7 +218,7 @@ ggplot(subset(mat_params2_TM, Species %in% c("Anabaena", "Epithemia Diatoms", "G
             aes(x = model_date, y = obs_mean, group = Species),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances") +
+  labs(x = "Date", y = "Relative Abundance (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
 
