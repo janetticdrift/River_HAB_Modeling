@@ -23,6 +23,15 @@ boxcox_transform <- function(x, lambda){
   
 }
 
+#' Calculate ammonium from ammonia
+calculate_NH4 <- function(df) {
+  df <- df %>%
+    dplyr::mutate(
+      pKa = 0.09018 + 2727.92 / (temp_C + 273.15),
+      f = 1 / (10^(pKa - pH) + 1),
+      ammonium_mg_N_L = round((1 - f) * ammonia, 5)
+    )
+}
 
 #' Calculate standard errors
 #' @param x Vector of data.

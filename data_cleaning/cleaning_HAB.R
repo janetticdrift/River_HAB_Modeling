@@ -25,7 +25,7 @@ library(lattice)
 library(httr)
 
 #Read in functions
-here::here("data/Functions.R")
+source(here::here("data_cleaning/Functions.R"))
 
 #Read in river-wide raw data for percent cover by reach and year
 percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
@@ -200,15 +200,6 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 #Tidy water chemistry data
 nut_data <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
-#Function for calculating ammonium from ammonia
-calculate_NH4 <- function(df) {
-  df <- df %>%
-    dplyr::mutate(
-      pKa = 0.09018 + 2727.92 / (temp_C + 273.15),
-      f = 1 / (10^(pKa - pH) + 1),
-      ammonium_mg_N_L = round((1 - f) * ammonia, 5)
-    )
-}
 #Subset out the last year
 x <- calculate_NH4(nut_data)[138:173,] %>% 
   dplyr::select(!c(pKa, f))

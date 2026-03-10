@@ -47,6 +47,7 @@ yeardata <- cover_indexweek %>%
 yearmatdata_TM <- micro_indexweek %>% 
   dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TM") %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   dplyr::mutate(sample_type = replace_na(sample_type, "TM"))
@@ -55,10 +56,10 @@ yearmatdata_TM <- micro_indexweek %>%
 yearmatdata_TAC <- micro_indexweek %>% 
   dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
   dplyr::filter(sample_type == "TAC") %>% 
+  pivot_wider(names_from = Species, values_from = Abundance) %>% 
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   dplyr::mutate(sample_type = replace_na(sample_type, "TAC"))
-  #replace(is.na(.), -99)
 
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
   dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
@@ -164,21 +165,21 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   group_by(year, week) %>%
-  dplyr::summarise(across(c(anabaena_and_cylindrospermum:rare), mean, na.rm = TRUE)) %>% 
+  dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
-  dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
-                'Epithemia Diatoms' = e_diatoms,
-                Geitlerinema = geitlerinema,
-                'Green Algae' = green_algae, 
-                Microcoleus = microcoleus,
-                'Non-Epithemia Diatoms' = non_e_diatoms,
-                Nostoc = nostoc,
-                'Other Coccoids' = other_coccoids,
-                Rare = rare)
+  dplyr::mutate(across(Anabaena:Rare, log)) %>%
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  # dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
+  #               'Epithemia Diatoms' = e_diatoms,
+  #               Geitlerinema = geitlerinema,
+  #               'Green Algae' = green_algae, 
+  #               Microcoleus = microcoleus,
+  #               'Non-Epithemia Diatoms' = non_e_diatoms,
+  #               Nostoc = nostoc,
+  #               'Other Coccoids' = other_coccoids,
+  #               Rare = rare)
 
 
 model.1 <- list("uniqueID" = nrow(matalltaxaM),
