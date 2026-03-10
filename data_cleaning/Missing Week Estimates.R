@@ -169,7 +169,16 @@ matalltaxaM <- yearmatdata %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
+                'Epithemia Diatoms' = e_diatoms,
+                Geitlerinema = geitlerinema,
+                'Green Algae' = green_algae, 
+                Microcoleus = microcoleus,
+                'Non-Epithemia Diatoms' = non_e_diatoms,
+                Nostoc = nostoc,
+                'Other Coccoids' = other_coccoids,
+                Rare = rare)
 
 
 model.1 <- list("uniqueID" = nrow(matalltaxaM),
@@ -199,7 +208,16 @@ matalltaxaA <- yearmatdata %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(anabaena_and_cylindrospermum:rare, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
+                'Epithemia Diatoms' = e_diatoms,
+                Geitlerinema = geitlerinema,
+                'Green Algae' = green_algae, 
+                Microcoleus = microcoleus,
+                'Non-Epithemia Diatoms' = non_e_diatoms,
+                Nostoc = nostoc,
+                'Other Coccoids' = other_coccoids,
+                Rare = rare) %>% 
 
 
 model.2 <- list("uniqueID" = nrow(matalltaxaA),
@@ -299,6 +317,12 @@ saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Rtheta'),
                        permuted=FALSE), 
         file = here::here("data/WithinMat_Micro.rds"))
+saveRDS(rstan::extract(fit.m1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/WithinMat_Micro_predictions.rds"))
+
 
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
@@ -306,6 +330,11 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Rtheta'),
                        permuted=FALSE), 
         file = here::here("data/WithinMat_Ana.rds"))
+saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/WithinMat_Ana_predictions.rds"))
 
 
 ################

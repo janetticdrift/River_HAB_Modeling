@@ -26,7 +26,7 @@ abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.r
 
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- abioticnonutfit[["n"]] #array indexed by iterations, species #, time
+posteriors <- TMfit[["n"]] #array indexed by iterations, species #, time
 
 
 ###############------------------------------------------------------------------
@@ -117,13 +117,13 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 #WITHIN MAT
 
 #Read in data
-fit.m1 <- readRDS(here::here("data/WithinMat_Micro.rds"))
-fit.m2 <- readRDS(here::here("data/WithinMat_Ana.rds"))
+TMfit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
+TAfit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
 
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
 #Extract the relevant model here. fit.m1 = microcoleus, fit.m2 = anabaena.
-posteriors_mat <- rstan::extract(fit.m1)[["n"]] #array indexed by iterations, species #, time
+posteriors_mat <- TMfit[["n"]] #array indexed by iterations, species #, time
 
 ###############------------------------------------------------------------------
 #Extract observed data vectors from alltaxatime, raw data object
@@ -174,7 +174,7 @@ for (s in 1:species) {
 
 # Posterior summarize 
 #Mean R2
-apply(R2, 2, mean)[c(4,6,7)] #2 stands for applying function over the columms
+apply(R2, 2, median)[c(1:3)] #2 stands for applying function over the columms
 #Credible Interval
 apply(R2, 2, quantile, c(0.025, 0.975))
 

@@ -5,10 +5,27 @@ library(tidyverse)
 library(abind)
 
 #files mat_params2 and mat_params2_groups are in WithinMatModel_vs_real
+
+#Graphing palettes
+#Create a color palette
+mycols <- c("brown", "darkolivegreen4", "darkorange", "chartreuse3", 
+            "lavender", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
+            "goldenrod", "lightblue1")
+mypal <- palette(mycols)
+names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
+                 "Green Algae", "Leptolyngbya", "Microcoleus", 
+                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
+                 "Other Coccoids", "Rare")
+colScale <- scale_color_manual(values = mypal)
+filScale <- scale_fill_manual(values = mypal)
   
+#Read in latent states and effect coefficients
+M.fit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
+A.fit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
+
 
 #Pull out community abundances and demographics 
-x <- rstan::extract(fit.m1) #m1 = averaged reaches for Microcoleus
+x <- M.fit #m1 = averaged reaches for Microcoleus
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
@@ -17,7 +34,7 @@ sigmas <- x[["sigma_p"]][,]
 #inputs
 runs <- nrow(abundances)
 time <- 13 #13 weeks in 2022, 13 in 2023, 15 in 2024
-n <- array(NA, dim = c(runs, 11, time)) #11 is number of species
+n <- array(NA, dim = c(runs, 9, time)) #9 is number of species
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]][,]
@@ -65,70 +82,64 @@ for(z in 1:runs){
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
-    # #Remove env drivers
-    # n[t,,z] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[t-1,,z],
-    #                          Sigma = sigma)
+
   }
 }
 
 pred2022 <- n
 
-matsims2022 <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:11, exp)) %>%
-  dplyr::rename(Anabaena = V1, 
-                'Epithemia Diatoms' = V2,
-                Geitlerinema = V3,
-                'Green Algae' = V4, 
-                Leptolyngbya = V5,
-                Microcoleus = V6,
-                'Non-Epithemia Diatoms' = V7,
-                Nostoc = V8,
-                Oscillatoria = V9,
-                'Other Coccoids' = V10,
-                Rare = V11) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
+                Geitlerinema = V3, 'Green Algae' = V4, 
+                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
+                Nostoc = V7, 'Other Coccoids' = V8,
+                Rare = V9) %>% 
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = c(1:11), names_to = "Species", values_to = "Abundance") %>% #cols are 1:9 if species are ungrouped, 1:3, 5:6 if grouped
-  mutate(real_week = time + 25, year = 2022) %>% #HEY THIS CHANGED FROM 24 TO 25
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+  pivot_longer(cols = c(1:9), names_to = "Species", values_to = "Abundance")
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
+  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
+                Geitlerinema = V3, 'Green Algae' = V4, 
+                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
+                Nostoc = V7, 'Other Coccoids' = V8,
+                Rare = V9) %>% 
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIlower")
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
+  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
+                Geitlerinema = V3, 'Green Algae' = V4, 
+                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
+                Nostoc = V7, 'Other Coccoids' = V8,
+                Rare = V9) %>% 
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIupper")
 
-#Create a color palette
-mycols <- c("brown", "chartreuse3", "goldenrod", "darkolivegreen4", 
-            "violetred", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
-            "darkorange", "lightblue1")
-mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
-                 "Green Algae", "Leptolyngbya", "Microcoleus", 
-                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
-                 "Other Coccoids", "Rare")
-colScale <- scale_color_manual(values = mypal)
+matsims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+  left_join(., sims2022uquant, by=c("Species", "time")) %>% 
+  dplyr::mutate(real_week = time + 25, year = 2022) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+
 
 #Plot
 
-#List of different species groups:
-# c("Anabaena", 
-#   "Epithemia Diatoms", 
-#   "Geitlerinema")
-
-# c("Microcoleus", 
-#   "Non-Epithemia Diatoms", 
-#   "Green Algae")
-
-mat_p22 <- ggplot(subset(matsims2022, Species %in% c("Microcoleus", 
-                                                     "Non-Epithemia Diatoms", 
-                                                     "Green Algae")), 
-                         aes(x = model_date, y = Abundance)) +
-  geom_line(size = 1.5, aes(color = Species)) +
-  geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2022", ], 
-                          Species %in% c("Microcoleus", 
-                                         "Non-Epithemia Diatoms", 
-                                         "Green Algae")), 
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .35) +
-  scale_y_continuous(breaks=c(seq(0,150,5))) +
-  #coord_cartesian(ylim = c(0,70)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "2022 Predictions") +
-  colScale
+# mat_p22 <- ggplot(subset(matsims2022, Species %in% c("Anabaena",
+#                                                      "Epithemia Diatoms",
+#                                                      "Geitlerinema")), 
+#                          aes(x = model_date, y = Abundance)) +
+#   geom_line(size = 1.5, aes(color = Species)) +
+#   geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2022", ], 
+#                           Species %in% c("Anabaena",
+#                                          "Epithemia Diatoms",
+#                                          "Geitlerinema")), 
+#             aes(x = model_date, y = mean, colour = Species),
+#             linewidth = 4, alpha = .35) +
+#   scale_y_continuous(breaks=c(seq(0,150,5))) +
+#   #coord_cartesian(ylim = c(0,70)) +
+#   labs(x = "Date", y = "Relative Abundance (%)", title = "2022 Predictions") +
+#   colScale
 
 
 #####################################

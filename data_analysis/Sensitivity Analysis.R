@@ -42,7 +42,7 @@ theta_list <- list(
 ID <- diag(1, nrow = 4, ncol = 4) # 4 is the number of species in the river-wide model
 
 #Set conditions and output storage
-env_range <- seq(-3, 3, length.out = 11)   #Range of env effect, in standard deviation units
+env_range <- seq(-2, 2, length.out = 11)   #Range of env effect, in standard deviation units
 env_names <- names(theta_list)      #Names of env variables
 
 w_star_include <- array(        # iteration, env_var, perturbation, species
@@ -172,7 +172,6 @@ eq_abund_exclude <- as.data.frame.table(w_star_exclude, responseName = "w_star")
 #Bind together predictions where species were included or excluded in predictions
 eq_abund <- rbind(eq_abund_include, eq_abund_exclude) %>% 
   group_by(Interactions)
-  # dplyr::filter(outlier(w_star)) #Do not remove outliers
 
 
 #Checking for errors
@@ -203,7 +202,7 @@ ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"),
   facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
-  scale_x_discrete(breaks = c(-3, 0, 3)) +
+  scale_x_discrete(breaks = c(-2, 0, 2)) +
   labs(title = "Microcoleus") +
   theme_classic() +
   scale_fill_viridis_c(option="magma", begin = 0.45, end = .80)+
@@ -214,32 +213,37 @@ ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x =
   facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
-  scale_x_discrete(breaks = c(-3, 0, 3)) +
+  scale_x_discrete(breaks = c(-2, 0, 2)) +
   labs(title = "Anabaena") +
   theme_classic() +
   scale_fill_viridis_c(option="viridis", begin = 0.5, end = .90)+
   theme(legend.position = "none")
 
 ######### 
-#Regression plot 
+#Median plot 
 ######### 
+
+eq_abund_medians <- eq_abund %>%
+  group_by(env, env_peturb, species, Interactions) %>%
+  dplyr::summarise(med_star = median(w_star, na.rm = TRUE))
+
   #Species2: Microcoleus
-ggplot(subset(eq_abund %>% slice_sample(n = 100000), species %in% "2"), aes(x = env_peturb, y = w_star, color = Interactions)) +
+ggplot(subset(eq_abund_medians, species %in% "2"), aes(x = env_peturb, y = med_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
-  geom_smooth(method = "loess", se = F) + #Will not work unless outliers are removed
-  labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Microcoleus") +
+  geom_line() +
   guides(color = guide_legend(reverse = TRUE)) +
-  scale_x_continuous(breaks = c(-3, 0, 3)) +
-  theme_classic() +
-  scale_color_manual(values = c("#E69F00", "#56B4E9"))
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Microcoleus") +
+  scale_x_continuous(breaks = c(-2, 0, 2)) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9")) +
+  theme_classic()
 
 #Species2: Anabaena
-ggplot(subset(eq_abund %>% slice_sample(n = 50000), species %in% "3"), aes(x = env_peturb, y = w_star, color = Interactions)) +
+ggplot(subset(eq_abund_medians, species %in% "3"), aes(x = env_peturb, y = med_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
-  geom_smooth(method = "loess", se = F) + #Will not work unless outliers are removed
-  labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Anabaena") +
+  geom_line() +
   guides(color = guide_legend(reverse = TRUE)) +
-  scale_x_continuous(breaks = c(-3, 0, 3)) +
-  theme_classic() +
-  scale_color_manual(values = c("#E69F00", "#56B4E9"))
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance", title = "Anabaena") +
+  scale_x_continuous(breaks = c(-2, 0, 2)) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9")) +
+  theme_classic()
 

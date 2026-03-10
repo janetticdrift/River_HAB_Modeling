@@ -119,7 +119,17 @@ microscopy <- microscopy1 %>%
   ungroup() %>% 
   pivot_wider(names_from = Species, values_from = Abundance) %>% 
   dplyr::mutate(rare = rowSums(dplyr::select(., rare_names))) %>% 
-  dplyr::select(!rare_names)
+  dplyr::select(!rare_names) %>% 
+  dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
+                'Epithemia Diatoms' = e_diatoms,
+                Geitlerinema = geitlerinema,
+                'Green Algae' = green_algae, 
+                Microcoleus = microcoleus,
+                'Non-Epithemia Diatoms' = non_e_diatoms,
+                Nostoc = nostoc,
+                'Other Coccoids' = other_coccoids,
+                Rare = rare) %>% 
+  pivot_longer(cols = c(10:18), names_to = "Species", values_to = "Abundance")
 
 #############################################################################################
 #Index date by timesteps and week numbers: 1, 2, 3... n
