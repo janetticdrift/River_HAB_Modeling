@@ -119,7 +119,7 @@ microscopy <- microscopy1 %>%
   ungroup() %>% 
   pivot_wider(names_from = Species, values_from = Abundance) %>% 
   dplyr::mutate(rare = rowSums(dplyr::select(., rare_names))) %>% 
-  dplyr::select(!rare_names) %>% 
+  dplyr::select(!all_of(rare_names)) %>% 
   dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
                 'Epithemia Diatoms' = e_diatoms,
                 Geitlerinema = geitlerinema,
