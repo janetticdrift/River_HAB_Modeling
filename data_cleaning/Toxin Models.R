@@ -125,3 +125,11 @@ library(rstantools)
 #Can check posterior graphs in shinystan
 shinystan::launch_shinystan(fit.atx)
 
+mcmc_intervals(
+  as.array(fit.atx),
+  pars = c("Ntheta", "Ptheta", "Atheta")) 
+
+mcmc_intervals(
+  as.array(fit.atx),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
+

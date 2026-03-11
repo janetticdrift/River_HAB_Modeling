@@ -27,13 +27,13 @@ parameters {
   vector[Nspecies] Beta1;// species effects
   real Beta_tox;         // Toxin effect
   
-  vector[Nspecies] Ntheta; //parameter for nitrate each species
-  vector[Nspecies] Ptheta; //parameter for o phos each species
-  vector[Nspecies] Atheta; //parameter for ammonium each species
-  vector[Nspecies] Dtheta; //parameter for discharge each species
-  vector[Nspecies] Ttheta; //parameter for temps each species
-  vector[Nspecies] Ctheta; //parameter for conductivity each species
-  vector[Nspecies] Rtheta; //parameter for shortwave radiation each species
+  real Ntheta; //parameter for nitrate each species
+  real Ptheta; //parameter for o phos each species
+  real Atheta; //parameter for ammonium each species
+  real Dtheta; //parameter for discharge each species
+  real Ttheta; //parameter for temps each species
+  real Ctheta; //parameter for conductivity each species
+  real Rtheta; //parameter for shortwave radiation each species
 }
 
 transformed parameters {
