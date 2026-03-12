@@ -133,3 +133,12 @@ mcmc_intervals(
   as.array(fit.atx),
   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
 
+#For building the observation vs latent state plots
+saveRDS(rstan::extract(fit.atx, permuted=FALSE), 
+        file = here::here("data/Anatoxin_.rds"))
+#For building the latent state vs predictions plots
+saveRDS(rstan::extract(fit.atx, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                        'Ntheta','Ptheta', 'Atheta', 
+                                        'Dtheta', 'Ttheta', 'Ctheta', 
+                                        'Rtheta')), 
+        file = here::here("data/Riverwide_AllVar_predictions.rds"))
