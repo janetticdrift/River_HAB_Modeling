@@ -82,7 +82,7 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
+  #dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
   replace(is.na(.), -99) %>%
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
@@ -135,10 +135,7 @@ mcmc_intervals(
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.atx, permuted=FALSE), 
-        file = here::here("data/Anatoxin_.rds"))
+        file = here::here("data/Anatoxin_AllVariables.rds"))
 #For building the latent state vs predictions plots
-saveRDS(rstan::extract(fit.atx, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
-        file = here::here("data/Riverwide_AllVar_predictions.rds"))
+saveRDS(rstan::extract(fit.atx), 
+        file = here::here("data/Anatoxin_AllVar_predictions.rds"))

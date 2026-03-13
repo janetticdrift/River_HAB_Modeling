@@ -3,6 +3,8 @@ library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 
+#Must read in alltaxatime
+#Must read in atx 
 
 #RIVERWIDE
 
@@ -248,4 +250,100 @@ mean(cors)
 # sync <- apply(logposteriors.mats[, c(1,2), 1:13], 1, function(x) sync_fun(x))
 # mean(sync)
 
+#####################################################################################
+#####################################################################################
+#####################################################################################
+
+#TOXINS
+
+#OBSERVED DATA VS POSTERIORS
+###############------------------------------------------------------------------
+#Extract observed data vectors from atx, raw data object
+y_obs_atx <- anatoxin_data$ATX_all_ug_g
+
+
+###############------------------------------------------------------------------
+#Read in modeled data
+atxfit <- readRDS(here::here("data/Anatoxin_AllVar_predictions.rds"))
+
+#Extract the relevant model here. fit.m4 = all variables,
+#fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
+posteriors <- atxfit[["tox"]] #array indexed by iterations, species #, time
+
+
+###############------------------------------------------------------------------
+#BAYESIAN R2 CALCULATIONS
+
+#Bayesian R2 comparing latent vs observed states
+iter <- dim(posteriors)[1]  # Number of iterations
+
+R2 <- rep(NA, times = iter)  #Create empty matrix for R2 values per iteration, per species
+
+  for (i in 1:iter) {
+    
+    y_obs <- y_obs_atx[ ]
+    obs_index <- which(y_obs != -99) #Remove weeks where we did not collect field data
+    
+    yhat <- posteriors[i, obs_index] #In the time index, take out weeks with no field data
+    yobs <- y_obs[obs_index]
+    
+    var_fit <- var(yhat)
+    var_res <- var(yobs - yhat)
+    
+    R2[i] <- var_fit / (var_fit + var_res)
+  }
+
+
+# Posterior summarize 
+#Mean R2
+mean(R2) #2 stands for applying function over the columms
+#Credible Interval
+quantile(R2, c(0.025, 0.975))
+
+
+#POSTERIORS VS PREDICTED
+###############------------------------------------------------------------------
+#LATENT VS PREDICTION RMSE & R2 CALCULATIONS
+
+#Read in simulated data
+pred.all.fit <- readRDS(here::here("data/Riverwide_Pred_AllVar.rds"))
+pred.biotic.fit <- readRDS(here::here("data/Riverwide_Pred_Biotic.rds"))
+pred.abiotic.fit <- readRDS(here::here("data/Riverwide_Pred_Abiotic.rds"))
+pred.abioticnonut.fit <- readRDS(here::here("data/Riverwide_Pred_AbioticNoNut.rds"))
+
+#Set current predictive data
+predictives <- pred.abioticnonut.fit
+
+#Back-transform latent abundance data
+logposteriors <- exp(posteriors)
+
+
+#Comparing All variables included
+iter <- dim(logposteriors)[1]  # Number of iterations 
+species <- dim(logposteriors)[2]  # Number of species 
+time <- dim(logposteriors)[3]  # Time steps
+
+#Create empty matrices for storing fit index values
+RMSE <- matrix(NA, iter, species)
+R2 <- matrix(NA, iter, species)
+
+for (s in 1:species) {
+  for (i in 1:iter) {
+    
+    y <- logposteriors[i, s, ]
+    y_pred <- predictives[i, s, ]
+    
+    RMSE[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
+    
+    R2[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
+  }
+}
+
+#Summarize RMSE
+apply(RMSE, 2, median)
+apply(RMSE, 2, quantile, c(0.025, 0.975))
+
+#Summarise R2
+apply(R2, 2, median)
+apply(R2, 2, quantile, c(0.025, 0.975))
 
