@@ -13,6 +13,7 @@ library(bayesplot)
 library(ggplot2)
 library(lubridate)
 library(patchwork)
+library(rstan)
 
 #Read in functions
 here::here("data/Functions.R")
@@ -25,7 +26,8 @@ toxins
 # #Dataframe of interest is "toxins"
 
 #Read in model data (from Missing Week Estimates)
-fit.atx <- readRDS(here::here("data/Anatoxin_AllVariables.rds"))
+fit.atx1 <- rstan::extract(fit.atx, permuted=FALSE)
+#readRDS(here::here("data/Anatoxin_AllVariables.rds"))
 
 #MODEL INCLUDING JUST ATX_ALL--------------------------------------------------------------
 #OBSERVED DATA
@@ -47,7 +49,7 @@ obs_data_toxins <- toxins %>%
 
 #Clean dataframe of MODELED data
 #Initial cleaning of model outputs
-tox_params_TM <- as.data.frame(fit.atx) %>% 
+tox_params_TM <- as.data.frame(fit.atx1) %>% 
   dplyr::select(matches("tox\\[")) %>% 
   #dplyr::mutate(across(`chain:1.tox[1]`:`chain:3.tox[41]`, exp)) %>%  #backtransform n
   t 
@@ -106,7 +108,7 @@ shapScale <- scale_shape_manual(values = myshap)
 ###Anatoxins
 ggplot(tox_params2_TM, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
-  #geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), alpha = 0.2) +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), alpha = 0.2) +
   # Latent points/lines
   geom_point(aes(colour = Congener), size = 3) +
   geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
@@ -120,5 +122,5 @@ ggplot(tox_params2_TM, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
   labs(x = "Date", y = "Anatoxin Concentration", title = "Observed vs. Latent Concentrations") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + shapScale
+  colScale + filScale + shapScale
 

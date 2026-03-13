@@ -54,7 +54,9 @@ transformed parameters{
 
   //t = 1: no previous state available. As a transformed param, every aspect of it must be 
   //explicity computed. n[,1] no longer has an implicit prior like it used to
-  n[,1] = n_nc[,1];
+  n[,1] = sigma_p*n_nc[,1];
+    //Note the multiplication by sigma_p. Otherwise, n's distribution is N(0,1), instead
+    //of N(0,sigma_p)
 
   //t >= 2
   for (t in 2:uniqueID) {
@@ -107,6 +109,7 @@ model {
   // n[,t] ~ multi_normal(Alpha + Beta * n[,t-1], diag_matrix(square(sigma_p)))
   // is equivalent to the NC form implemented here:
   to_vector(n_nc) ~ normal(0, 1);
+    //n_nc is drawn here, then used to estimate n in the transformed parameters block
       
       
   // ----------------- Observation model -----------------

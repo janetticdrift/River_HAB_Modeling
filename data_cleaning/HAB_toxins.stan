@@ -40,7 +40,7 @@ transformed parameters {
 
   vector[uniqueID] tox;
 
-  tox[1] = tox_nc[1];
+  tox[1] = sigma_p * tox_nc[1];
 
   for(t in 2:uniqueID){
     if(firstdays[t]==1){
@@ -81,7 +81,7 @@ model {
 
 // ----------------- Observation model -----------------
     for(t in 1:uniqueID){
-    if(Toxins[t] >= -3){ //If t is a week we actually have collected data for
+    if(Toxins[t] >= -99){ //If t is a week we actually have collected data for
       Toxins[t] ~ normal(tox[t], sigma_o);
         
       }

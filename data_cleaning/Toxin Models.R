@@ -116,14 +116,15 @@ fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-#Model checks and evaluation
+D#Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.atx)
+shinystan::launch_shinystan(as.shinystan(fit.atx))
+
 
 mcmc_intervals(
   as.array(fit.atx),
@@ -132,6 +133,10 @@ mcmc_intervals(
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
+
+mcmc_intervals(
+  as.array(fit.atx),
+  pars = c("Beta_tox", "Beta0", "sigma_p", "sigma_o") )
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.atx, permuted=FALSE), 
