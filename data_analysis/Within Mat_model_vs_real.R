@@ -223,7 +223,8 @@ ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
   geom_line(data = obs_data_mat_TM, 
             aes(x = model_date, y = obs_mean, group = Species),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 200, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  coord_cartesian(ylim = c(0,100)) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
