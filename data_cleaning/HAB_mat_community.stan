@@ -54,7 +54,7 @@ transformed parameters{
 
   //t = 1: no previous state available. As a transformed param, every aspect of it must be 
   //explicity computed. n[,1] no longer has an implicit prior like it used to
-  n[,1] = sigma_p*n_nc[,1];
+  n[,1] = n_nc[,1];
     //Note the multiplication by sigma_p. Otherwise, n's distribution is N(0,1), instead
     //of N(0,sigma_p)
 

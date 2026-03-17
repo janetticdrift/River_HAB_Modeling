@@ -161,15 +161,22 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 #MAT COMMUNITY PER REACH-----MICROCOLEUS
 #Split data into reach subsets, and run model separately per reach
 
+#Important note: Only Ana, Epithemia, and Geit are retained here. Their abundances
+#have been re-relativized to sum to 100%
+
 #Target Microcoleus, averaged reaches
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
+  dplyr::select(c(1:9)) %>% #Retain only Ana, Epi, and Geit
+  rowwise() %>% #Re-relativize one row at a time
+  mutate(across(Anabaena:Geitlerinema, ~ .x / sum(c_across(Anabaena:Geitlerinema)) * 100)) %>% #Divide the abundances by the new row total, *100
+  ungroup() %>% 
   group_by(year, week) %>%
-  dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
+  dplyr::summarise(across(c(Anabaena:Geitlerinema), mean, na.rm = TRUE)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  dplyr::mutate(across(Anabaena:Rare, log)) %>%
+  dplyr::mutate(across(Anabaena:Geitlerinema, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
   # dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
   #               'Epithemia Diatoms' = e_diatoms,
@@ -246,12 +253,12 @@ options(mc.cores = parallel::detectCores())
 #All years, one species, 3 reaches
 
 init_fun_M <- function() list(
-  sigma_p = rep(0.5, 9),     #9 is number of species in mat datasets
-  sigma_o = rep(0.5, 9),
-  Alpha   = rep(0, 9),
-  Beta_diag = rep(0, 0, 9),     # small start
-  Beta_off = matrix(0, 9, 9),
-  n_nc = matrix(0, 9, nrow(matalltaxaM))
+  sigma_p = rep(0.5, 3),     #9 is number of species in mat datasets
+  sigma_o = rep(0.5, 3),
+  Alpha   = rep(0, 3),
+  Beta_diag = rep(0, 0, 3),     # small start
+  Beta_off = matrix(0, 3, 3),
+  n_nc = matrix(0, 3, nrow(matalltaxaM))
 )
 
 init_fun_A <- function() list(
