@@ -27,8 +27,14 @@ matmodel_TA <- readRDS(here::here("data/WithinMat_Ana.rds"))
 #Clean dataframe of observed REAL data - This one is for TM only
 obs_data_mat_TM <- microscopy %>% 
   dplyr::filter(sample_type %in% "TM") %>% 
+  dplyr::arrange(field_date) %>% 
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
                               as.Date("2022-09-08"))) %>%  #Change 2022/09/06 to 09/08 so the model can summarise correctly 
+  dplyr::filter(Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")) %>% #Retain only Ana, Epi, and Geit
+  group_by(field_date, reach) %>% 
+  dplyr::mutate(Abundance = Abundance / sum(Abundance) * 100) %>% #Divide the abundances by summed total, *100
+  dplyr::mutate(Abundance = replace_na(Abundance, 0)) %>% 
+  ungroup() %>% 
   group_by(field_date, year, Species) %>% 
   dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   replace(is.na(.), 0) %>% #one date had only reach, resulting in SE = NA
@@ -42,23 +48,23 @@ obs_data_mat_TM <- microscopy %>%
 #Initial cleaning of model outputs
 mat_params_TM <- as.data.frame(matmodel_TM) %>% 
   dplyr::select(matches("n\\[")) %>% 
-  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[9,41]`, exp)) %>%  #backtransform n
+  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[3,41]`, exp)) %>%  #backtransform n
   t 
     #Make sure you anazlyze n, not n_nc: n is the reconstructed latent state, and biologically meaningful
     #n_nc is just the standardized version for model construction
 
 #Set up dataframe to extract week/year info from
 yearweekTM <- matalltaxaM %>% 
-  dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
-                'Epithemia Diatoms' = e_diatoms,
-                Geitlerinema = geitlerinema,
-                'Green Algae' = green_algae, 
-                Microcoleus = microcoleus,
-                'Non-Epithemia Diatoms' = non_e_diatoms,
-                Nostoc = nostoc,
-                'Other Coccoids' = other_coccoids,
-                Rare = rare) %>% 
-  pivot_longer(cols = c(3:11),
+  # dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
+  #               'Epithemia Diatoms' = e_diatoms,
+  #               Geitlerinema = geitlerinema,
+  #               'Green Algae' = green_algae, 
+  #               Microcoleus = microcoleus,
+  #               'Non-Epithemia Diatoms' = non_e_diatoms,
+  #               Nostoc = nostoc,
+  #               'Other Coccoids' = other_coccoids,
+  #               Rare = rare) %>% 
+  pivot_longer(cols = c(3:5),
                names_to = "Species", values_to = "mean") %>% 
   dplyr::mutate(time = rep(seq(41), each = length(unique(Species))))   #41 is mat timeseries length
 
@@ -204,23 +210,27 @@ names(myshap) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema")
 shapScale <- scale_shape_manual(values = myshap)
 
 ###TM: Ana + Geit + Epithemia
-ggplot(subset(mat_params2_TM, Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")), aes(x = model_date, y = mean)) +
+ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.2) +
   # Latent points/lines
   geom_point(aes(colour = Species), size = 3) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7) +
   # Observed points/lines
-  geom_point(data = subset(obs_data_mat_TM, Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")), 
+  geom_point(data = obs_data_mat_TM, 
              aes(x = model_date, y = obs_mean, shape = Species), #shape = Species in aes
              size = 2.5) +
-  geom_line(data = subset(obs_data_mat_TM, Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")), 
+  geom_line(data = obs_data_mat_TM, 
             aes(x = model_date, y = obs_mean, group = Species),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
+  
+ggarrange(plot1, plot2,
+          legend = "bottom",
+          common.legend = T)
 
 
 ###First 6 species TAC---------------------------

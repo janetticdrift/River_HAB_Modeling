@@ -9,6 +9,8 @@ library(dataRetrieval)
 
 #Read in needed data
 source(here::here("data_cleaning/cleaning_HAB.R"))
+#Set pseudocount here for tidying data before log-transforming
+pseudocount <- 1
 
 #Tidy dataframes into format needed for STAN
 
@@ -16,16 +18,17 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 #This dataframe (yeardata) is created for HAB_all_years.stan, HAB_abiotic.stan, 
 #and HAB_biotic.stan
 #####
-weekdata <- cover_indexweek %>% 
-  dplyr::select(-c(timestep, field_date)) %>% 
-  group_by(year) %>% 
-  complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
-  replace(is.na(.), -99) %>% 
-  ungroup() %>% 
-  #dplyr::filter(year == "2022") %>% 
-  dplyr::mutate(reach = as.numeric(factor(reach))) %>% 
-  #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
-  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
+# weekdata <- cover_indexweek %>% 
+#   dplyr::select(-c(timestep, field_date)) %>% 
+#   group_by(year) %>% 
+#   dplyr::mutate(across(green_algae:other_nfixers,
+#                        ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
+#   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
+#   replace(is.na(.), -99) %>% 
+#   ungroup() %>% 
+#   #dplyr::filter(year == "2022") %>% 
+#   dplyr::mutate(reach = as.numeric(factor(reach))) 
+#   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
 
 # Eventually I should log-transform data here first, when cleaning up code
 #Fills in missing weeks for years that sampled bimonthly, and sets missing entries to -99
@@ -33,12 +36,13 @@ weekdata <- cover_indexweek %>%
 yeardata <- cover_indexweek %>% 
   dplyr::select(-c(timestep, field_date)) %>% 
   group_by(year) %>% 
+  dplyr::mutate(across(green_algae:other_nfixers,
+                       ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   replace(is.na(.), -99) %>% 
   ungroup() %>% 
-  dplyr::mutate(reach = as.numeric(factor(reach))) %>% 
+  dplyr::mutate(reach = as.numeric(factor(reach))) 
   #mutate(across(green_algae:other_nfixers, round, 0)) %>% #Round numbers to no decimal places
-  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) #Cannot have zeros for log transforming
 
 #####
 #This dataframe (yearmatdata) is created for HAB_mat_community.stan
@@ -51,7 +55,6 @@ yearmatdata_TM <- micro_indexweek %>%
   group_by(year) %>%
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% 
   dplyr::mutate(sample_type = replace_na(sample_type, "TM"))
-  #replace(is.na(.), -99)
 
 yearmatdata_TAC <- micro_indexweek %>% 
   dplyr::select(-c(location, field_date, slide_rep, date_analyzed, method)) %>%
@@ -62,7 +65,6 @@ yearmatdata_TAC <- micro_indexweek %>%
   dplyr::mutate(sample_type = replace_na(sample_type, "TAC"))
 
 yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>% 
-  dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
   arrange(year, week)
 
 #-------------------------------------------------------------------------------------------------
@@ -169,8 +171,10 @@ matalltaxaM <- yearmatdata %>%
   dplyr::filter(sample_type == "TM") %>% 
   dplyr::select(c(1:9)) %>% #Retain only Ana, Epi, and Geit
   rowwise() %>% #Re-relativize one row at a time
-  mutate(across(Anabaena:Geitlerinema, ~ .x / sum(c_across(Anabaena:Geitlerinema)) * 100)) %>% #Divide the abundances by the new row total, *100
+  dplyr::mutate(across(Anabaena:Geitlerinema, ~ .x / sum(c_across(Anabaena:Geitlerinema)) * 100)) %>% #Divide the abundances by the new row total, *100
   ungroup() %>% 
+  dplyr::mutate(across(c(Anabaena:Geitlerinema),
+                       ~ . + pseudocount)) %>%  #Cannot have zeros for log transforming
   group_by(year, week) %>%
   dplyr::summarise(across(c(Anabaena:Geitlerinema), mean, na.rm = TRUE)) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
