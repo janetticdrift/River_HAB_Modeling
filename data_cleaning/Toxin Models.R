@@ -82,11 +82,13 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  #dplyr::mutate(across(everything(), ~replace(., . == 0, 1))) %>%  #Cannot have zeros for log transforming
-  replace(is.na(.), -99) %>%
+  dplyr::mutate(across(everything(), ~replace(., . == 0, 0.1))) %>%  #Cannot have zeros for log transforming
+  dplyr::mutate(across(ATX_all_ug_g, log)) %>%
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T)
+
 
 
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
@@ -116,7 +118,7 @@ fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-D#Model checks and evaluation
+#Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
@@ -137,6 +139,8 @@ mcmc_intervals(
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("Beta_tox", "Beta0", "sigma_p", "sigma_o") )
+
+
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.atx, permuted=FALSE), 

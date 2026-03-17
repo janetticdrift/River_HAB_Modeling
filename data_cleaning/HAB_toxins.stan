@@ -3,7 +3,8 @@
 data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Number of species in microscopy
-  vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  int firstdays[uniqueID]; //Days to skip modeling, first day of the year
+  
   vector[uniqueID] Toxins; //Vector of known toxin concentrations
   matrix[uniqueID, Nspecies] N; //microscopy abundances per week
   
@@ -40,7 +41,7 @@ transformed parameters {
 
   vector[uniqueID] tox;
 
-  tox[1] = sigma_p * tox_nc[1];
+  tox[1] = tox_nc[1];
 
   for(t in 2:uniqueID){
     if(firstdays[t]==1){
@@ -64,7 +65,7 @@ model {
   sigma_p ~ inv_gamma(3,1); //process model var
   sigma_o ~ inv_gamma(3,1); //observation model var
   
-  Beta0 ~ normal(0,1);    //Intercept
+  Beta0 ~ normal(0,0.5);    //Intercept
   Beta1 ~ normal(0,1);    //population coefficient
   Beta_tox ~ normal(0,1); //Toxin coefficient
   
@@ -81,7 +82,7 @@ model {
 
 // ----------------- Observation model -----------------
     for(t in 1:uniqueID){
-    if(Toxins[t] >= -99){ //If t is a week we actually have collected data for
+    if(Toxins[t] > -99){ //If t is a week we actually have collected data for
       Toxins[t] ~ normal(tox[t], sigma_o);
         
       }
