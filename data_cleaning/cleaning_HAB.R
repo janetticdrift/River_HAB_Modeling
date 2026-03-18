@@ -465,20 +465,24 @@ atx24clean <- atx2024 %>%
   arrange(field_date)
   
 #combine 2024 data with 2022,2023
+
+pseudocount <- 0.001
+
 atx <- rbind(atx2223clean, atx24clean) %>% 
   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
-  dplyr::mutate(year = year(field_date))
+  dplyr::mutate(year = year(field_date)) %>% 
+  dplyr::mutate(concentration = concentration + pseudocount) %>%  #Cannot have zeros for log transforming
+  dplyr::mutate(concentration = log(concentration))
 
 #Plot data
 TAC <- ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
   facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
   geom_point() +
   geom_line() +
-  ylim(0, 100) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  labs(title = "Target Anabaena", x = "Date", y = "Anatoxin Concentration (ug/g)") +
+  labs(title = "Target Anabaena", x = "Date", y = "Log Anatoxin Concentration (ug/g)") +
   scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
                                "Homoanatoxin-a"),
                      values = c("red", "blue", "goldenrod", "purple"),
@@ -488,7 +492,7 @@ TM <- ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concent
   facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
   geom_point() +
   geom_line() +
-  labs(title = "Target Microcoleus", x = "Date", y = "Anatoxin Concentration (ug/g)") +
+  labs(title = "Target Microcoleus", x = "Date", y = "Log Anatoxin Concentration (ug/g)") +
   scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
                                 "Homoanatoxin-a"),
                      values = c("red", "blue", "goldenrod", "purple"),

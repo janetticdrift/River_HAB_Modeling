@@ -77,18 +77,19 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 
 #---------------------------------------------------------------------------------------
 #CREATE MODELS
+pseudocount <- 1
 
 #Gather data into stan list format
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  dplyr::mutate(across(everything(), ~replace(., . == 0, 0.1))) %>%  #Cannot have zeros for log transforming
-  dplyr::mutate(across(ATX_all_ug_g, log)) %>%
+  # dplyr::mutate(across(ATX_all_ug_g,
+  #                      ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
+  # dplyr::mutate(across(ATX_all_ug_g, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T)
-
 
 
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
@@ -113,9 +114,18 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 
 options(mc.cores = parallel::detectCores())
 
+#Set starting anatoxin values to be the mean: 4.79
+init_fun_atx <- function() list(
+  sigma_p = 0.5,    
+  sigma_o = 0.5,
+  Beta0 = 0,
+  Beta1 = rep(0, 3),     # small start
+  log_tox_nc = rep(log(4.79), nrow(anatoxin_data)) #nrow is the time length
+ )
+
 #Estimate anatoxins in TM mats
-fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 6000,
-                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 4000,
+                 warmup = 2000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
 #Model checks and evaluation
@@ -138,7 +148,7 @@ mcmc_intervals(
 
 mcmc_intervals(
   as.array(fit.atx),
-  pars = c("Beta_tox", "Beta0", "sigma_p", "sigma_o") )
+  pars = c("Beta0", "sigma_p", "sigma_o") )
 
 
 

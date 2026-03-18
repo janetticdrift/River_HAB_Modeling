@@ -384,7 +384,7 @@ p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,100)) +
+  coord_cartesian(ylim = c(0,90)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
   colScale + filScale + linScale
 
