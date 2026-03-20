@@ -61,11 +61,11 @@ transformed parameters {
 model {
 	
   //priors
-  sigma_p ~ normal(0,0.1); //process model var
-  sigma_o ~ normal(0,1); //observation model var
+  sigma_p ~ normal(0,0.3); //process model var
+  sigma_o ~ normal(0,0.3); //observation model var
   
-  Beta0 ~ normal(0,1);    //Intercept
-  Beta1 ~ normal(0,1);    //population coefficient
+  Beta0 ~ normal(0,0.2);    //Intercept
+  Beta1 ~ normal(0,0.2);    //population coefficient
   
   Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);

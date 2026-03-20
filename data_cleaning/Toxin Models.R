@@ -120,12 +120,12 @@ init_fun_atx <- function() list(
   sigma_o = 0.5,
   Beta0 = 0,
   Beta1 = rep(0, 3),     # small start
-  log_tox_nc = rep(log(4.79), nrow(anatoxin_data)) #nrow is the time length
+  log_tox_nc = rep(log(4.79), nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
  )
 
 #Estimate anatoxins in TM mats
-fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 4000,
-                 warmup = 2000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
 #Model checks and evaluation

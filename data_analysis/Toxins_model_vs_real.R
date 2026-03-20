@@ -50,8 +50,8 @@ obs_data_toxins <- toxins %>%
 #Clean dataframe of MODELED data
 #Initial cleaning of model outputs
 tox_params_TM <- as.data.frame(fit.atx1) %>% 
-  dplyr::select(matches("tox\\[")) %>% 
-  dplyr::mutate(across(`chain:1.tox[1]`:`chain:3.tox[41]`, exp)) %>%  #backtransform tox
+  dplyr::select(matches("tox_raw")) %>% 
+  #dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, exp)) %>%  #backtransform tox
   t 
 #Make sure you anazlyze tox, not tox_nc: tox is the reconstructed latent state, and biologically meaningful
 #tox_nc is just the standardized version for model construction
