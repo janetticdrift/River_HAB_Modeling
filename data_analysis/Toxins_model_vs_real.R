@@ -51,6 +51,7 @@ obs_data_toxins <- toxins %>%
 #Initial cleaning of model outputs
 tox_params_TM <- as.data.frame(fit.atx1) %>% 
   dplyr::select(matches("tox_raw")) %>% 
+  #dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>%
   #dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, exp)) %>%  #backtransform tox
   t 
 #Make sure you anazlyze tox, not tox_nc: tox is the reconstructed latent state, and biologically meaningful
@@ -120,7 +121,7 @@ ggplot(tox_params2_TM, aes(x = model_date, y = mean)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
-  labs(x = "Date", y = "Anatoxin Concentration", title = "Observed vs. Latent Concentrations") +
+  labs(x = "Date", y = "Anatoxin Concentration", title = "Poisson Observed vs. Latent Concentrations") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
 

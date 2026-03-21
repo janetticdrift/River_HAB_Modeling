@@ -77,24 +77,29 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 
 #---------------------------------------------------------------------------------------
 #CREATE MODELS
-pseudocount <- 1
+pseudocount <- 0.00001
 
 #Gather data into stan list format
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  # dplyr::mutate(across(ATX_all_ug_g,
-  #                      ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
-  # dplyr::mutate(across(ATX_all_ug_g, log)) %>%
+  # dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson
+  #               ATX_all_ug_g = ATX_all_ug_g*1000) %>% 
+  dplyr::mutate(across(ATX_all_ug_g,
+                       ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
+  dplyr::mutate(across(ATX_all_ug_g, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T)
+  # dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #editing data for poisson
+  #               ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
 
 
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
+                 # "is_obs" = anatoxin_data$is_obs,
                 "firstdays" = anatoxin_data$firstday,
-                "Toxins" = anatoxin_data$ATX_all_ug_g,
+                "Toxins" = anatoxin_data$ATX_all_ug_g, #must use as.integer if poisson
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                 "N" = matalltaxaM[,-(1:2)],
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
@@ -120,7 +125,7 @@ init_fun_atx <- function() list(
   sigma_o = 0.5,
   Beta0 = 0,
   Beta1 = rep(0, 3),     # small start
-  log_tox_nc = rep(log(4.79), nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
+  log_tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
  )
 
 #Estimate anatoxins in TM mats

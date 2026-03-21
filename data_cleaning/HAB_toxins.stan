@@ -22,7 +22,7 @@ parameters {
   real<lower= 0> sigma_p; //var w/ process model
   real<lower= 0> sigma_o; //var w/ observation model
   
-  vector[uniqueID] log_tox_nc;  //estimated anatoxin state, non-centered and treated as on the log scale
+  vector[uniqueID] tox_nc;  //estimated anatoxin state, non-centered and treated as on the log scale
   
   real Beta0;            // intercept
   vector[Nspecies] Beta1;// species effects
@@ -38,21 +38,21 @@ parameters {
 
 transformed parameters {
 
-  vector[uniqueID] log_tox;
+  vector[uniqueID] tox;
 
-  log_tox[1] = log_tox_nc[1];
+  tox[1] = sigma_p * tox_nc[1];
 
   for(t in 2:uniqueID){
     if(firstdays[t]==1){
-      log_tox[t] = log_tox_nc[t]; 
+      tox[t] = sigma_p * tox_nc[t]; 
       continue;
     }
-    log_tox[t] = Beta0 + dot_product(Beta1, N[t-1]) + 
+    tox[t] = tox[t-1] + Beta0 + dot_product(Beta1, N[t-1]) + 
                             Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + 
                             Atheta*ammonium[t-1] + Dtheta*discharge[t-1] + 
                             Ttheta*temp[t-1] + Ctheta*cond[t-1] + 
                             Rtheta*rad[t-1] +
-                            sigma_p * log_tox_nc[t];
+                            sigma_p * tox_nc[t];
 
   }
 
@@ -64,28 +64,26 @@ model {
   sigma_p ~ normal(0,0.3); //process model var
   sigma_o ~ normal(0,0.3); //observation model var
   
-  Beta0 ~ normal(0,0.2);    //Intercept
-  Beta1 ~ normal(0,0.2);    //population coefficient
+  Beta0 ~ normal(0,0.3);    //Intercept
+  Beta1 ~ normal(0,0.3);    //population coefficient
   
-  Ntheta ~ normal(0,1);
-  Ptheta ~ normal(0,1);
-  Atheta ~ normal(0,1);
-  Dtheta ~ normal(0,1);
-  Ttheta ~ normal(0,1);
-  Ctheta ~ normal(0,1);
-  Rtheta ~ normal(0,1);
+  Ntheta ~ normal(0,0.3);
+  Ptheta ~ normal(0,0.3);
+  Atheta ~ normal(0,0.3);
+  Dtheta ~ normal(0,0.3);
+  Ttheta ~ normal(0,0.3);
+  Ctheta ~ normal(0,0.3);
+  Rtheta ~ normal(0,0.3);
 
 // ----------------- Process model (NON-CENTERED) -----------------
 
-    log_tox_nc ~ normal(0,1);
+    tox_nc ~ normal(0,1);
     //tox_nc is drawn here, then used to estimate tox in the transformed parameters block
 
 // ----------------- Observation model -----------------
     for(t in 1:uniqueID){
     if(Toxins[t] > -99){ //If t is a week we actually have collected data for
-      // Add tiny constant to zeros to stabilize sampler?
-      real y_obs = (Toxins[t] == 0) ? 1e-6 : Toxins[t]; //condition ? value_if_true : value_if_false
-      y_obs ~ normal(exp(log_tox[t]), sigma_o) T[0,]; //truncate raw Toxins values at 0
+      Toxins[t] ~ normal(tox[t], sigma_o);
     }
   }
 }
@@ -94,6 +92,6 @@ generated quantities {
   vector[uniqueID] tox_raw;
 
   for (t in 1:uniqueID) {
-    tox_raw[t] = exp(log_tox[t]);
+    tox_raw[t] = exp(tox[t]);
   }
 }
