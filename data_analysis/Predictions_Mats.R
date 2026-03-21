@@ -233,7 +233,7 @@ abundances <- x[["n"]][,,27] #iterations, species #, time
 #inputs
 runs <- nrow(abundances)
 time <- 15 #number of weeks in 2023
-n <- array(NA, dim = c(runs, 9, time))
+n <- array(NA, dim = c(runs, 3, time))
 
 #Pull out environmental effects
 nitrate <- stand_nut$nitrate_mg_N_L[27:(26+time)]
