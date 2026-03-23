@@ -119,7 +119,7 @@ setwd(here::here("data_cleaning")) #Set working directory to current folder
 
 options(mc.cores = parallel::detectCores())
 
-#Set starting anatoxin values to be the mean: 4.79
+#Set starting values
 init_fun_atx <- function() list(
   sigma_p = 0.5,    
   sigma_o = 0.5,
