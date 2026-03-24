@@ -170,9 +170,9 @@ model.4 <- list("uniqueID" = nrow(alltaxatime),
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
   dplyr::select(c(1:9)) %>% #Retain only Ana, Epi, and Geit
-  rowwise() %>% #Re-relativize one row at a time
-  dplyr::mutate(across(Anabaena:Geitlerinema, ~ .x / sum(c_across(Anabaena:Geitlerinema)) * 100)) %>% #Divide the abundances by the new row total, *100
-  ungroup() %>% 
+  # rowwise() %>% #Re-relativize one row at a time
+  # dplyr::mutate(across(Anabaena:Geitlerinema, ~ .x / sum(c_across(Anabaena:Geitlerinema)) * 100)) %>% #Divide the abundances by the new row total, *100
+  # ungroup() %>% 
   dplyr::mutate(across(c(Anabaena:Geitlerinema),
                        ~ . + pseudocount)) %>%  #Cannot have zeros for log transforming
   group_by(year, week) %>%

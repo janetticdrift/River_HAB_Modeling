@@ -121,7 +121,7 @@ ggplot(tox_params2_TM, aes(x = model_date, y = mean)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
-  labs(x = "Date", y = "Anatoxin Concentration", title = "Poisson Observed vs. Latent Concentrations") +
+  labs(x = "Date", y = "Anatoxin Concentration", title = "Observed vs. Latent Concentrations") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale
 
