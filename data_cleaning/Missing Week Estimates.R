@@ -257,7 +257,7 @@ options(mc.cores = parallel::detectCores())
 #All years, one species, 3 reaches
 
 init_fun_M <- function() list(
-  sigma_p = rep(0.5, 3),     #9 is number of species in mat datasets
+  sigma_p = rep(0.5, 3),     #3 is number of species in mat datasets
   sigma_o = rep(0.5, 3),
   Alpha   = rep(0, 3),
   Beta_diag = rep(0, 0, 3),     # small start

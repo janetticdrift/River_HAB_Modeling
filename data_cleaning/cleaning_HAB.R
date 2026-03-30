@@ -207,7 +207,7 @@ x <- calculate_NH4(nut_data)[138:173,] %>%
 nut_data <- nut_data %>% 
   dplyr::slice(1:137)
 nut_data <- rbind(nut_data, x)
-nut_data[85, "nitrate_mg_N_L"] <- NA #Take out an outlier
+nut_data[85, "nitrate_mg_N_L"] <- NA #Take out an outlier (recording mistake)
 nut_data[145, "cond_uS_cm"] <- 237 #Fix glitch reading from sensor with lowest HOBO estimate
 
 
@@ -230,19 +230,16 @@ nutrients <- nut_data %>%
 
 #Test for Normality, and transform data
 #Nitrate
-MASS::boxcox(lm(nutrients$nitrate_mg_N_L ~ 1)) #Determine ideal lambda
-nutrients$nitrate_mg_N_L <- boxcox_transform(nutrients$nitrate_mg_N_L, 0.35) #Transform variable
 shapiro.test(nutrients$nitrate_mg_N_L) #Test for Normality
+nutrients$nitrate_mg_N_L <- log(nutrients$nitrate_mg_N_L)
 
 #Phosphate
-MASS::boxcox(lm(nutrients$oPhos_ug_P_L ~ 1)) #Determine ideal lambda
-nutrients$oPhos_ug_P_L <- boxcox_transform(nutrients$oPhos_ug_P_L, -1.1) #Transform variable
 shapiro.test(nutrients$oPhos_ug_P_L) #Test for Normality
+nutrients$oPhos_ug_P_L <- log(nutrients$oPhos_ug_P_L)
 
 #Ammonium
-MASS::boxcox(lm(nutrients$ammonium_mg_N_L ~ 1)) #Determine ideal lambda
-nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L) #Transform variable
 shapiro.test(nutrients$ammonium_mg_N_L) #Test for Normality
+nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L)
 
 stand_nut <- nutrients %>% 
   dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
@@ -361,7 +358,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
-  dplyr::mutate(log_discharge = log(discharge)) %>% 
+  dplyr::mutate(log_discharge = log(discharge)) %>% #log-transform
   dplyr::mutate(stand_discharge = c(scale(log_discharge))) %>% 
   dplyr::mutate(year = as.numeric(as.character(year)))
 
@@ -422,18 +419,12 @@ swradiation_raw <- rbind(PAR2022, PAR2023, PAR2024) %>%
   dplyr::mutate(date = as.Date(date),
                 year = as.numeric(as.character(year)))
 
-#Test for Normality, and transform data
-#Nitrate
-MASS::boxcox(lm(swradiation_raw$radiation ~ 1)) #Determine ideal lambda
-swradiation_raw$radiation <- boxcox_transform(swradiation_raw$radiation, 2.6) #Transform variable
-shapiro.test(swradiation_raw$radiation) #Test for Normality
-
 #Scale radiation data
 swradiation <- swradiation_raw %>% 
   dplyr::mutate(stand_rad = c(scale(radiation)))
 
 #Quick plot of radiation data
-ggplot(swradiation, aes(x = fake_date, y = radiation, color = year)) +
+ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year)) +
   geom_point() +
   geom_line() +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
