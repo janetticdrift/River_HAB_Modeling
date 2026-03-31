@@ -31,10 +31,10 @@ obs_data_mat_TM <- microscopy %>%
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
                               as.Date("2022-09-08"))) %>%  #Change 2022/09/06 to 09/08 so the model can summarise correctly 
   dplyr::filter(Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")) %>% #Retain only Ana, Epi, and Geit
-  group_by(field_date, reach) %>% 
-  dplyr::mutate(Abundance = Abundance / sum(Abundance) * 100) %>% #Divide the abundances by summed total, *100
-  dplyr::mutate(Abundance = replace_na(Abundance, 0)) %>% 
-  ungroup() %>% 
+  # group_by(field_date, reach) %>% 
+  # dplyr::mutate(Abundance = Abundance / sum(Abundance) * 100) %>% #Divide the abundances by summed total, *100
+  # dplyr::mutate(Abundance = replace_na(Abundance, 0)) %>% 
+  # ungroup() %>% 
   group_by(field_date, year, Species) %>% 
   dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   replace(is.na(.), 0) %>% #one date had only reach, resulting in SE = NA
@@ -224,7 +224,7 @@ ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
             aes(x = model_date, y = obs_mean, group = Species),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,100)) +
+  coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
   colScale + filScale + shapScale

@@ -96,12 +96,35 @@ anatoxin_data <- atx %>%
   #               ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
 
 
+#Gather latent states of microscopy abundances
+matmodel_TM <- readRDS(here::here("data/WithinMat_Micro.rds"))
+
+TM_latent1 <- as.data.frame(matmodel_TM) %>% 
+  dplyr::select(matches("n\\[")) %>% 
+  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[3,41]`, exp)) %>%  #backtransform n
+  t 
+
+TM_latent <- as.data.frame(TM_latent1) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Anabaena',
+                                    grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
+                                    grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema')) %>% 
+  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
+  dplyr::select(-group) %>% 
+  dplyr::mutate(mean = log(mean)) %>% 
+  pivot_wider(names_from = Species, values_from = mean) %>% 
+  arrange(time)
+
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
                  # "is_obs" = anatoxin_data$is_obs,
                 "firstdays" = anatoxin_data$firstday,
                 "Toxins" = anatoxin_data$ATX_all_ug_g, #must use as.integer if poisson
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                "N" = matalltaxaM[,-(1:2)],
+                "N" = TM_latent[,-(1)], #SHOULD THIS BE LOG TRANSFORMED???? shouldn't need to be?
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
