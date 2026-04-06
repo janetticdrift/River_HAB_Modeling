@@ -221,14 +221,16 @@ saveRDS(rstan::extract(fit.atx),
 lag_df <- data.frame(time = TM_latent$time,
                      ATX = exp(anatoxin_data$ATX_all_ug_g), 
                      Anabaena_mat = exp(TM_latent$Anabaena),
-                     Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum))
+                     Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum[-c(14:15, 29:30)]))
 
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
+ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
 
 #Create lags
 lag_df <- lag_df %>%
-  dplyr::mutate(Ana_lag1 = lag(Anabaena, 1),
-                Ana_lag2 = lag(Anabaena, 2))
+  dplyr::mutate(Ana_lag1 = lag(Anabaena_river, 1),
+                Ana_lag2 = lag(Anabaena_river, 2)) %>% 
+  dplyr::select(!Anabaena_mat)
 
 lag_dfpivot <- lag_df %>% 
   pivot_longer(cols = starts_with("Ana"),
@@ -239,5 +241,6 @@ lag_dfpivot <- lag_df %>%
 ggplot(lag_dfpivot, aes(x = Abundance, y = ATX, color = lag)) +
   geom_point(alpha = 0.7) +
   geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Abundance (lagged)", y = "Toxin")
+  labs(x = "Abundance (lagged)", y = "Toxin") +
+  theme_bw()
 
