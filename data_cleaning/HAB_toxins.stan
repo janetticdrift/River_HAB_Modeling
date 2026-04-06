@@ -2,19 +2,12 @@
 
 data {
   int uniqueID; //Total number of weeks down the years
-  int Nspecies; //Number of species in microscopy
   int firstdays[uniqueID]; //Days to skip modeling, first day of the year
+  int Npredictors; //Number of predictor variables
   
   vector[uniqueID] Toxins; //Vector of raw toxin concentrations
-  matrix[uniqueID, Nspecies] N; //microscopy abundances per week
-  
-  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
-  vector [uniqueID] phos; //Vector of o phos levels, standardized
-  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
-  vector [uniqueID] discharge; //Vector of discharge levels, logged
-  vector [uniqueID] temp; //Vector of temperatures, Celsius
-  vector [uniqueID] cond; //Vector of conductivity, standardized
-  vector [uniqueID] rad; //Vector of shortwave radiation, standardized
+  matrix[uniqueID, Npredictors] X; //Design matrix of all predictors
+
 }
 
 parameters {
@@ -25,7 +18,9 @@ parameters {
   vector[uniqueID] tox_nc;  //estimated anatoxin state, non-centered and treated as on the log scale
   
   real Beta0;            // intercept
-  vector[Nspecies] Beta1;// species effects
+  real Beta1;            // species 1 effects
+  real Beta2;            // species 2 effects
+  real Beta3;            // species 3 effects
   
   real Ntheta; //parameter for nitrate each species
   real Ptheta; //parameter for o phos each species
@@ -41,18 +36,29 @@ transformed parameters {
   vector[uniqueID] tox;
 
   tox[1] = sigma_p * tox_nc[1];
+  
+  vector[11] beta;   // Beta vector: 1 intercept + 3 algae species + 7 env vars
+  
+  //Fill in empty beta vector:
+  beta[1] = Beta0;
+  beta[2] = Beta1;
+  beta[3] = Beta2;
+  beta[4] = Beta3;
+
+  beta[5] = Ntheta;
+  beta[6] = Ptheta;
+  beta[7] = Atheta;
+  beta[8] = Dtheta;
+  beta[9] = Ttheta;
+  beta[10] = Ctheta;
+  beta[11] = Rtheta;
 
   for(t in 2:uniqueID){
     if(firstdays[t]==1){
       tox[t] = sigma_p * tox_nc[t]; 
       continue;
     }
-    tox[t] = tox[t-1] + Beta0 + dot_product(Beta1, N[t-1]) + 
-                            Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + 
-                            Atheta*ammonium[t-1] + Dtheta*discharge[t-1] + 
-                            Ttheta*temp[t-1] + Ctheta*cond[t-1] + 
-                            Rtheta*rad[t-1] +
-                            sigma_p * tox_nc[t];
+    tox[t] = tox[t-1] + X[t-1]*beta + sigma_p * tox_nc[t];
 
   }
 
@@ -65,7 +71,9 @@ model {
   sigma_o ~ normal(0,0.3); //observation model var
   
   Beta0 ~ normal(0,0.3);    //Intercept
-  Beta1 ~ normal(0,0.3);    //population coefficient
+  Beta1 ~ normal(0,0.3);    //Anabaena coefficient
+  Beta2 ~ normal(0,0.3);    //Epithemia coefficient
+  Beta3 ~ normal(0,0.3);    //Geitlerinema coefficient
   
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);

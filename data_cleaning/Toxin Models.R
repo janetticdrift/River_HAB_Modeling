@@ -119,20 +119,42 @@ TM_latent <- as.data.frame(TM_latent1) %>%
   pivot_wider(names_from = Species, values_from = mean) %>% 
   arrange(time)
 
-model.atx <- list("uniqueID" = nrow(anatoxin_data),
-                 # "is_obs" = anatoxin_data$is_obs,
-                "firstdays" = anatoxin_data$firstday,
-                "Toxins" = anatoxin_data$ATX_all_ug_g, #must use as.integer if poisson
-                "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                "N" = TM_latent[,-(1)], #SHOULD THIS BE LOG TRANSFORMED???? shouldn't need to be?
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
-                "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
-                "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
-                "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
-                "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-                "rad" = swradiation$stand_rad[-c(14:15, 29:30)]
+#Create design matrix
+X <- cbind(
+  intercept = 1,
+  TM_latent[, -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)]
 )
+
+#Combine with other information into model list
+model.atx <- list("uniqueID" = nrow(anatoxin_data),
+                  "firstdays" = anatoxin_data$firstday,
+                  "Toxins" = anatoxin_data$ATX_all_ug_g,
+                  "Nspecies" = as.integer(ncol(matalltaxaM)-2),
+                  "X" = X,
+                  "Npredictors" = ncol(X)
+)
+
+# model.atx <- list("uniqueID" = nrow(anatoxin_data),
+#                  # "is_obs" = anatoxin_data$is_obs,
+#                 "firstdays" = anatoxin_data$firstday,
+#                 "Toxins" = anatoxin_data$ATX_all_ug_g, #must use as.integer if poisson
+#                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),
+#                 "N" = TM_latent[,-(1)],
+#                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
+#                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
+#                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
+#                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
+#                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
+#                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+#                 "rad" = swradiation$stand_rad[-c(14:15, 29:30)]
+# )
 
 
 #-------------------------------------------------------------------------------------------------
@@ -147,7 +169,9 @@ init_fun_atx <- function() list(
   sigma_p = 0.5,    
   sigma_o = 0.5,
   Beta0 = 0,
-  Beta1 = rep(0, 3),     # small start
+  Beta1 = 0,     # small start for species abundances
+  Beta2 = 0,
+  Beta3 = 0,
   log_tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
  )
 
@@ -176,7 +200,11 @@ mcmc_intervals(
 
 mcmc_intervals(
   as.array(fit.atx),
-  pars = c("Beta0", "sigma_p", "sigma_o") )
+  pars = c("Beta1", "Beta2", "Beta3") )
+
+mcmc_intervals(
+  as.array(fit.atx),
+  pars = c("sigma_p", "sigma_o") )
 
 
 
@@ -186,3 +214,30 @@ saveRDS(rstan::extract(fit.atx, permuted=FALSE),
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.atx), 
         file = here::here("data/Anatoxin_AllVar_predictions.rds"))
+
+
+
+##### Exploratory business#####
+lag_df <- data.frame(time = TM_latent$time,
+                     ATX = exp(anatoxin_data$ATX_all_ug_g), 
+                     Anabaena_mat = exp(TM_latent$Anabaena),
+                     Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum))
+
+ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
+
+#Create lags
+lag_df <- lag_df %>%
+  dplyr::mutate(Ana_lag1 = lag(Anabaena, 1),
+                Ana_lag2 = lag(Anabaena, 2))
+
+lag_dfpivot <- lag_df %>% 
+  pivot_longer(cols = starts_with("Ana"),
+  names_to = "lag",
+  values_to = "Abundance"
+)
+
+ggplot(lag_dfpivot, aes(x = Abundance, y = ATX, color = lag)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Abundance (lagged)", y = "Toxin")
+
