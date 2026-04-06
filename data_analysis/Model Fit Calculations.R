@@ -60,7 +60,7 @@ for (s in 1:species) {
 
 # Posterior summarize 
   #Mean R2
-apply(R2, 2, mean) #2 stands for applying function over the columms
+apply(R2, 2, median) #2 stands for applying function over the columms
   #Credible Interval
 apply(R2, 2, quantile, c(0.025, 0.975))
 

@@ -14,6 +14,7 @@ library(patchwork)
 library(ggpubr)
 library(gridExtra)
 library(MASS)
+library(slider)
 
 #Packages for radiation data
 library("StreamLightUtils")
@@ -326,48 +327,70 @@ ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
 miranda2022 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code, cubic feet per second!
-  startDate = "2022-06-26",
+  startDate = "2021-11-07", #"2022-06-20",
   endDate = "2022-09-18")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::mutate(discharge = slide_dbl(
+    discharge, mean,
+    .before = 6, # include previous 6 days into mean for 7 week rolling avg
+    .complete = TRUE # calculate mean on full 7-day window
+  )) %>%
+  dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
 #2023 - startDate = "2023-06-20", endDate = "2023-09-24" but end it a couple days later
 miranda2023 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code
-  startDate = "2023-06-20",
+  startDate = "2022-11-07", #"2023-06-14",
   endDate = "2023-09-25")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::mutate(discharge = slide_dbl(
+    discharge, mean,
+    .before = 6, # include previous 6 days into mean for 7 week rolling avg
+    .complete = TRUE # calculate mean on full 7-day window
+  )) %>%
+  dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
 #2024 - startDate = "2024-06-19", endDate = "2024-10-10"
 miranda2024 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code
-  startDate = "2024-06-19",
+  startDate = "2023-11-02", #"2024-06-13",
   endDate = "2024-10-10")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::mutate(discharge = slide_dbl(
+      discharge, mean,
+      .before = 6, # include previous 6 days into mean for 7 week rolling avg
+      .complete = TRUE # calculate mean on full 7-day window
+    )) %>%
+  dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
-  dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date))) %>% 
+  # dplyr::mutate(season_year = if_else(month(date) >= 11, year(date) + 1, year(date)),
+  #               season_year = factor(season_year)) %>%
+  dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date)),
+                fake_date = if_else(month(date) >= 11, fake_date - years(1), fake_date)) %>% 
   dplyr::mutate(log_discharge = log(discharge)) %>% #log-transform
-  dplyr::mutate(stand_discharge = c(scale(log_discharge))) %>% 
-  dplyr::mutate(year = as.numeric(as.character(year)))
+  dplyr::mutate(stand_discharge = c(scale(log_discharge))) 
+  #dplyr::mutate(year = as.numeric(as.character(year)))
 
 
 #Quick plot of discharge data
-ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
+ggplot(discharge, aes(x = fake_date, y = log_discharge, group = season_year, color = season_year)) +
   geom_point() +
-  geom_line() +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
+  geom_line(size = 1) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b")+ #b = month?
+  labs(x = "Date")
 
 #Zoom in on the dates past the spring peak
 ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
