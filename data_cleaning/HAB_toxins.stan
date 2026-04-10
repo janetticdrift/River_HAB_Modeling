@@ -90,8 +90,8 @@ model {
 
 // ----------------- Observation model -----------------
     for(t in 1:uniqueID){
-    if(Toxins[t] > -99){ //If t is a week we actually have collected data for
-      Toxins[t] ~ normal(tox[t], sigma_o);
+      if(Toxins[t] > -99){ //If t is a week we actually have collected data for
+        Toxins[t] ~ normal(tox[t], sigma_o);
     }
   }
 }
