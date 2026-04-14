@@ -85,9 +85,9 @@ anatoxin_data <- atx %>%
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
   dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson
                 ATX_all_ug_g = ATX_all_ug_g*1000) %>%
-  dplyr::mutate(across(ATX_all_ug_g,
-                       ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
-  dplyr::mutate(across(ATX_all_ug_g, log)) %>%
+  # dplyr::mutate(across(ATX_all_ug_g,
+  #                      ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
+  # dplyr::mutate(across(ATX_all_ug_g, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
@@ -134,8 +134,9 @@ X <- cbind(
 
 #Combine with other information into model list
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
+                  "is_obs" = anatoxin_data$is_obs, #poisson edit
                   "firstdays" = anatoxin_data$firstday,
-                  "Toxins" = anatoxin_data$ATX_all_ug_g,
+                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                   "X" = X,
                   "Npredictors" = ncol(X)

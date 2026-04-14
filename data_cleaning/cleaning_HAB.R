@@ -340,7 +340,7 @@ miranda2022 <- renameNWISColumns(readNWISuv(
   dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
-#2023 - startDate = "2023-06-20", endDate = "2023-09-24" but end it a couple days later
+#2023 - startDate = "2023-06-20", endDate = "2023-09-24"
 miranda2023 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code
