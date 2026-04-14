@@ -4,8 +4,9 @@ data {
   int uniqueID; //Total number of weeks down the years
   int firstdays[uniqueID]; //Days to skip modeling, first day of the year
   int Npredictors; //Number of predictor variables (includes species int + env effect)
+  int<lower=0, upper=1> is_obs[uniqueID];
   
-  vector[uniqueID] Toxins; //Vector of raw toxin concentrations
+  int<lower=0> Toxins[uniqueID]; //Vector of raw toxin concentrations
   matrix[uniqueID, Npredictors] X; //Design matrix of all predictors
 }
 

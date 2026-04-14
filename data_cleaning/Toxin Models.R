@@ -83,17 +83,17 @@ pseudocount <- 0.00001
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  # dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson
-  #               ATX_all_ug_g = ATX_all_ug_g*1000) %>% 
+  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson
+                ATX_all_ug_g = ATX_all_ug_g*1000) %>%
   dplyr::mutate(across(ATX_all_ug_g,
                        ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
   dplyr::mutate(across(ATX_all_ug_g, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
-  unite("uniqueID", c(year, week), sep = "_", remove=T)
-  # dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #editing data for poisson
-  #               ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
+  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
+                ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
 
 
 #Gather latent states of microscopy abundances
@@ -176,7 +176,7 @@ init_fun_atx <- function() list(
  )
 
 #Estimate anatoxins in TM mats
-fit.atx <-  stan(file = "HAB_toxins.stan", data = model.atx, chains = 3, iter = 6000,
+fit.atx <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
