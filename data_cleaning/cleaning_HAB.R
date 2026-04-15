@@ -327,7 +327,7 @@ ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
 miranda2022 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code, cubic feet per second!
-  startDate = "2021-11-07", #"2022-06-20",
+  startDate = "2022-06-20", #"2021-11-07", for visualizing water year discharge patterns
   endDate = "2022-09-18")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
@@ -344,7 +344,7 @@ miranda2022 <- renameNWISColumns(readNWISuv(
 miranda2023 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code
-  startDate = "2022-11-07", #"2023-06-14",
+  startDate = "2023-06-14", #"2022-11-07",
   endDate = "2023-09-25")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
@@ -361,7 +361,7 @@ miranda2023 <- renameNWISColumns(readNWISuv(
 miranda2024 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
   parameterCd = "00060", #discharge code
-  startDate = "2023-11-02", #"2024-06-13",
+  startDate = "2024-06-13", #"2023-11-02",
   endDate = "2024-10-10")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
   group_by(date) %>% 
@@ -376,7 +376,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
-  # dplyr::mutate(season_year = if_else(month(date) >= 11, year(date) + 1, year(date)),
+  # dplyr::mutate(season_year = if_else(month(date) >= 11, year(date) + 1, year(date)), #Make Nov and Dec of previous year belong to the same season year
   #               season_year = factor(season_year)) %>%
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date)),
                 fake_date = if_else(month(date) >= 11, fake_date - years(1), fake_date)) %>% 
