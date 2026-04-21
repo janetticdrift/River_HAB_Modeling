@@ -22,6 +22,11 @@ parameters {
   real Beta2;            // species 2 effects
   real Beta3;            // species 3 effects
   
+  real BetaAna;         // species 1 effects, lag t-2
+  real BetaEpi;         // species 2 effects, lag t-2
+  real BetaGeit;        // species 3 effects, lag t-2
+  
+  
   real Ntheta; //parameter for nitrate each species
   real Ptheta; //parameter for o phos each species
   real Atheta; //parameter for ammonium each species
@@ -37,13 +42,13 @@ transformed parameters {
 
   tox[1] = sigma_p * tox_nc[1];
   
-  vector[11] beta;   // Beta vector: 1 intercept + 3 algae species + 7 env vars
+  vector[Npredictors] beta;   // Beta vector: 1 intercept + 3 algae species + 7 env vars
   
   //Fill in empty beta vector:
-  beta[1] = Beta0;
-  beta[2] = Beta1;
-  beta[3] = Beta2;
-  beta[4] = Beta3;
+  beta[1] = Beta0; //intercept
+  beta[2] = Beta1; //Anabaena
+  beta[3] = Beta2; //Epithemia
+  beta[4] = Beta3; //Geitlerinema
 
   beta[5] = Ntheta;
   beta[6] = Ptheta;
@@ -53,12 +58,18 @@ transformed parameters {
   beta[10] = Ctheta;
   beta[11] = Rtheta;
   
-  for(t in 2:uniqueID){
+  vector[3] beta_lag; //Beta vector: for using a t-2 lag with the species
+  
+  beta_lag[1] = BetaAna; //Anabaena
+  beta_lag[2] = BetaEpi; //Epithemia
+  beta_lag[3] = BetaGeit; //Geitlerinema
+  
+  for(t in 3:uniqueID){
     if(firstdays[t]==1){
       tox[t] = tox_nc[t]; 
       continue;
     }
-    tox[t] = tox[t-1] + X[t-1]*beta + sigma_p * tox_nc[t];
+    tox[t] = X[t-1,]*beta + X[t-2, 2:4]*beta_lag + sigma_p*tox_nc[t];
 
   }
 
@@ -71,7 +82,9 @@ model {
   sigma_o ~ normal(0,0.3); //observation model var
   
   Beta0 ~ normal(0,0.3);    //Intercept
-  Beta1 ~ normal(0,0.3);    //population coefficient
+  BetaAna ~ normal(0,0.3);    //population coefficient
+  BetaEpi ~ normal(0,0.3);    //population coefficient
+  BetaGeit ~ normal(0,0.3);    //population coefficient
   
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);

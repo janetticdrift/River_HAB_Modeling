@@ -136,7 +136,7 @@ X <- cbind(
 model.atx <- list("uniqueID" = nrow(anatoxin_data),
                   "is_obs" = anatoxin_data$is_obs, #poisson edit
                   "firstdays" = anatoxin_data$firstday,
-                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit
+                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                   "X" = X,
                   "Npredictors" = ncol(X)
@@ -168,12 +168,12 @@ options(mc.cores = parallel::detectCores())
 #Set starting values
 init_fun_atx <- function() list(
   sigma_p = 0.5,    
-  sigma_o = 0.5,
+  #sigma_o = 0.5, #not needed for poisson
   Beta0 = 0,
   Beta1 = 0,     # small start for species abundances
   Beta2 = 0,
   Beta3 = 0,
-  log_tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
+  tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
  )
 
 #Estimate anatoxins in TM mats
