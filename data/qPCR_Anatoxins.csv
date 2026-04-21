@@ -1,4 +1,4 @@
-﻿date,year,site,mat,pcr_samp_present,sample,samp_rerun,DNA_conc_ng_uL,DNA_conc_rerun,ana_C/uL,ana_C/uL_rerun,nif/uL,nif/uL_rerun,ATX_all_ug_g,ATXa_ug_g,HTXa_ug_g,dhATXa_ug_g,org_matter_percent,Notes,UNR_Notes
+﻿date,year,site,mat,pcr_samp_present,sample,samp_rerun,DNA_conc_ng_uL,DNA_conc_rerun,ana_C/uL,ana_C/uL_rerun,nif/uL,nif/uL_rerun,ATX_all_ug_g,ATXa_ug_g,HTXa_ug_g,dhATXa_ug_g,org_matter_percent,UU_Notes,UNR_Notes
 6/20/23,2023,2,Microcoleus,Y,,57,,91.7,,289,,13807,,,,,,,
 6/20/23,2023,3,Microcoleus,N,,,,,,,,,,,,,,,
 6/20/23,2023,4,Microcoleus,N,,,,,,,,,,,,,,,
@@ -165,12 +165,12 @@
 8/14/24,2024,1S,Anabaena,Y,39,39.1,206.2,,nd,nd,1990000,652,0.538,0.448333333,bdl,0.089666667,0.3376,,ATX triplicate
 8/26/24,2024,2,Anabaena,Y,74,,57.8,,0.931,,52.6,,2.242,1.424,bdl,0.818,0.35,,
 8/26/24,2024,3,Anabaena,Y,76,,59,,2940000,,1202,,6.578,4.731666667,bdl,1.846,0.4688,,ATX triplicate
-8/26/24,2024,4,Anabaena,Y,78,,40.3,,215000000,,2794,,1.172,0.746,bdl,0.426,0.3505,,
+8/26/24,2024,4,Anabaena,Y,78,78.1,40.3,,215000000,19084,2794,,1.172,0.746,bdl,0.426,0.3505,,No given DNA_conc for rerun
 8/26/24,2024,1S,Anabaena,Y,72,,22.5,,50.9,,10095,,2.083,1.529,bdl,0.553,0.2255,,
 9/14/24,2024,2,Anabaena,Y,85,,103,,7.71,,4.27,,0.072333333,bdl,bdl,0.072333333,0.3431,,ATX triplicate
 9/14/24,2024,3,Anabaena,Y,83,,30.4,,2.34,,nd,,0.158,bdl,bdl,0.158,0.3042,,
 9/14/24,2024,4,Anabaena,Y,81,,46.2,,nd,,nd,,0.066,bdl,bdl,0.066,0.8217,,
-9/14/24,2024,1S,Anabaena,Y,87,,53.8,,312000000,,nd,,0.022,bdl,bdl,0.022,0.3356,,
+9/14/24,2024,1S,Anabaena,Y,87,87.1,53.8,,312000000,1197,nd,,0.022,bdl,bdl,0.022,0.3356,,No given DNA_conc for rerun
 9/27/24,2024,2,Anabaena,N,,,,,,,,,,,,,,,
 9/27/24,2024,3,Anabaena,Y,102,,123.1,,nd,,nd,,,,,,,,
 9/27/24,2024,4,Anabaena,Y,104,,52.2,,132,,2266,,,,,,,,
