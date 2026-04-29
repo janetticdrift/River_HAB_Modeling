@@ -107,7 +107,7 @@ non_occurences <- microscopy1 %>%
   group_by(year, sample_type, Species) %>% 
   dplyr::summarise(Sum = sum(Abundance))
 
-rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences per each target and each year?
+rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences, per each target and each year?
 
 rare_species <- non_occurences %>% 
   ungroup() %>% 
