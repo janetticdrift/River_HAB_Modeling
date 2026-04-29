@@ -118,7 +118,7 @@ TM_latent <- as.data.frame(TM_latent1) %>%
   arrange(time)
 
 #Create design matrix
-X <- cbind(
+X1 <- cbind(
   intercept = 1,
   TM_latent[, -1],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
@@ -137,7 +137,7 @@ model.atx <- list("uniqueID" = nrow(anatoxin_data),
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                   "X" = X,
-                  "Npredictors" = ncol(X)
+                  "Npredictors" = ncol(X1)
 )
 
 #---------------------------------------------------------------------------------------
@@ -165,26 +165,27 @@ River_latent <- as.data.frame(River_latent1) %>%
   arrange(time)
 
 #Create design matrix
-X <- cbind(
+X2 <- cbind(
   intercept = 1,
-  TM_latent[, -1],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
-  temp = stand_nut$temp_C[-c(14:15, 29:30)],
-  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-  rad = swradiation$stand_rad[-c(14:15, 29:30)]
+  River_latent[, -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L,
+  phos = stand_nut$oPhos_ug_P_L,
+  ammonium = stand_nut$ammonium_mg_N_L,
+  discharge = discharge$stand_discharge,
+  temp = stand_nut$temp_C,
+  cond = stand_nut$cond_uS_cm,
+  rad = swradiation$stand_rad
 )
 
 #Combine with other information into model list
-model.atx <- list("uniqueID" = nrow(anatoxin_data),
-                  "is_obs" = anatoxin_data$is_obs, #poisson edit
+model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
+                  "is_obs" = anatoxin_data$is_obs, #poisson edit, was this an observed day?
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
                   "X" = X,
-                  "Npredictors" = ncol(X)
+                  "Npredictors" = ncol(X2)
+)
 
 #-------------------------------------------------------------------------------------------------
 #Run models
@@ -196,7 +197,6 @@ options(mc.cores = parallel::detectCores())
 #Set starting values
 init_fun_atx <- function() list(
   sigma_p = 0.5,    
-  #sigma_o = 0.5, #not needed for poisson
   Beta0 = 0,
   Beta1 = 0,     # small start for species abundances
   Beta2 = 0,
@@ -205,9 +205,13 @@ init_fun_atx <- function() list(
  )
 
 #Estimate anatoxins in TM mats
-fit.atx <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains = 3, iter = 6000,
+fit.atx.mat <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
+
+fit.atx.river <-  stan(file = "HAB_toxins_poisson_Riverwise.stan", data = model.atx.river, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                 max_treedepth = 15))
 
  #Model checks and evaluation
 library(shinystan)

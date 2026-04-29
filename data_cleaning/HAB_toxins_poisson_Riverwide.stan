@@ -7,7 +7,7 @@ data {
   int<lower=0, upper=1> is_obs[uniqueID];
   
   int<lower=0> Toxins[uniqueID]; //Vector of raw toxin concentrations
-  matrix[uniqueID, Npredictors] X1; //Design matrix of all predictors
+  matrix[uniqueID, Npredictors] X2; //Design matrix of all predictors
 }
 
 parameters {
@@ -20,11 +20,12 @@ parameters {
   real Beta1;            // species 1 effects
   real Beta2;            // species 2 effects
   real Beta3;            // species 3 effects
+  real Beta4;            // species 4 effects
   
-  real BetaAna;         // species 1 effects, lag t-2
-  real BetaEpi;         // species 2 effects, lag t-2
-  real BetaGeit;        // species 3 effects, lag t-2
-  
+  real BetaGreen;         // species 1 effects, lag t-2
+  real BetaMicro;         // species 2 effects, lag t-2
+  real BetaAna;          // species 3 effects, lag t-2
+  real BetaNFix;          // species 4 effects, lag t-2
   
   real Ntheta; //parameter for nitrate each species
   real Ptheta; //parameter for o phos each species
@@ -46,30 +47,32 @@ transformed parameters {
   
   //Fill in empty beta vector:
   beta[1] = Beta0; //intercept
-  beta[2] = Beta1; //Anabaena
-  beta[3] = Beta2; //Epithemia
-  beta[4] = Beta3; //Geitlerinema
+  beta[2] = Beta1; //Green Algae
+  beta[3] = Beta2; //Microcoleus
+  beta[4] = Beta3; //Anabaena
+  beta[5] = Beta4; //Other N Fixers
 
-  beta[5] = Ntheta;
-  beta[6] = Ptheta;
-  beta[7] = Atheta;
-  beta[8] = Dtheta;
-  beta[9] = Ttheta;
-  beta[10] = Ctheta;
-  beta[11] = Rtheta;
+  beta[6] = Ntheta;
+  beta[7] = Ptheta;
+  beta[8] = Atheta;
+  beta[9] = Dtheta;
+  beta[10] = Ttheta;
+  beta[11] = Ctheta;
+  beta[12] = Rtheta;
   
   vector[3] beta_lag; //Beta vector: for using a t-2 lag with the species
   
-  beta_lag[1] = BetaAna; //Anabaena
-  beta_lag[2] = BetaEpi; //Epithemia
-  beta_lag[3] = BetaGeit; //Geitlerinema
+  beta_lag[1] = BetaGreen; //Green Algae
+  beta_lag[2] = BetaMicro; //Microcoleus
+  beta_lag[3] = BetaAna; //Anabaena
+  beta_lag[3] = BetaNFix; //Other N Fixers
   
   for(t in 3:uniqueID){
     if(firstdays[t]==1){
       tox[t] = tox_nc[t]; 
       continue;
     }
-    tox[t] = X1[t-1,]*beta + X1[t-2, 2:4]*beta_lag + sigma_p*tox_nc[t];
+    tox[t] = X2[t-1,]*beta + X2[t-2, 2:4]*beta_lag + sigma_p*tox_nc[t];
 
   }
 
