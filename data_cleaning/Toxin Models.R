@@ -76,7 +76,7 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 
 
 #---------------------------------------------------------------------------------------
-#CREATE MODELS
+#CREATE MODEL FOR WITHIN-MAT DATA
 pseudocount <- 0.00001
 
 #Gather data into stan list format
@@ -101,7 +101,6 @@ matmodel_TM <- readRDS(here::here("data/WithinMat_Micro.rds"))
 
 TM_latent1 <- as.data.frame(matmodel_TM) %>% 
   dplyr::select(matches("n\\[")) %>% 
-  dplyr::mutate(across(`chain:1.n[1,1]`:`chain:3.n[3,41]`, exp)) %>%  #backtransform n
   t 
 
 TM_latent <- as.data.frame(TM_latent1) %>% 
@@ -115,7 +114,6 @@ TM_latent <- as.data.frame(TM_latent1) %>%
                                     grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   dplyr::select(-group) %>% 
-  dplyr::mutate(mean = log(mean)) %>% 
   pivot_wider(names_from = Species, values_from = mean) %>% 
   arrange(time)
 
@@ -142,21 +140,51 @@ model.atx <- list("uniqueID" = nrow(anatoxin_data),
                   "Npredictors" = ncol(X)
 )
 
-# model.atx <- list("uniqueID" = nrow(anatoxin_data),
-#                  # "is_obs" = anatoxin_data$is_obs,
-#                 "firstdays" = anatoxin_data$firstday,
-#                 "Toxins" = anatoxin_data$ATX_all_ug_g, #must use as.integer if poisson
-#                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-#                 "N" = TM_latent[,-(1)],
-#                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
-#                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
-#                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
-#                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
-#                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
-#                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-#                 "rad" = swradiation$stand_rad[-c(14:15, 29:30)]
-# )
+#---------------------------------------------------------------------------------------
+#River-Wide 
+#Gather latent states of microscopy abundances
+rivermodel <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
 
+River_latent1 <- as.data.frame(rivermodel) %>% 
+  dplyr::select(matches("n\\[")) %>% 
+  t 
+
+River_latent <- as.data.frame(River_latent1) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Green Algae',
+                                    grepl("[2,", group, fixed=TRUE) ~ 'Microcoleus',
+                                    grepl("[3,", group, fixed=TRUE) ~ 'Anabaena',
+                                    grepl("[4,", group, fixed=TRUE) ~ 'Other N Fixers')) %>% 
+  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
+  dplyr::select(-group) %>% 
+  pivot_wider(names_from = Species, values_from = mean) %>% 
+  arrange(time)
+
+#Create design matrix
+X <- cbind(
+  intercept = 1,
+  TM_latent[, -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)]
+)
+
+#Combine with other information into model list
+model.atx <- list("uniqueID" = nrow(anatoxin_data),
+                  "is_obs" = anatoxin_data$is_obs, #poisson edit
+                  "firstdays" = anatoxin_data$firstday,
+                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
+                  "Nspecies" = as.integer(ncol(matalltaxaM)-2),
+                  "X" = X,
+                  "Npredictors" = ncol(X)
 
 #-------------------------------------------------------------------------------------------------
 #Run models
@@ -181,7 +209,7 @@ fit.atx <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains = 3,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-#Model checks and evaluation
+ #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
