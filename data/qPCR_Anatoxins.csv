@@ -95,7 +95,7 @@
 8/28/23,2023,2,Anabaena,Y,,178,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
 8/28/23,2023,3,Anabaena,Y,,164,,NA,,NA,,NA,0.616,0.463,bdl,0.153,0.38,Rerun Bad Quality,
 8/28/23,2023,4,Anabaena,Y,,175,,63.7,,nd,,nd,,,,,,,
-8/28/23,2023,1S,Anabaena,Y,,119,,NA,,NA,,NA,12.598,10.67,bdl,1.928,1.2,Rerun Bad Quality,
+8/28/23,2023,1S,Anabaena,Y,,119,,NA,,NA,,NA,12.598,10.67,bdl,1.928,1,Rerun Bad Quality,"%org calculated as 1.199, rounded down to 1"
 9/4/23,2023,2,Anabaena,Y,,171,,67,,3049,,4106,0.013,0.013,bdl,bdl,0.14,,
 9/4/23,2023,3,Anabaena,Y,,176,,NA,,NA,,NA,,,,,,Rerun Bad Quality,
 9/4/23,2023,4,Anabaena,N,,,,,,,,,,,,,,,
@@ -142,7 +142,7 @@
 9/14/24,2024,3,Microcoleus,Y,82,,216.8,,5.87,,118,,0.096,bdl,bdl,0.096,0.1457,,
 9/14/24,2024,4,Microcoleus,Y,80,,136,,128,,2.57,,0.086,bdl,bdl,0.086,0.5352,,
 9/14/24,2024,1S,Microcoleus,Y,86,,259.8,,31.5,,2.91,,bdl,bdl,bdl,bdl,0.6882,,
-9/27/24,2024,2,Microcoleus,Y,101,,321.3,,nd,,nd,,,,,,1.1057,,
+9/27/24,2024,2,Microcoleus,Y,101,,321.3,,nd,,nd,,,,,,1,,"%org calculated as 1.1057, rounded down to 1"
 9/27/24,2024,3,Microcoleus,N,,,,,,,,,,,,,,,
 9/27/24,2024,4,Microcoleus,Y,103,,38.9,,117,,7.91,,,,,,0.5743,,
 9/27/24,2024,1S,Microcoleus,Y,100,,159.5,,0.728,,nd,,bdl,bdl,bdl,bdl,0.5275,,
