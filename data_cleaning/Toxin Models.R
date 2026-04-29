@@ -205,6 +205,11 @@ mcmc_intervals(
 
 mcmc_intervals(
   as.array(fit.atx),
+  pars = c("BetaAna", "BetaEpi", "BetaGeit") )
+
+
+mcmc_intervals(
+  as.array(fit.atx),
   pars = c("sigma_p", "sigma_o") )
 
 
