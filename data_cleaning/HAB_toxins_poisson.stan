@@ -15,7 +15,7 @@ parameters {
   real<lower= 0> sigma_p; //var w/ process model
   real<lower= 0> sigma_o; //var w/ observation model
   
-  vector[uniqueID] tox_nc;  //estimated anatoxin state, non-centered and treated as on the log scale
+  vector[uniqueID] tox_nc;   //estimated anatoxin state, non-centered and treated as on the log scale
   
   real Beta0;            // intercept
   real Beta1;            // species 1 effects
