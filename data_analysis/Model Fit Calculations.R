@@ -3,18 +3,20 @@ library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 
-#Must read in alltaxatime
 #Must read in atx 
 
-#RIVERWIDE
+#River-Wide
 
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
-#Extract observed data vectors from alltaxatime, raw data object
-y_micro <- alltaxatime$microcoleus
-y_ana <- alltaxatime$anabaena_cylindrospermum
-y_green <- alltaxatime$green_algae
-y_nfix <- alltaxatime$other_nfixers
+#Read in observed River-Wide data 
+obs_river_data <- readRDS(here::here("data/Model Fits/obs_river_data.rds"))
+
+#Extract observed data vectors from obs_river_data
+y_micro <- obs_river_data$microcoleus
+y_ana <- obs_river_data$anabaena_cylindrospermum
+y_green <- obs_river_data$green_algae
+y_nfix <- obs_river_data$other_nfixers
 
 #Put them into a single matrix
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time

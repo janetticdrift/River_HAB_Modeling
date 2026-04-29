@@ -68,6 +68,9 @@ alltaxatime <- yearriverdata %>%
   dplyr::mutate(across(green_algae:other_nfixers, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
+#Save observed data for model fit comparisons
+saveRDS(alltaxatime, 
+        file = here::here("data/Model Fits/obs_river_data.rds"))
 
 model.1 <- list("uniqueID" = nrow(alltaxatime), 
                 "Nspecies" = as.integer(ncol(alltaxatime)-3),
