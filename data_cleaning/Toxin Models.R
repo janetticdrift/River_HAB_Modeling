@@ -136,7 +136,7 @@ model.atx <- list("uniqueID" = nrow(anatoxin_data),
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                  "X" = X,
+                  "X" = X1,
                   "Npredictors" = ncol(X1)
 )
 
@@ -167,14 +167,14 @@ River_latent <- as.data.frame(River_latent1) %>%
 #Create design matrix
 X2 <- cbind(
   intercept = 1,
-  River_latent[, -1],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L,
-  phos = stand_nut$oPhos_ug_P_L,
-  ammonium = stand_nut$ammonium_mg_N_L,
-  discharge = discharge$stand_discharge,
-  temp = stand_nut$temp_C,
-  cond = stand_nut$cond_uS_cm,
-  rad = swradiation$stand_rad
+  River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)]
 )
 
 #Combine with other information into model list
@@ -183,7 +183,7 @@ model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                  "X" = X,
+                  "X" = X2,
                   "Npredictors" = ncol(X2)
 )
 
@@ -209,7 +209,7 @@ fit.atx.mat <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains 
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-fit.atx.river <-  stan(file = "HAB_toxins_poisson_Riverwise.stan", data = model.atx.river, chains = 3, iter = 6000,
+fit.atx.river <-  stan(file = "HAB_toxins_poisson_Riverwide.stan", data = model.atx.river, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                  max_treedepth = 15))
 
@@ -226,23 +226,28 @@ shinystan::launch_shinystan(as.shinystan(fit.atx))
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("Ntheta", "Ptheta", "Atheta")) 
-
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
-
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("Beta1", "Beta2", "Beta3") )
-
 mcmc_intervals(
   as.array(fit.atx),
   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
 
-
 mcmc_intervals(
-  as.array(fit.atx),
-  pars = c("sigma_p", "sigma_o") )
+  as.array(fit.atx.river),
+  pars = c("Ntheta", "Ptheta", "Atheta")) 
+mcmc_intervals(
+  as.array(fit.atx.river),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
+mcmc_intervals(
+  as.array(fit.atx.river),
+  pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
+mcmc_intervals(
+  as.array(fit.atx.river),
+  pars = c("BetaGreen", "BetaMicro", "BetaAna", "BetaNFix") )
 
 
 
@@ -257,32 +262,15 @@ saveRDS(rstan::extract(fit.atx),
 
 ##### Exploratory business#####
 lag_df <- data.frame(time = TM_latent$time,
-                     ATX = exp(anatoxin_data$ATX_all_ug_g), 
+                     ATX = anatoxin_data$ATX_all_ug_g/1000, 
                      Anabaena_mat = exp(TM_latent$Anabaena),
+                     Microcoleus_river = exp(alltaxatime$microcoleus)[-c(14:15, 29:30)],
                      Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum[-c(14:15, 29:30)]))
 
 #Plots
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
-
-#Create lags
-lag_df <- lag_df %>%
-  dplyr::mutate(Ana_lag1 = lag(Anabaena_river, 1),
-                Ana_lag2 = lag(Anabaena_river, 2)) %>% 
-  dplyr::select(!Anabaena_mat)
-
-lag_dfpivot <- lag_df %>% 
-  pivot_longer(cols = starts_with("Ana"),
-  names_to = "lag",
-  values_to = "Abundance"
-)
-
-#Plot regression
-ggplot(lag_dfpivot, aes(x = Abundance, y = ATX, color = lag)) +
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Abundance (lagged)", y = "Toxin") +
-  theme_bw()
+ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
 
 ###
 #Examine DeltaATX ~ DeltaPercent + DeltaEnv

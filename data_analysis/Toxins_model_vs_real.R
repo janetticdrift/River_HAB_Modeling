@@ -26,7 +26,7 @@ toxins
 # #Dataframe of interest is "toxins"
 
 #Read in model data (from Missing Week Estimates)
-fit.atx1 <- rstan::extract(fit.atx, permuted=FALSE)
+fit.atx1 <- rstan::extract(fit.atx.river, permuted=FALSE)
 #readRDS(here::here("data/Anatoxin_AllVariables.rds"))
 
 #MODEL INCLUDING JUST ATX_ALL--------------------------------------------------------------

@@ -7,7 +7,7 @@ data {
   int<lower=0, upper=1> is_obs[uniqueID];
   
   int<lower=0> Toxins[uniqueID]; //Vector of raw toxin concentrations
-  matrix[uniqueID, Npredictors] X2; //Design matrix of all predictors
+  matrix[uniqueID, Npredictors] X; //Design matrix of all predictors
 }
 
 parameters {
@@ -60,19 +60,19 @@ transformed parameters {
   beta[11] = Ctheta;
   beta[12] = Rtheta;
   
-  vector[3] beta_lag; //Beta vector: for using a t-2 lag with the species
+  vector[4] beta_lag; //Beta vector: for using a t-2 lag with the species
   
   beta_lag[1] = BetaGreen; //Green Algae
   beta_lag[2] = BetaMicro; //Microcoleus
   beta_lag[3] = BetaAna; //Anabaena
-  beta_lag[3] = BetaNFix; //Other N Fixers
+  beta_lag[4] = BetaNFix; //Other N Fixers
   
   for(t in 3:uniqueID){
     if(firstdays[t]==1){
       tox[t] = tox_nc[t]; 
       continue;
     }
-    tox[t] = X2[t-1,]*beta + X2[t-2, 2:4]*beta_lag + sigma_p*tox_nc[t];
+    tox[t] = X[t-1,]*beta + X[t-2, 2:5]*beta_lag + sigma_p*tox_nc[t];
 
   }
 
@@ -87,9 +87,11 @@ model {
   Beta1 ~ normal(0,0.3);    //Will be overwritten by pop coefs below
   Beta2 ~ normal(0,0.3);
   Beta3 ~ normal(0,0.3);
-  BetaAna ~ normal(0,0.3);    //population coefficient
-  BetaEpi ~ normal(0,0.3);    //population coefficient
-  BetaGeit ~ normal(0,0.3);    //population coefficient
+  Beta4 ~ normal(0,0.3);
+  BetaGreen ~ normal(0,0.3);    //population coefficient
+  BetaMicro ~ normal(0,0.3);    
+  BetaAna ~ normal(0,0.3);  
+  BetaNFix ~ normal(0,0.3);  
   
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);
