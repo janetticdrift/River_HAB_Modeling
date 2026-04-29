@@ -22,11 +22,11 @@ y_nfix <- obs_river_data$other_nfixers
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
 
 ###############------------------------------------------------------------------
-#Read in modeled data
-allfit <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds"))
-bioticfit <- readRDS(here::here("data/Riverwide_Biotic_predictions.rds"))
-abioticfit <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds"))
-abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+#Read in latent states of River-Wide
+allfit <- readRDS(here::here("data/Model Fits/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
 
 #Extract the relevant model here. fit.m4 = all variables,
 #fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
