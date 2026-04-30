@@ -233,14 +233,14 @@ saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Riverwide_AllVar_predictions.rds"))
+        file = here::here("data/Model Fits/Riverwide_AllVar_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.2, permuted=FALSE), 
         file = here::here("data/Riverwide_Biotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.2, pars = c('Alpha', 'Beta', 'n', 'sigma_p')), 
-        file = here::here("data/Riverwide_Biotic_predictions.rds"))
+        file = here::here("data/Model Fits/Riverwide_Biotic_predictions.rds"))
 
 
 #For building the observation vs latent state plots
@@ -251,7 +251,7 @@ saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Riverwide_Abiotic_predictions.rds"))
+        file = here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.4, permuted=FALSE), 
@@ -260,7 +260,7 @@ saveRDS(rstan::extract(fit.m1.4, permuted=FALSE),
 saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+        file = here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
 
 
 ##Save Within-Mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
@@ -275,7 +275,7 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/WithinMat_Micro_predictions.rds"))
+        file = here::here("data/Model Fits/WithinMat_Micro_predictions.rds"))
 
 #TAC output
 saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
@@ -287,7 +287,7 @@ saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/WithinMat_Ana_predictions.rds"))
+        file = here::here("data/Model Fits/WithinMat_Ana_predictions.rds"))
 
 
 #To read: object <- readRDS(here::here("data/Riverwide_AllVariables.rds"))

@@ -5,9 +5,106 @@ library(tidyverse)
 
 #Must read in atx 
 
-#River-Wide
+###############------------------------------------------------------------------
+#Create empty dataframe for storing all calculated indices
+model.indices <- data.frame(
+  model = character(),
+  category = character(),
+  param = character(),
+  metric = character(),
+  value = numeric(),
+  lwr = numeric(),
+  upr = numeric(),
+  stringsAsFactors = FALSE
+)
 
-#OBSERVED DATA VS POSTERIORS
+###############------------------------------------------------------------------
+#Read in all data needed for calculations
+
+        #River-Wide
+#Read in OBSERVED states of River-Wide
+obs_river_data <- readRDS(here::here("data/Model Fits/obs_river_data.rds"))
+#Extract observed data vectors from obs_river_data
+y_micro <- obs_river_data$microcoleus
+y_ana <- obs_river_data$anabaena_cylindrospermum
+y_green <- obs_river_data$green_algae
+y_nfix <- obs_river_data$other_nfixers
+#Put them into a single matrix
+y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
+
+#Read in LATENT states of River-Wide
+allfit <- readRDS(here::here("data/Model Fits/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
+
+#Read in SIMULATED states of River-Wide
+pred.allfit <- readRDS(here::here("data/Riverwide_Pred_AllVar.rds"))
+pred.bioticfit <- readRDS(here::here("data/Riverwide_Pred_Biotic.rds"))
+pred.abioticfit <- readRDS(here::here("data/Riverwide_Pred_Abiotic.rds"))
+pred.abioticnonutfit <- readRDS(here::here("data/Riverwide_Pred_AbioticNoNut.rds"))
+
+      #Within-Mat
+#Read in OBSERVED states of Within-Mat: TM
+obs_mat_data <- readRDS(here::here("data/Model Fits/obs_TM_data.rds"))
+#Extract observed data vectors from obs_mat_data, raw data object
+y_ana <- obs_mat_data$Anabaena                  #1
+y_epi <- obs_mat_data$`Epithemia Diatoms`       #2
+y_geit <- obs_mat_data$Geitlerinema             #3
+#Put them into a single matrix
+y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
+
+#Read in LATENT states of River-Wide: TM
+TMfit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
+
+#Read in SIMULATED states of River-Wide
+TM.pred <- readRDS(here::here("data/WithinMat_Pred_TM.rds"))
+
+#Create lists of models to iterate through
+river_species <- c("green", "micro", "ana", "nfix")
+mat_species <- c("ana", "epi", "geit")
+
+model_list <- list(
+  list(
+    name = "allfit",
+    category = "River-Wide",
+    post = allfit[["n"]],
+    pred = pred.allfit,
+    species = river_species
+  ),
+  list(
+    name = "bioticfit",
+    category = "River-Wide",
+    post = bioticfit[["n"]],
+    pred = pred.bioticfit,
+    species = river_species
+  ),
+  list(
+    name = "abioticfit",
+    category = "River-Wide",
+    post = abioticfit[["n"]],
+    pred = pred.abioticfit,
+    species = river_species
+  )
+  list(
+    name = "abioticnonutfit",
+    category = "River-Wide",
+    post = abioticnonutfit[["n"]],
+    pred = pred.abioticnonutfit,
+    species = river_species
+  ),
+  list(
+    name = "TMfit",
+    category = "Within-Mat",
+    post = TMfit[["n"]],
+    pred = pred.abioticnonutfit,
+    species = river_species
+  )
+)
+
+
+#River-Wide
+#Observed Data VS Latent States
 ###############------------------------------------------------------------------
 #Read in observed River-Wide data 
 obs_river_data <- readRDS(here::here("data/Model Fits/obs_river_data.rds"))
@@ -28,10 +125,9 @@ bioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Biotic_predictions.rd
 abioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
 abioticnonutfit <- readRDS(here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
 
-#Extract the relevant model here. fit.m4 = all variables,
-#fit.m5 = biotic interactions, and fit.m6 = abiotic effects.
-posteriors <- TMfit[["n"]] #array indexed by iterations, species #, time
-
+#Extract the relevant model here. fit.m1.1 = all variables,
+#fit.m1.2 = biotic interactions, fit.m1.3 = abiotic effects, and fit.m1.4 = abiotic-nut.
+posteriors <- allfit[["n"]] #array indexed by iterations, species #, time
 
 ###############------------------------------------------------------------------
 #BAYESIAN R2 CALCULATIONS
@@ -41,7 +137,8 @@ iter <- dim(posteriors)[1]  # Number of iterations
 species <- dim(posteriors)[2]  # Number of species
 time <- dim(posteriors)[3]  # Time steps
 
-R2 <- matrix(NA, iter, species) #Create empty matrix for R2 values per iteration, per species
+#Create empty matrix for R2 values per iteration, per species
+R2 <- matrix(NA, iter, species) 
 
 for (s in 1:species) {
   
@@ -66,8 +163,6 @@ apply(R2, 2, median) #2 stands for applying function over the columms
   #Credible Interval
 apply(R2, 2, quantile, c(0.025, 0.975))
 
-
-#POSTERIORS VS PREDICTED
 ###############------------------------------------------------------------------
 #LATENT VS PREDICTION RMSE & R2 CALCULATIONS
 
@@ -78,7 +173,7 @@ pred.abiotic.fit <- readRDS(here::here("data/Riverwide_Pred_Abiotic.rds"))
 pred.abioticnonut.fit <- readRDS(here::here("data/Riverwide_Pred_AbioticNoNut.rds"))
 
 #Set current predictive data
-predictives <- pred.abioticnonut.fit
+predictives <- pred.all.fit
 
 #Back-transform latent abundance data
 logposteriors <- exp(posteriors)
@@ -122,7 +217,7 @@ apply(R2, 2, quantile, c(0.025, 0.975))
 
 #Read in data
 TMfit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
-TAfit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
+#TAfit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
 
 #OBSERVED DATA VS POSTERIORS
 ###############------------------------------------------------------------------
