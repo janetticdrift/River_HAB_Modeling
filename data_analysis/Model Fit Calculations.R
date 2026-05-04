@@ -55,7 +55,7 @@ y_geit <- obs_mat_data$Geitlerinema             #3
 y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
 
 #Read in LATENT states of River-Wide: TM
-TMfit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
+TMfit <- readRDS(here::here("data/Model Fits/WithinMat_Micro_predictions.rds"))
 
 #Read in SIMULATED states of River-Wide
 TM.pred <- readRDS(here::here("data/WithinMat_Pred_TM.rds"))
@@ -66,69 +66,80 @@ mat_species <- c("ana", "epi", "geit")
 
 model_list <- list(
   list(
-    name = "allfit",
-    category = "River-Wide",
-    post = allfit[["n"]],
-    pred = pred.allfit,
-    species = river_species
+    model = "allfit",          #The specific model
+    category = "River-Wide",  #Whether it used percent cover or microscopy data
+    y_obs = y_obs_river,      #Reading in observed values
+    post = allfit[["n"]],     #Reading in latent state posteriors
+    pred = pred.allfit,       #Reading in simulated/predicted values
+    params = river_species   #List of species names used in this model
   ),
   list(
-    name = "bioticfit",
+    model = "bioticfit",
     category = "River-Wide",
+    y_obs = y_obs_river,
     post = bioticfit[["n"]],
     pred = pred.bioticfit,
-    species = river_species
+    params = river_species
   ),
   list(
-    name = "abioticfit",
+    model = "abioticfit",
     category = "River-Wide",
+    y_obs = y_obs_river,
     post = abioticfit[["n"]],
     pred = pred.abioticfit,
-    species = river_species
-  )
-  list(
-    name = "abioticnonutfit",
-    category = "River-Wide",
-    post = abioticnonutfit[["n"]],
-    pred = pred.abioticnonutfit,
-    species = river_species
+    params = river_species
   ),
   list(
-    name = "TMfit",
+    model = "abioticnonutfit",
+    category = "River-Wide",
+    y_obs = y_obs_river,
+    post = abioticnonutfit[["n"]],
+    pred = pred.abioticnonutfit,
+    params = river_species
+  ),
+  list(
+    model = "TMfit",
     category = "Within-Mat",
+    y_obs = y_obs_mat,
     post = TMfit[["n"]],
     pred = pred.abioticnonutfit,
-    species = river_species
+    params = mat_species
   )
 )
 
-
-#River-Wide
-#Observed Data VS Latent States
-###############------------------------------------------------------------------
-#Read in observed River-Wide data 
-obs_river_data <- readRDS(here::here("data/Model Fits/obs_river_data.rds"))
-
-#Extract observed data vectors from obs_river_data
-y_micro <- obs_river_data$microcoleus
-y_ana <- obs_river_data$anabaena_cylindrospermum
-y_green <- obs_river_data$green_algae
-y_nfix <- obs_river_data$other_nfixers
-
-#Put them into a single matrix
-y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
-
-###############------------------------------------------------------------------
-#Read in latent states of River-Wide
-allfit <- readRDS(here::here("data/Model Fits/Riverwide_AllVar_predictions.rds"))
-bioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Biotic_predictions.rds"))
-abioticfit <- readRDS(here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
-abioticnonutfit <- readRDS(here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
-
-#Extract the relevant model here. fit.m1.1 = all variables,
-#fit.m1.2 = biotic interactions, fit.m1.3 = abiotic effects, and fit.m1.4 = abiotic-nut.
-posteriors <- allfit[["n"]] #array indexed by iterations, species #, time
-
+for (m in 1:length(model_list)) {
+  
+  model <- model_list[[1]]
+  
+  y_obs <- model$y_obs
+  posteriors <- model$post
+  predictives <- model$pred
+  species_names <- model$params
+  
+  iter <- dim(posteriors)[1]     # Number of iterations
+  params <- dim(posteriors)[2]   # Number of parameters
+  time <- dim(posteriors)[3]     # Time steps
+  
+  for(p in 1:length(params)) {
+                                      #Bayesian R2
+    #Create empty matrix for storage
+    R2 <- matrix(NA, iter, species)
+    #Pull current observation point
+    y_obs <- y_obs[p, ]
+     obs_index <- which(y_obs != -99) #Remove weeks where we did not collect field data
+    
+    for (i in 1:iter) {
+      
+      yhat <- posteriors[i, p, obs_index] #In the time index, take out weeks with no field data
+      yobs <- y_obs[obs_index]
+      
+      var_fit <- var(yhat)
+      var_res <- var(yobs - yhat)
+      
+      R2[i, p] <- var_fit / (var_fit + var_res)
+  }
+  }
+}
 ###############------------------------------------------------------------------
 #BAYESIAN R2 CALCULATIONS
 
