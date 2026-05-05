@@ -76,6 +76,16 @@ allcoverdata <- rbind(percover, cleanpercover)
 #Clean microscopy data to tidy slide replicates and consolidate rare species
 microscopy_non_avg <- microdata %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
+  #Updated ID changes: Merge leptolyngbya and geitlerinema
+  dplyr::mutate(leptolyngbya_and_geitlerinema = leptolyngbya + geitlerinema) %>% 
+  dplyr::select(!c("leptolyngbya", "geitlerinema")) %>% 
+  #Updated ID changes: Move Homeothrix IDs to Calothrix
+  dplyr::mutate(calothrix = calothrix + homoeothrix) %>% 
+  dplyr::select(!"homoeothrix") %>% 
+  #Updated ID changes: Rivularia may be Gloeotrichia pre akinete formation
+  dplyr::rename(rivularia_or_early_stage_gloeotrichia = rivularia) %>% 
+  #Updated ID changes: Change Lyngbya to Miscellaneous Oscillatoriales
+  dplyr::rename(miscellaneous_oscillatoriales = lyngbya) %>% 
   separate(site_reach, into=c("site", "location", "reach"), 
            sep="-") %>% #Split location columns into separate categories
   dplyr::filter(grepl("M", location)) %>% #Keep Miranda sites, remove Standish-Hicky (SH) sites
@@ -84,11 +94,11 @@ microscopy_non_avg <- microdata %>%
   relocate(year, .after = field_date) %>%   #reorganize column order
   dplyr::select(!non_algal) %>% #Remove column measuring sediment amount
   dplyr::filter(!reach == 2) %>% #Remove the added reach
-  pivot_longer(microcoleus:aphanothece, names_to = "Species", values_to = "Abundance")
+  pivot_longer(microcoleus:leptolyngbya_and_geitlerinema, names_to = "Species", values_to = "Abundance")
 
 #Average together slide replicates  
 averaged_slides <- microscopy_non_avg %>% 
-  dplyr::filter(!slide_rep == "Final") %>%
+  dplyr::filter(!slide_rep == "Final") %>% #Do not re-average finalized slide entries
   group_by(field_date, year, site, location, reach, sample_type, date_analyzed, 
            method, Species) %>% 
   dplyr::summarise(Abundance = mean(Abundance)) %>% 
@@ -103,18 +113,19 @@ processed_slides <- microscopy_non_avg %>%
 microscopy1 <- rbind(averaged_slides, processed_slides)
 
 #Collapse rare species into one column
+#Rare is categorized as any species that has zero occurences in a sample year, for either TM or TAC
 non_occurences <- microscopy1 %>% 
   group_by(year, sample_type, Species) %>% 
   dplyr::summarise(Sum = sum(Abundance))
 
-rownum <- which(non_occurences$Sum <= 0) #Which samples have no occurences, per each target and each year?
+rownum <- which(non_occurences$Sum <= 0) 
 
 rare_species <- non_occurences %>% 
   ungroup() %>% 
   dplyr::slice(rownum)
 
-rare_names <- unique(rare_species$Species)  #Names of the species that are rare
-rare_names <- c(rare_names, "oscillatoria", "leptolyngbya") #add species that did not appear in 2024
+rare_names <- unique(rare_species$Species)  #Names of the taxa that are rare
+rare_names <- c(rare_names, "oscillatoria") #Add taxa that did not appear in 2024
 
 microscopy <- microscopy1 %>% 
   ungroup() %>% 
@@ -123,14 +134,14 @@ microscopy <- microscopy1 %>%
   dplyr::select(!all_of(rare_names)) %>% 
   dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
                 'Epithemia Diatoms' = e_diatoms,
-                Geitlerinema = geitlerinema,
+                Geitlerinema = leptolyngbya_and_geitlerinema,
                 'Green Algae' = green_algae, 
                 Microcoleus = microcoleus,
                 'Non-Epithemia Diatoms' = non_e_diatoms,
                 Nostoc = nostoc,
                 'Other Coccoids' = other_coccoids,
                 Rare = rare) %>% 
-  pivot_longer(cols = c(10:18), names_to = "Species", values_to = "Abundance")
+  pivot_longer(cols = c(10:19), names_to = "Species", values_to = "Abundance")
 
 #############################################################################################
 #Index date by timesteps and week numbers: 1, 2, 3... n
