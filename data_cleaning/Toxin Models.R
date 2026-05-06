@@ -131,12 +131,12 @@ X1 <- cbind(
 )
 
 #Combine with other information into model list
-model.atx <- list("uniqueID" = nrow(anatoxin_data),
+model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
                   "is_obs" = anatoxin_data$is_obs, #poisson edit
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                  "X" = X1,
+                  "X1" = X1,
                   "Npredictors" = ncol(X1)
 )
 
@@ -183,7 +183,7 @@ model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(matalltaxaM)-2),
-                  "X" = X2,
+                  "X2" = X2,
                   "Npredictors" = ncol(X2)
 )
 
@@ -205,7 +205,7 @@ init_fun_atx <- function() list(
  )
 
 #Estimate anatoxins in TM mats
-fit.atx.mat <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx, chains = 3, iter = 6000,
+fit.atx.mat <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx.mat, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
@@ -264,14 +264,13 @@ saveRDS(rstan::extract(fit.atx.river, pars = c('Beta1', 'Beta2', 'Beta3', 'Beta4
                                               'Atheta', 'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
-        file = here::here("data/Anatoxin_River_predictions.rds"))
-saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                               'BetaGreen','BetaMicro', 'BetaAna', 
-                                               'BetaNFix', 'Ntheta','Ptheta', 
-                                               'Atheta', 'Dtheta', 'Ttheta', 
-                                               'Ctheta', 'Rtheta', 'sigma_p',
-                                               'tox_raw')), 
-        file = here::here("data/Anatoxin_Mat_predictions.rds"))
+        file = here::here("data/Model Fits/Anatoxin_River_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta1', 'Beta2', 'Beta3',
+                                             'BetaAna', 'BetaEpi', 'BetaGeit',
+                                             'Ntheta','Ptheta', 'Atheta', 'Dtheta',
+                                             'Ttheta', 'Ctheta', 'Rtheta', 'sigma_p',
+                                             'tox_raw')), 
+        file = here::here("data/Model Fits/Anatoxin_Mat_predictions.rds"))
 
 
 

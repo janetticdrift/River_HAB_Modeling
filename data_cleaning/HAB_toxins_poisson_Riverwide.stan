@@ -7,7 +7,7 @@ data {
   int<lower=0, upper=1> is_obs[uniqueID];
   
   int<lower=0> Toxins[uniqueID]; //Vector of raw toxin concentrations
-  matrix[uniqueID, Npredictors] X; //Design matrix of all predictors
+  matrix[uniqueID, Npredictors] X2; //Design matrix of all predictors
 }
 
 parameters {
@@ -72,7 +72,7 @@ transformed parameters {
       tox[t] = tox_nc[t]; 
       continue;
     }
-    tox[t] = X[t-1,]*beta + X[t-2, 2:5]*beta_lag + sigma_p*tox_nc[t];
+    tox[t] = X2[t-1,]*beta + X2[t-2, 2:5]*beta_lag + sigma_p*tox_nc[t];
 
   }
 
