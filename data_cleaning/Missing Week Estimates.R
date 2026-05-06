@@ -294,4 +294,4 @@ saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
         file = here::here("data/Model Fits/WithinMat_Ana_predictions.rds"))
 
 
-#To read: object <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
+#To read: object <- readRDS(here::here("data/file_name.rds"))

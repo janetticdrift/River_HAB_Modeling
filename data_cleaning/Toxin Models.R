@@ -224,16 +224,16 @@ shinystan::launch_shinystan(as.shinystan(fit.atx))
 
 
 mcmc_intervals(
-  as.array(fit.atx),
+  as.array(fit.atx.mat),
   pars = c("Ntheta", "Ptheta", "Atheta")) 
 mcmc_intervals(
-  as.array(fit.atx),
+  as.array(fit.atx.mat),
   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
 mcmc_intervals(
-  as.array(fit.atx),
+  as.array(fit.atx.mat),
   pars = c("Beta1", "Beta2", "Beta3") )
 mcmc_intervals(
-  as.array(fit.atx),
+  as.array(fit.atx.mat),
   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
 
 mcmc_intervals(
@@ -252,15 +252,30 @@ mcmc_intervals(
 
 
 #For building the observation vs latent state plots
-saveRDS(rstan::extract(fit.atx, permuted=FALSE), 
-        file = here::here("data/Anatoxin_AllVariables.rds"))
+saveRDS(rstan::extract(fit.atx.river, permuted=FALSE), 
+        file = here::here("data/Anatoxin_Riverwide.rds"))
+saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE), 
+        file = here::here("data/Anatoxin_Withinmat.rds"))
+
 #For building the latent state vs predictions plots
-saveRDS(rstan::extract(fit.atx), 
-        file = here::here("data/Anatoxin_AllVar_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.river, pars = c('Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                              'BetaGreen','BetaMicro', 'BetaAna', 
+                                              'BetaNFix', 'Ntheta','Ptheta', 
+                                              'Atheta', 'Dtheta', 'Ttheta', 
+                                              'Ctheta', 'Rtheta', 'sigma_p',
+                                              'tox_raw')), 
+        file = here::here("data/Anatoxin_River_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                               'BetaGreen','BetaMicro', 'BetaAna', 
+                                               'BetaNFix', 'Ntheta','Ptheta', 
+                                               'Atheta', 'Dtheta', 'Ttheta', 
+                                               'Ctheta', 'Rtheta', 'sigma_p',
+                                               'tox_raw')), 
+        file = here::here("data/Anatoxin_Mat_predictions.rds"))
 
 
 
-##### Exploratory business#####
+##### Exploratory business: Significant lag between toxins and abundances?#####
 lag_df <- data.frame(time = TM_latent$time,
                      ATX = anatoxin_data$ATX_all_ug_g/1000, 
                      Anabaena_mat = exp(TM_latent$Anabaena),
