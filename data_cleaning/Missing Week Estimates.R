@@ -104,6 +104,10 @@ matalltaxaM <- yearmatdata %>%
   dplyr::mutate(across(Anabaena:Geitlerinema, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
 
+#Save observed data for model fit comparisons
+saveRDS(matalltaxaM, 
+        file = here::here("data/Model Fits/obs_TM_data.rds"))
+
 
 model.2 <- list("uniqueID" = nrow(matalltaxaM),
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
