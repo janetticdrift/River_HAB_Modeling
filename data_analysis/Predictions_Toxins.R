@@ -20,103 +20,126 @@ colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
 
 #Read in latent states and effect coefficients
-M.fit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
-A.fit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
-
+River.fit <- readRDS(here::here("data/Model Fits/Anatoxin_River_predictions.rds"))
+Mat.fit <- readRDS(here::here("data/Model Fits/Anatoxin_Mat_predictions.rds"))
 
 #Pull out community abundances and demographics 
-x <- M.fit #m1 = averaged reaches for Microcoleus
-abundances <- x[["n"]][,,1] #iterations, species #, time
-alphas <- x[["Alpha"]][,]
-betas <- as.array(x[["Beta"]])[,,]
-sigmas <- x[["sigma_p"]][,]
+x <- Mat.fit 
+tox_conc <- x[["tox_raw"]][,1] #iterations, time
+Beta0 <- x[["Beta0"]]
+Beta1 <- x[["Beta1"]]
+Beta2 <- x[["Beta2"]]
+Beta3 <- x[["Beta3"]]
+BetaAna  <- x[["BetaAna"]]
+BetaEpi  <- x[["BetaEpi"]]
+BetaGeit <- x[["BetaGeit"]]
 
-#inputs
-runs <- nrow(abundances)
-time <- 13 #13 weeks in 2022, 13 in 2023, 15 in 2024
-n <- array(NA, dim = c(runs, 3, time)) #9 is number of species
+sigma_p <- x[["sigma_p"]]
 
 #Pull out environmental effects
-Ntheta <- x[["Ntheta"]][,]
+Ntheta <- x[["Ntheta"]]
 nitrate <- stand_nut$nitrate_mg_N_L[1:time]
 
-Ptheta <- x[["Ptheta"]][,]
+Ptheta <- x[["Ptheta"]]
 phos <- stand_nut$oPhos_ug_P_L[1:time]
 
-Atheta <- x[["Atheta"]][,]
+Atheta <- x[["Atheta"]]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-Dtheta <- x[["Dtheta"]][,]
+Dtheta <- x[["Dtheta"]]
 dis <- discharge$stand_discharge[1:time]
 
-Ttheta <- x[["Ttheta"]][,]
+Ttheta <- x[["Ttheta"]]
 temp <- stand_nut$temp_C[1:time]
 
-Ctheta <- x[["Ctheta"]][,]
+Ctheta <- x[["Ctheta"]]
 cond <- stand_nut$cond_uS_cm[1:time]
 
-Rtheta <- x[["Rtheta"]][,]
+Rtheta <- x[["Rtheta"]]
 rad <- swradiation$stand_rad[1:time]
 
-#Run predictions
-for(z in 1:runs){
-  #Set parameters
-  Alpha <- alphas[z,]
-  Beta <- betas[z,,]
-  n[z,,1] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
+#Create design matrix
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  TM_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
+)
+
+#Inputs
+runs <- length(Beta1)
+time <- 13
+
+tox <- matrix(NA, runs, time)
+
+for (z in 1:runs) {
   
-  #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
   
+  beta_lag <- c(
+    BetaAna[z],
+    BetaEpi[z],
+    BetaGeit[z]
+  )
   
-  for(t in 2:time){
-    #Include env drivers
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+  #Set initial tox concentration
+  tox[z,1] <- log(tox_conc[1] + 1e-6)
+  
+  # You NEED t=2 because your model uses t-2
+  tox[z,2] <- log(tox_conc[2] + 1e-6)
+  
+  #Simulation
+  for (t in 3:time) {
     
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
   }
 }
 
 pred2022 <- n
 
-# 'Green Algae' = V4, 
-# Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-# Nostoc = V7, 'Other Coccoids' = V8,
-# Rare = V9)
+sims2022mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
 
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  mutate(time = 1:time) %>% 
-  pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
+sims2022lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
 
-matsims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
-  left_join(., sims2022uquant, by=c("Species", "time")) %>% 
+sims2022uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
+
+matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2022uquant, by=c("toxins", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
 
 
 #Plot

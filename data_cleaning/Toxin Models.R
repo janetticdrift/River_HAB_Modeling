@@ -11,6 +11,7 @@ library(dataRetrieval)
 library(ggplot2)
 library(ggpubr)
 library(RColorBrewer)
+library(loo)
 
 #Read in environmental and microscopy data
 source(here::here("data_cleaning/cleaning_HAB.R"))
@@ -201,7 +202,7 @@ init_fun_atx <- function() list(
   Beta1 = 0,     # small start for species abundances
   Beta2 = 0,
   Beta3 = 0,
-  tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length, 4.79 is the mean anatoxin concentration
+  tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length
  )
 
 #Estimate anatoxins in TM mats
@@ -235,6 +236,11 @@ mcmc_intervals(
 mcmc_intervals(
   as.array(fit.atx.mat),
   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
+#Extract log-likelihood
+log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
+#Calculate WAIC
+waic(log_lik_mat)
+#When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
 mcmc_intervals(
   as.array(fit.atx.river),
