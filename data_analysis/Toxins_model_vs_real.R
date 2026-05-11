@@ -18,16 +18,13 @@ library(rstan)
 #Read in functions
 here::here("data/Functions.R")
 
-#Read in real data (from Toxin_Models.R - should be put in other files eventually)
-toxins
-
-# #Read in real microscopy data 
-# source(here::here("data_cleaning/cleaning_HAB.R"))
-# #Dataframe of interest is "toxins"
+#Read in cleaned real data (from Toxin_Models.R - should be put in other files eventually)
+toxins <- readRDS(here::here("data/obs_toxins.rds"))
+uniqueID_toxins <- readRDS(here::here("data/binding_toxins.rds"))
 
 #Read in model data (from Missing Week Estimates)
-fit.atx1 <- rstan::extract(fit.atx.river, permuted=FALSE)
-#readRDS(here::here("data/Anatoxin_AllVariables.rds"))
+fit.atx.river <- readRDS(here::here("data/Anatoxin_Riverwide.rds"))
+fit.atx.mat <- readRDS(here::here("data/Anatoxin_Withinmat.rds"))
 
 #MODEL INCLUDING JUST ATX_ALL--------------------------------------------------------------
 #OBSERVED DATA
@@ -47,18 +44,14 @@ obs_data_toxins <- toxins %>%
   dplyr::mutate(Congener = as.factor(Congener))
 
 
-#Clean dataframe of MODELED data
-#Initial cleaning of model outputs
-tox_params_TM <- as.data.frame(fit.atx1) %>% 
+#MODELED DATA
+tox_params_river <- as.data.frame(fit.atx.river) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
-  #dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, exp)) %>%  #backtransform tox
   t 
-#Make sure you anazlyze tox, not tox_nc: tox is the reconstructed latent state, and biologically meaningful
-#tox_nc is just the standardized version for model construction
 
 #Set up dataframe to extract week/year info from
-yearweek_atx <- anatoxin_data %>% 
+yearweek_atx <- uniqueID_toxins %>% 
   dplyr::rename('Total Anatoxins' = ATX_all_ug_g) %>% #Anatoxin-a = ATXa_ug_g,
                                                       #Homoanatoxin-a = HTXa_ug_g,
                                                       #Dihydroanatoxin-a = dhATXa_ug_g
@@ -67,7 +60,7 @@ yearweek_atx <- anatoxin_data %>%
   dplyr::mutate(time = rep(seq(41), each = length(unique(Congener))))   #41 is mat timeseries length
 
 #Manually calculate mean posteriors for microscopy proportions
-tox_params2_TM <- as.data.frame(tox_params_TM) %>% 
+tox_params2_river <- as.data.frame(tox_params_river) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -94,20 +87,8 @@ tox_params2_TM <- as.data.frame(tox_params_TM) %>%
 
 #FIGURES--------------------------------------------------------------------------------
 
-mycols <- c("brown", "darkolivegreen4", "darkorange", "chartreuse3")
-mypal <- palette(mycols)
-names(mypal) = c("Total Anatoxins", "Anatoxin-a", "Homoanatoxin-a", 
-                 "Dihydroanatoxin-a")
-colScale <- scale_color_manual(values = mypal)
-filScale <- scale_fill_manual(values = mypal)
-
-myshap <- c(16, 17, 15, 3)
-names(myshap) = c("Total Anatoxins", "Anatoxin-a", "Homoanatoxin-a", 
-                  "Dihydroanatoxin-a")
-shapScale <- scale_shape_manual(values = myshap)
-
 ###Anatoxins
-ggplot(tox_params2_TM, aes(x = model_date, y = mean)) +
+ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), alpha = 0.2) +
   # Latent points/lines

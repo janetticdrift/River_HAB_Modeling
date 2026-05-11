@@ -30,6 +30,10 @@ toxins <- toxindf %>%
   dplyr::filter(field_date != "6/19/24") %>% #Remove 6/19/24 as it wasn't sampled in microscopy data
   dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y"))
 
+#Save cleaned output for visualizing observational vs latent states
+saveRDS(toxins, 
+        file = here::here("data/obs_toxins.rds"))
+
 
 anaCsplit <- toxins %>% 
   group_split(year)
@@ -95,6 +99,10 @@ anatoxin_data <- atx %>%
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
                 ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
+
+#Save cleaned output for visualizing observational vs latent states
+saveRDS(anatoxin_data, 
+        file = here::here("data/binding_toxins.rds"))
 
 
 #Gather latent states of microscopy abundances
