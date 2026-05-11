@@ -6,19 +6,6 @@ library(tidyverse)
 #Must read in atx 
 
 ###############------------------------------------------------------------------
-#Create empty dataframe for storing all calculated indices
-model.indices <- data.frame(
-  model = character(),
-  category = character(),
-  species = character(),
-  metric = character(),
-  value = numeric(),
-  lwr = numeric(),
-  upr = numeric(),
-  stringsAsFactors = FALSE #Do not make categorical variables factors
-)
-
-###############------------------------------------------------------------------
 #Read in all data needed for calculations
 
                                #River-Wide
@@ -57,12 +44,13 @@ y_geit <- obs_mat_data$Geitlerinema             #3
 #Put them into a single matrix
 y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
 
-#Read in LATENT states of River-Wide: TM
+#Read in LATENT states of Within-Mat: TM
 TMfit <- readRDS(here::here("data/Model Fits/WithinMat_Micro_predictions.rds"))
 
-#Read in SIMULATED states of River-Wide
+#Read in SIMULATED states of Within-Mat
 TM.pred <- readRDS(here::here("data/WithinMat_Pred_TM.rds"))
 
+###############------------------------------------------------------------------
 #Create lists of models to iterate through
 river_species <- c("green", "micro", "ana", "nfix")
 mat_species <- c("ana", "epi", "geit")
@@ -107,8 +95,30 @@ model_list <- list(
     post = TMfit[["n"]],
     pred = TM.pred,
     species = mat_species
+  ),
+  list(
+    model = "TMfit",
+    category = "Within-Mat",
+    y_obs = y_obs_mat,
+    post = TMfit[["n"]],
+    pred = TM.pred,
+    species = mat_species
   )
 )
+
+###############------------------------------------------------------------------
+#Create empty dataframe for storing all calculated indices
+model.indices <- data.frame(
+  model = character(),
+  category = character(),
+  species = character(),
+  metric = character(),
+  value = numeric(),
+  lwr = numeric(),
+  upr = numeric(),
+  stringsAsFactors = FALSE #Do not make categorical variables factors
+)
+
 
 counter <- 1
 
@@ -130,6 +140,7 @@ for (m in 1:length(model_list)) {
   BayesR2_vals <- matrix(NA, iter, species) 
   RMSE_vals <- matrix(NA, iter, species) 
   R2_vals <- matrix(NA, iter, species) 
+  WAIC_vals <- matrix(NA, iter, species) 
   
   for(s in 1:species) {
     
@@ -148,7 +159,6 @@ for (m in 1:length(model_list)) {
       BayesR2_vals[i, s] <- var_fit / (var_fit + var_res)
       
                                         #RMSE
-      
       y <- logposteriors[i, s, ]
       y_pred <- predictives[i, s, ]
       
@@ -156,6 +166,7 @@ for (m in 1:length(model_list)) {
  
                                          #R2      
       R2_vals[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
+      
       
     }
   } 
@@ -194,6 +205,45 @@ for (m in 1:length(model_list)) {
 }
 
 ###############------------------------------------------------------------------
+#Quick visualization of indices so far
+str(model.indices)
+model.indices$model <- factor(  #Manually order model name 
+  model.indices$model,
+  levels = c("allfit", "bioticfit", "abioticfit", "abioticnonutfit", "TMfit")
+)
+
+ggplot(model.indices, aes(x = value, y = model, shape = species, color = species)) +
+  facet_wrap(~ metric, scales = "free_x") +
+  geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
+             size = 3) +
+  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
+                 position = position_dodge(width = 0.6)) +
+  scale_y_discrete(limits = rev(levels(model.indices$model))) +
+  scale_shape_manual(values = c("ana" = 16, "epi" = 17, "geit" = 15,
+                                "green" = 6, "micro" = 8, "nfix" = 9)) +
+  theme_bw() +
+  labs(x = "Metric value",
+       y = "Model",
+       shape = "Species",
+       color = "Species")
+
+
+
+ggplot(subset(model.indices, metric == "RMSE"), aes(x = value, y = model, shape = species, color = species)) +
+  geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
+             size = 3) +
+  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
+                 position = position_dodge(width = 0.6)) +
+  scale_y_discrete(limits = rev(levels(model.indices$model))) +
+  scale_shape_manual(values = c("ana" = 16, "epi" = 17, "geit" = 15,
+                                "green" = 6, "micro" = 8, "nfix" = 9)) +
+  coord_cartesian(xlim = c(0, 10)) +
+  theme_bw() +
+  labs(title = "RMSE",
+       x = "Metric value",
+       y = "Model",
+       shape = "Species",
+       color = "Species")
 
 #####################################################################################
 #####################################################################################
