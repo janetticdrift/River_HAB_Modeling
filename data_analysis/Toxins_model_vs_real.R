@@ -44,7 +44,8 @@ obs_data_toxins <- toxins %>%
   dplyr::mutate(Congener = as.factor(Congener))
 
 
-#MODELED DATA
+                                  #MODELED DATA - River-Wide
+
 tox_params_river <- as.data.frame(fit.atx.river) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
@@ -85,10 +86,54 @@ tox_params2_river <- as.data.frame(tox_params_river) %>%
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
+
+#MODELED DATA - Within-Mat
+tox_params_mat <- as.data.frame(fit.atx.mat) %>% 
+  dplyr::select(matches("tox_raw")) %>% 
+  dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
+  t 
+
+#Set up dataframe to extract week/year info from
+yearweek_atx <- uniqueID_toxins %>% 
+  dplyr::rename('Total Anatoxins' = ATX_all_ug_g) %>% #Anatoxin-a = ATXa_ug_g,
+  #Homoanatoxin-a = HTXa_ug_g,
+  #Dihydroanatoxin-a = dhATXa_ug_g
+  pivot_longer(cols = 3,
+               names_to = "Congener", values_to = "mean") %>% 
+  dplyr::mutate(time = rep(seq(41), each = length(unique(Congener))))   #41 is mat timeseries length
+
+#Manually calculate mean posteriors for microscopy proportions
+tox_params2_mat <- as.data.frame(tox_params_mat) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
+                   se_mean = calcSE(c_across(starts_with("V"))),
+                   CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
+                   CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
+  dplyr::mutate(Congener = "Total Anatoxins") %>% 
+  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,1])) %>%  #Change [,1] to [,2] if multiple congeners again
+  left_join(yearweek_atx[,c("uniqueID", "Congener", "time")], by = c("Congener", "time")) %>% 
+  relocate(uniqueID) %>% 
+  separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
+  mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+  ungroup() %>% 
+  left_join(obs_data_toxins[,c("year", "week", "Congener", "real_week")], 
+            by = c("year", "week", "Congener")) %>% 
+  arrange(time) %>% 
+  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
+  mutate(real_week = ifelse(year == 2024, time, real_week)) %>% #manually fill in multiple skipped weeks, luckily real week = timestep in this year
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+
+
+
+
 #FIGURES--------------------------------------------------------------------------------
 
 ###Anatoxins
-ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
+ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), alpha = 0.2) +
   # Latent points/lines
@@ -101,8 +146,9 @@ ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
   geom_line(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 200, 10)) +
+  scale_y_continuous(breaks = seq(0, 50, 10)) +
+  coord_cartesian(y = c(0, 50)) +
   labs(x = "Date", y = "Anatoxin Concentration", title = "Observed vs. Latent Concentrations") +
-  labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  labs(color = "Latent", fill = "Latent", shape = "Observed")
+  #colScale + filScale + shapScale
 

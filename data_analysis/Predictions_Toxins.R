@@ -4,28 +4,16 @@ library(ggpubr)
 library(tidyverse)
 library(abind)
 
-#files mat_params2 and mat_params2_groups are in WithinMatModel_vs_real
-
-#Graphing palettes
-#Create a color palette
-mycols <- c("brown", "darkolivegreen4", "darkorange", "chartreuse3", 
-            "lavender", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
-            "goldenrod", "lightblue1")
-mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
-                 "Green Algae", "Leptolyngbya", "Microcoleus", 
-                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
-                 "Other Coccoids", "Rare")
-colScale <- scale_color_manual(values = mypal)
-filScale <- scale_fill_manual(values = mypal)
-
 #Read in latent states and effect coefficients
 River.fit <- readRDS(here::here("data/Model Fits/Anatoxin_River_predictions.rds"))
 Mat.fit <- readRDS(here::here("data/Model Fits/Anatoxin_Mat_predictions.rds"))
 
+
+######Simulate Toxins using microscopy data
+
 #Pull out community abundances and demographics 
 x <- Mat.fit 
-tox_conc <- x[["tox_raw"]][,1] #iterations, time
+tox_conc <- x[["tox_raw"]][,1:2] #iterations, time
 Beta0 <- x[["Beta0"]]
 Beta1 <- x[["Beta1"]]
 Beta2 <- x[["Beta2"]]
@@ -38,31 +26,23 @@ sigma_p <- x[["sigma_p"]]
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]]
-nitrate <- stand_nut$nitrate_mg_N_L[1:time]
 
 Ptheta <- x[["Ptheta"]]
-phos <- stand_nut$oPhos_ug_P_L[1:time]
 
 Atheta <- x[["Atheta"]]
-amon <- stand_nut$ammonium_mg_N_L[1:time]
 
 Dtheta <- x[["Dtheta"]]
-dis <- discharge$stand_discharge[1:time]
 
 Ttheta <- x[["Ttheta"]]
-temp <- stand_nut$temp_C[1:time]
 
 Ctheta <- x[["Ctheta"]]
-cond <- stand_nut$cond_uS_cm[1:time]
 
 Rtheta <- x[["Rtheta"]]
-rad <- swradiation$stand_rad[1:time]
 
-#Create design matrix
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
+  TM_latent[, -1][1:time, ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
@@ -73,7 +53,7 @@ X1 <- cbind(
 )
 
 #Inputs
-runs <- length(Beta1)
+runs <- length(Beta1) # number of model iterations
 time <- 13
 
 tox <- matrix(NA, runs, time)
@@ -101,11 +81,9 @@ for (z in 1:runs) {
     BetaGeit[z]
   )
   
-  #Set initial tox concentration
-  tox[z,1] <- log(tox_conc[1] + 1e-6)
-  
-  # You NEED t=2 because your model uses t-2
-  tox[z,2] <- log(tox_conc[2] + 1e-6)
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
   #Simulation
   for (t in 3:time) {
@@ -116,25 +94,24 @@ for (z in 1:runs) {
   }
 }
 
-pred2022 <- n
+pred2022 <- tox
 
 sims2022mean <- as.data.frame(apply(tox, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-
 sims2022lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
   dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-
 sims2022uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
+#Join together mean and CI ranges
 matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
-  dplyr::left_join(., sims2022uquant, by=c("toxins", "time")) %>% 
+  dplyr::left_join(., sims2022uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(
     ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
@@ -142,245 +119,541 @@ matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
   ))
 
 
-#Plot
-
-mat_p22 <- ggplot(subset(matsims2023, Species %in% c("Anabaena",
-                                                     "Epithemia Diatoms",
-                                                     "Geitlerinema")),
-                  aes(x = model_date, y = Abundance)) +
-  geom_line(size = 1.5, aes(color = Species)) +
-  geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2023", ],
-                          Species %in% c("Anabaena",
-                                         "Epithemia Diatoms",
-                                         "Geitlerinema")),
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .35) +
-  scale_y_continuous(breaks=c(seq(0,150,5))) +
-  #coord_cartesian(ylim = c(0,70)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "2023 Predictions") +
-  colScale
-
-
 #####################################
 #Historical Predictions, 2023
 #####################################
-#Pull out community abundances and demographics 
-abundances <- x[["n"]][,,14] #iterations, species #, time
+#Pull out new starting year
+tox_conc <- x[["tox_raw"]][,14:15] #iterations, time
 
-#inputs
-runs <- nrow(abundances)
-time <- 13 #number of weeks in 2023
-n <- array(NA, dim = c(runs, 3, time))
+#Inputs
+runs <- length(Beta1) # number of model iterations
+time <- 13
+tox <- matrix(NA, runs, time)
 
-#Pull out environmental effects
-nitrate <- stand_nut$nitrate_mg_N_L[14:(13+time)]
-
-phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
-
-amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
-
-dis <- discharge$stand_discharge[14:(13+time)]
-
-temp <- stand_nut$temp_C[14:(13+time)]
-
-cond <- stand_nut$cond_uS_cm[14:(13+time)]
-
-rad <- swradiation$stand_rad[14:(13+time)]
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  TM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
+)
 
 
-for(z in 1:runs){
-  #Set parameters
-  Alpha <- alphas[z,]
-  Beta <- betas[z,,]
-  n[z,,1] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
+for (z in 1:runs) {
   
-  #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
   
+  beta_lag <- c(
+    BetaAna[z],
+    BetaEpi[z],
+    BetaGeit[z]
+  )
   
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
-  for(t in 2:time){
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+  #Simulation
+  for (t in 3:time) {
     
-    
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
   }
 }
 
-pred2023 <- n
+pred2023 <- tox
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  mutate(time = 1:time) %>% 
-  pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
+sims2023mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
+sims2023lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
+sims2023uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
 
-matsims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
-  left_join(., sims2023uquant, by=c("Species", "time")) %>% 
+#Join together mean and CI ranges
+matsims2023 <- dplyr::left_join(sims2023mean, sims2023lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2023uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2023) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
-
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
 
 
 
 #####################################
 #Historical Predictions, 2024
 #####################################
-#Pull out community abundances and demographics 
-abundances <- x[["n"]][,,27] #iterations, species #, time
+#Pull out new starting year
+tox_conc <- x[["tox_raw"]][,27:28] #iterations, time
 
-#inputs
-runs <- nrow(abundances)
-time <- 15 #number of weeks in 2023
-n <- array(NA, dim = c(runs, 3, time))
+#Inputs
+runs <- length(Beta1) # number of model iterations
+time <- 15
+tox <- matrix(NA, runs, time)
 
-#Pull out environmental effects
-nitrate <- stand_nut$nitrate_mg_N_L[27:(26+time)]
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  TM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
+)
 
-phos <- stand_nut$oPhos_ug_P_L[27:(26+time)]
-
-amon <- stand_nut$ammonium_mg_N_L[27:(26+time)]
-
-dis <- discharge$stand_discharge[27:(26+time)]
-
-temp <- stand_nut$temp_C[27:(26+time)]
-
-cond <- stand_nut$cond_uS_cm[27:(26+time)]
-
-rad <- swradiation$stand_rad[27:(26+time)]
-
-
-for(z in 1:runs){
-  #Set parameters
-  Alpha <- alphas[z,]
-  Beta <- betas[z,,]
-  n[z,,1] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
+for (z in 1:runs) {
   
-  #Pull env covariates
-  nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
-  dTheta <- Dtheta[z,]
-  tTheta <- Ttheta[z,]
-  cTheta <- Ctheta[z,]
-  rTheta <- Rtheta[z,]
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
   
+  beta_lag <- c(
+    BetaAna[z],
+    BetaEpi[z],
+    BetaGeit[z]
+  )
   
-  for(t in 2:time){
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
+  
+  #Simulation
+  for (t in 3:time) {
     
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
   }
 }
 
-pred2024 <- n
+pred2024 <- tox
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
-  mutate(time = 1:time) %>% 
-  pivot_longer(cols = c(1:9), names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
-  dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
-  dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIupper")
+sims2024mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
+sims2024lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
+sims2024uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
 
-matsims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
-  left_join(., sims2024uquant, by=c("Species", "time")) %>% 
+#Join together mean and CI ranges
+matsims2024 <- dplyr::left_join(sims2024mean, sims2024lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2024uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2024) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
-
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
 
 #Join together simulation data
-matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>% 
-  dplyr::rename(mean = Abundance)
-
-ggplot(subset(matsims2022, Species %in% c("Anabaena",
-                                          "Epithemia Diatoms",
-                                          "Geitlerinema")),
-       aes(x = model_date, y = Abundance)) +
-  geom_line(size = 1.5, aes(color = Species)) +
-  geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2022", ],
-                          Species %in% c("Anabaena",
-                                         "Epithemia Diatoms",
-                                         "Geitlerinema")),
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .35) +
-  scale_y_continuous(breaks=c(seq(0,150,5))) +
-  #coord_cartesian(ylim = c(0,70)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "2022 Predictions") +
-  colScale
+matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024)
 
 ###Create plot of TM microscopy predictions vs latent states
-ggplot(subset(matsimsallyears, Species %in% c("Anabaena", "Epithemia Diatoms",
-                                              "Geitlerinema")), 
-       aes(x = model_date, y = mean)) +
+
+#Graphing palettes
+#Create a color palette
+mycols <- c("lightsalmon2", "brown")
+mypal <- palette(mycols)
+names(mypal) = c("Latent", "Predicted")
+colScale <- scale_color_manual(name = "State Type", values = mypal)
+filScale <- scale_fill_manual(name = "State Type", values = mypal)
+linScale <- scale_linetype_manual(name = "State Type",
+                                  values = c("Latent" = "11",
+                                             "Predicted" = "solid"))
+
+ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
   facet_wrap(~year, scales = "free_x") +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.3) +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
+              alpha = 0.3) +
   # Predicted points/lines
-  geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5) +
+  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   # Latent points/lines
-  geom_line(data = subset(mat_params2_TM, Species %in% c("Anabaena", "Epithemia Diatoms",
-                                                         "Geitlerinema")),
-            aes(linetype = "Latent", colour = Species), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "Latent vs. Predicted Abundances") +
+  geom_line(data = tox_params2_mat,
+            aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
+  scale_y_continuous(breaks = seq(0, 200, 10)) +
+  coord_cartesian(ylim = c(0,160)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
   colScale + filScale + linScale
 
 
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives_TMmats <- abind(pred2022, pred2023, pred2024, along = 3)
-predictives_TMmats <- exp(predictives_TMmats)
+predictives_toxins_mats <- abind(pred2022, pred2023, pred2024, along = 2)
+predictives_toxins_mats <- exp(predictives_toxins_mats)
 
-#Save predictive output of Microcoleus model
-saveRDS(predictives_TMmats, 
-        file = here::here("data/WithinMat_Pred_TM.rds"))
+#Save predictive output of Toxin Within-Mat model
+saveRDS(predictives_toxins_mats, 
+        file = here::here("data/Toxins_Pred_Withinmat.rds"))
+
+
+
+
+######Simulate Toxins using percent cover data
+
+#Pull out community abundances and demographics 
+x <- River.fit 
+tox_conc <- x[["tox_raw"]][,1:2] #iterations, time
+Beta0 <- x[["Beta0"]]
+Beta1 <- x[["Beta1"]]
+Beta2 <- x[["Beta2"]]
+Beta3 <- x[["Beta3"]]
+Beta4 <- x[["Beta4"]]
+BetaGreen  <- x[["BetaGreen"]]
+BetaMicro  <- x[["BetaMicro"]]
+BetaAna <- x[["BetaAna"]]
+BetaNFix <- x[["BetaNFix"]]
+
+sigma_p <- x[["sigma_p"]]
+
+#Pull out environmental effects
+Ntheta <- x[["Ntheta"]]
+
+Ptheta <- x[["Ptheta"]]
+
+Atheta <- x[["Atheta"]]
+
+Dtheta <- x[["Dtheta"]]
+
+Ttheta <- x[["Ttheta"]]
+
+Ctheta <- x[["Ctheta"]]
+
+Rtheta <- x[["Rtheta"]]
+
+#Inputs
+runs <- length(Beta1) # number of model iterations
+time <- 13
+
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  River_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
+)
+
+tox <- matrix(NA, runs, time)
+
+for (z in 1:runs) {
+  
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Beta4[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
+  
+  beta_lag <- c(
+    BetaGreen[z],
+    BetaMicro[z],
+    BetaAna[z],
+    BetaNFix[z]
+  )
+  
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
+  
+  #Simulation
+  for (t in 3:time) {
+    
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
+  }
+}
+
+pred2022 <- tox
+
+sims2022mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
+sims2022lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
+sims2022uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
+
+#Join together mean and CI ranges
+matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2022uquant, by=c("time")) %>% 
+  dplyr::mutate(real_week = time + 25, year = 2022) %>% 
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
+
+
+#####################################
+#Historical Predictions, 2023
+#####################################
+#Pull out new starting year
+tox_conc <- x[["tox_raw"]][,14:15] #iterations, time
+
+#Inputs
+runs <- length(Beta1) # number of model iterations
+time <- 13
+tox <- matrix(NA, runs, time)
+
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  TM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
+)
+
+
+for (z in 1:runs) {
+  
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
+  
+  beta_lag <- c(
+    BetaAna[z],
+    BetaEpi[z],
+    BetaGeit[z]
+  )
+  
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
+  
+  #Simulation
+  for (t in 3:time) {
+    
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
+  }
+}
+
+pred2023 <- tox
+
+sims2023mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
+sims2023lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
+sims2023uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
+
+#Join together mean and CI ranges
+matsims2023 <- dplyr::left_join(sims2023mean, sims2023lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2023uquant, by=c("time")) %>% 
+  dplyr::mutate(real_week = time + 26, year = 2023) %>% 
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
+
+
+
+#####################################
+#Historical Predictions, 2024
+#####################################
+#Pull out new starting year
+tox_conc <- x[["tox_raw"]][,27:28] #iterations, time
+
+#Inputs
+runs <- length(Beta1) # number of model iterations
+time <- 15
+tox <- matrix(NA, runs, time)
+
+#Create design matrix
+X1 <- cbind(
+  intercept = rep(1, time),
+  TM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
+)
+
+for (z in 1:runs) {
+  
+  # Build parameter vectors
+  beta <- c(
+    Beta0[z],
+    Beta1[z],
+    Beta2[z],
+    Beta3[z],
+    Ntheta[z],
+    Ptheta[z],
+    Atheta[z],
+    Dtheta[z],
+    Ttheta[z],
+    Ctheta[z],
+    Rtheta[z]
+  )
+  
+  beta_lag <- c(
+    BetaAna[z],
+    BetaEpi[z],
+    BetaGeit[z]
+  )
+  
+  #Set initial tox concentrations for the first two skipped days
+  tox[z,1] <- log(tox_conc[z,1] + 1e-6)
+  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
+  
+  #Simulation
+  for (t in 3:time) {
+    
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
+                        sum(X1[t-2, 2:4] * beta_lag)
+                      , sigma_p[z])
+  }
+}
+
+pred2024 <- tox
+
+sims2024mean <- as.data.frame(apply(tox, 2, mean)) %>% 
+  dplyr::rename(toxins = 1) %>% 
+  dplyr::mutate(toxins = exp(toxins)) %>% 
+  dplyr::mutate(time = 1:time) 
+sims2024lquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>% 
+  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+  dplyr::mutate(time = 1:time)
+sims2024uquant <- as.data.frame(apply(tox, 2, quantile, probs = 0.975)) %>% 
+  dplyr::rename(CIupper = 1) %>% 
+  dplyr::mutate(CIupper = exp(CIupper)) %>% 
+  dplyr::mutate(time = 1:time)
+
+#Join together mean and CI ranges
+matsims2024 <- dplyr::left_join(sims2024mean, sims2024lquant, by=c("time")) %>%
+  dplyr::left_join(., sims2024uquant, by=c("time")) %>% 
+  dplyr::mutate(real_week = time + 26, year = 2024) %>% 
+  dplyr::mutate(model_date = ceiling_date(
+    ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
+    "week", week_start = 7
+  ))
+
+#Join together simulation data
+matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024)
+
+###Create plot of TM microscopy predictions vs latent states
+
+#Graphing palettes
+#Create a color palette
+mycols <- c("lightsalmon2", "brown")
+mypal <- palette(mycols)
+names(mypal) = c("Latent", "Predicted")
+colScale <- scale_color_manual(name = "State Type", values = mypal)
+filScale <- scale_fill_manual(name = "State Type", values = mypal)
+linScale <- scale_linetype_manual(name = "State Type",
+                                  values = c("Latent" = "11",
+                                             "Predicted" = "solid"))
+
+ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
+              alpha = 0.3) +
+  # Predicted points/lines
+  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
+  # Latent points/lines
+  geom_line(data = tox_params2_mat,
+            aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
+  scale_y_continuous(breaks = seq(0, 200, 10)) +
+  coord_cartesian(ylim = c(0,160)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
+  colScale + filScale + linScale
+
+
+
+#Compile model check dataframes into a single full timeseries matrix
+predictives_toxins_mats <- abind(pred2022, pred2023, pred2024, along = 2)
+predictives_toxins_mats <- exp(predictives_toxins_mats)
+
+#Save predictive output of Toxin Within-Mat model
+saveRDS(predictives_toxins_mats, 
+        file = here::here("data/Toxins_Pred_Withinmat.rds"))
