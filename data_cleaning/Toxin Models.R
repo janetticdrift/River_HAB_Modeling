@@ -272,14 +272,14 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
         file = here::here("data/Anatoxin_Withinmat.rds"))
 
 #For building the latent state vs predictions plots
-saveRDS(rstan::extract(fit.atx.river, pars = c('Beta1', 'Beta2', 'Beta3', 'Beta4',
+saveRDS(rstan::extract(fit.atx.river, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                               'BetaGreen','BetaMicro', 'BetaAna', 
                                               'BetaNFix', 'Ntheta','Ptheta', 
                                               'Atheta', 'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
         file = here::here("data/Model Fits/Anatoxin_River_predictions.rds"))
-saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta1', 'Beta2', 'Beta3',
+saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
                                              'BetaAna', 'BetaEpi', 'BetaGeit',
                                              'Ntheta','Ptheta', 'Atheta', 'Dtheta',
                                              'Ttheta', 'Ctheta', 'Rtheta', 'sigma_p',

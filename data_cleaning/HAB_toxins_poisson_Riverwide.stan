@@ -40,7 +40,7 @@ transformed parameters {
   
  vector[Npredictors] beta;
   
-  beta[1] = Beta0;
+  beta[1] = Beta0; //Intercept
   beta[2] = Beta1;
   beta[3] = Beta2;
   beta[4] = Beta3;

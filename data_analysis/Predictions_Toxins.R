@@ -333,7 +333,7 @@ saveRDS(predictives_toxins_mats,
 
 
 
-######Simulate Toxins using percent cover data
+                    ######Simulate Toxins using percent cover data
 
 #Pull out community abundances and demographics 
 x <- River.fit 
@@ -343,8 +343,8 @@ Beta1 <- x[["Beta1"]]
 Beta2 <- x[["Beta2"]]
 Beta3 <- x[["Beta3"]]
 Beta4 <- x[["Beta4"]]
-BetaGreen  <- x[["BetaGreen"]]
-BetaMicro  <- x[["BetaMicro"]]
+BetaGreen <- x[["BetaGreen"]]
+BetaMicro <- x[["BetaMicro"]]
 BetaAna <- x[["BetaAna"]]
 BetaNFix <- x[["BetaNFix"]]
 
@@ -370,7 +370,7 @@ runs <- length(Beta1) # number of model iterations
 time <- 13
 
 #Create design matrix
-X1 <- cbind(
+X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   River_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
@@ -380,45 +380,30 @@ X1 <- cbind(
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
-)
+))
 
 tox <- matrix(NA, runs, time)
 
+# Build parameter matrixes
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
+              Ctheta, Rtheta)
+beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
+
 for (z in 1:runs) {
-  
-  # Build parameter vectors
-  beta <- c(
-    Beta0[z],
-    Beta1[z],
-    Beta2[z],
-    Beta3[z],
-    Beta4[z],
-    Ntheta[z],
-    Ptheta[z],
-    Atheta[z],
-    Dtheta[z],
-    Ttheta[z],
-    Ctheta[z],
-    Rtheta[z]
-  )
-  
-  beta_lag <- c(
-    BetaGreen[z],
-    BetaMicro[z],
-    BetaAna[z],
-    BetaNFix[z]
-  )
   
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
   tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
+  #Identify timesteps in coefficient matrices
+  beta <- beta_matrix[z, ]
+  beta_lag <- beta_lag_matrix[z, ]
+  
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
+                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
   }
 }
 
@@ -443,8 +428,7 @@ matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(
     ymd(paste(year, "01", "01", sep = "-")) + (real_week - 1) * 7 - 1,
-    "week", week_start = 7
-  ))
+    "week", week_start = 7))
 
 
 #####################################
@@ -461,7 +445,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
+  River_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
