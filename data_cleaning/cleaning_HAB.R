@@ -412,8 +412,8 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
-###The commented out code no longer works as the data is housed elsewhere online now
-###Downloaded the data and saved on Github now
+###The commented out code is no longer UTD as the data is housed elsewhere online now
+###Downloaded the data and saved on GitHub instead
 
 # source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
 # 
@@ -465,27 +465,28 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
 
 
 #############################################################################################
-#Tidy ATX data.
+                                #Tidy Anatxoin Concentration data.
 
+#Clean and subset anatoxin data from 2022 and 2023
 atx2223clean <- atx2223 %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
   dplyr::select(!c(site, site_reach)) %>% 
   dplyr::select(!c(Chla_ug_g:12)) %>%  #Remove toxins that weren't analyzed in 2024
   dplyr::mutate(field_date = as.Date(field_date))
 
-#WHAT ARE THE EXT SAMPLES--I ignored them for now!
+#Clean and subset anatoxin data from 2024
 atx24clean <- atx2024 %>% 
   dplyr::filter(grepl("SFE", site)) %>%  #Keep sites that include string "SFE" in site col
-  dplyr:: mutate(is_dup = grepl("Duplicate", Sample)) %>% #create empty col that stores duplicate info
+  dplyr::mutate(is_dup = grepl("Duplicate", Sample)) %>% #create empty col that stores duplicate info
   dplyr::mutate(across(.cols = where(is.numeric), #only target numeric columns
                 .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
   dplyr:: mutate(across(where(is.numeric),
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
-  dplyr::filter(!is_dup) %>% #remove old duplicate rows
-  dplyr::filter(!grepl("Var Reps", Sample)) %>% 
-  dplyr::select(!c(is_dup, Sample, site)) %>%  #remove duplicate ID col and Sample col
-  dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) %>%   #remove toxins that weren't analyzed in '22,'23
+  dplyr::filter(!is_dup) %>% #remove duplicate rows where is_dup = T
+  dplyr::filter(!grepl("Var Reps", Sample)) %>% #Remove extra analysis replicates
+  dplyr::select(!c(is_dup, Sample, site, ESF)) %>%  #remove duplicate ID col and Sample col, and unnecessary ESF sample ID column
+  dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) %>%   #remove toxins that weren't analyzed in '22 or '23
   dplyr::mutate(field_date = as.Date(format(mdy(field_date), '%Y-%m-%d'))) %>% 
   arrange(field_date)
   
@@ -493,37 +494,16 @@ atx24clean <- atx2024 %>%
 
 pseudocount <- 0.001
 
-atx <- rbind(atx2223clean, atx24clean) %>% 
+toxindf <- rbind(atx2223clean, atx24clean) %>% 
   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
-  dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, average
+  dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, take the average
   dplyr::mutate(year = year(field_date)) %>% 
-  dplyr::mutate(concentration = concentration + pseudocount) %>%  #Cannot have zeros for log transforming
-  dplyr::mutate(concentration = log(concentration))
+  dplyr::mutate(concentration = log(concentration + pseudocount)) %>%  #Cannot have zeros for log transforming
+  pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
+  dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
+                                        sample_type=="TAC" ~ "Anabaena"))
 
-#Plot data
-TAC <- ggplot(subset(atx, sample_type %in% "TAC"), aes(x = field_date, y = concentration, color = anatoxins)) +
-  facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
-  geom_point() +
-  geom_line() +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  labs(title = "Target Anabaena", x = "Date", y = "Log Anatoxin Concentration (ug/g)") +
-  scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
-                               "Homoanatoxin-a"),
-                     values = c("red", "blue", "goldenrod", "purple"),
-                     name = "Congeners")
-
-TM <- ggplot(subset(atx, sample_type %in% "TM"), aes(x = field_date, y = concentration, color = anatoxins)) +
-  facet_grid(reach~year, scales = "free_x") + #facet_grid for multiple variables
-  geom_point() +
-  geom_line() +
-  labs(title = "Target Microcoleus", x = "Date", y = "Log Anatoxin Concentration (ug/g)") +
-  scale_color_manual(labels = c("Total anatoxins", "Anatoxin-a", "Dihydroanatoxin-a",
-                                "Homoanatoxin-a"),
-                     values = c("red", "blue", "goldenrod", "purple"),
-                     name = "Congeners")
-
-ggarrange(TM, TAC, common.legend = TRUE, legend = "bottom")
 
 
 

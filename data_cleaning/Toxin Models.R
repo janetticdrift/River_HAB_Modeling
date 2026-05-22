@@ -13,12 +13,8 @@ library(ggpubr)
 library(RColorBrewer)
 library(loo)
 
-#Read in environmental and microscopy data
+#Read in environmental, microscopy, and anatoxin data
 source(here::here("data_cleaning/cleaning_HAB.R"))
-#Read in anatoxin data
-toxindf <- read.csv(here::here("data/HABS_anatoxins.csv"))
-# #Read in gene copy data
-# genesdf <- read.csv(here::here("data/qPCR_genecopies.csv"))
 
 #Clean dataframes to feed into the toxin model
 
