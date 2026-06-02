@@ -21,9 +21,9 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 #Isolate Microcoleus mats
 toxins <- toxindf %>% 
   dplyr::filter(sample_type == "Microcoleus") %>% 
-  dplyr::mutate(field_date = ifelse(field_date == "7/11/23", "7/10/23", 
+  dplyr::mutate(field_date = if_else(field_date == as.Date("2023-07-11"), as.Date("2023-07-10"), 
                                     field_date)) %>%  #Replace 7/11/23 with 7/10/23 so they are on the same week
-  dplyr::filter(field_date != "6/19/24") %>% #Remove 6/19/24 as it wasn't sampled in microscopy data
+  dplyr::filter(field_date != as.Date("2024-06-19")) %>% #Remove 6/19/24 as it wasn't sampled in microscopy data
   dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y"))
 
 #Save cleaned output for visualizing observational vs latent states
@@ -32,6 +32,7 @@ saveRDS(toxins,
 
 
 anaCsplit <- toxins %>% 
+  ungroup() %>% 
   group_split(year)
 year1 <- anaCsplit[[1]]
 year2 <- anaCsplit[[2]]
@@ -53,7 +54,7 @@ year2_index <- year2 %>%
   dplyr::mutate(timestep = dense_rank(field_date)) %>% 
   dplyr::mutate(week = timestep)
 
-############################Note in 2023 they did not anatoxin sample the first week of %covers
+############################Note in 2023 they did not sample anatoxins the first week of %covers
 
 #year 2024
 year3_index <- year3 %>% 

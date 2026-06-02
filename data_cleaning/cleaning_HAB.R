@@ -141,7 +141,7 @@ microscopy <- microscopy1 %>%
                 Nostoc = nostoc,
                 'Other Coccoids' = other_coccoids,
                 Rare = rare) %>% 
-  pivot_longer(cols = c(10:19), names_to = "Species", values_to = "Abundance")
+  pivot_longer(cols = c(10:"Rare"), names_to = "Species", values_to = "Abundance")
 
 #############################################################################################
 #Index date by timesteps and week numbers: 1, 2, 3... n
@@ -415,7 +415,7 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 ###The commented out code is no longer UTD as the data is housed elsewhere online now
 ###Downloaded the data and saved on GitHub instead
 
-# source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/R Functions/Hydrology Data Rods.R")
+# source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/Functions.R")
 # 
 # #Process and format NLDAS data for last two months of 2024. SW = shortwaves
 # NLDAS_sw <- get_NLDASv20_datarod(
@@ -492,18 +492,14 @@ atx24clean <- atx2024 %>%
   
 #combine 2024 data with 2022,2023
 
-pseudocount <- 0.001
-
 toxindf <- rbind(atx2223clean, atx24clean) %>% 
   pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, take the average
   dplyr::mutate(year = year(field_date)) %>% 
-  dplyr::mutate(concentration = log(concentration + pseudocount)) %>%  #Cannot have zeros for log transforming
   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
   dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
                                         sample_type=="TAC" ~ "Anabaena"))
-
 
 
 
