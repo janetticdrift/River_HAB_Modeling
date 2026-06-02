@@ -112,7 +112,7 @@ generated quantities {
   
   for (t in 1:uniqueID) {
     
-    tox_raw[t] = exp(tox[t]);
+    tox_raw[t] = exp(tox[t]) / 1000;
     
     if (is_obs[t] == 1) {
       log_lik[t] = poisson_log_lpmf(Toxins[t] | tox[t]); //We can only calculate likelihood when there's observed data to compare against
