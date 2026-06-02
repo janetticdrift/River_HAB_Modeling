@@ -21,8 +21,10 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 #Isolate Microcoleus mats
 toxins <- toxindf %>% 
   dplyr::filter(sample_type == "Microcoleus") %>% 
-  dplyr::mutate(field_date = if_else(field_date == as.Date("2023-07-11"), as.Date("2023-07-10"), 
-                                    field_date)) %>%  #Replace 7/11/23 with 7/10/23 so they are on the same week
+  dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2023-07-11"), 
+                                     as.Date("2023-07-10"))) %>%  #Replace 2023-07-11 with 07/10 so they are on the same week
+  dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
+                                     as.Date("2022-09-08"))) %>%  #Replace 2022/09/06 to 09/08 so they are on the same week 
   dplyr::filter(field_date != as.Date("2024-06-19")) %>% #Remove 6/19/24 as it wasn't sampled in microscopy data
   dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y"))
 
@@ -70,7 +72,7 @@ year3_index <- year3 %>%
                                  timestep == 9 ~ 17))
 
 atx <- rbind(year1_index, year2_index, year3_index) %>% 
-  dplyr::select(-c(field_date, site, sample_type, timestep)) %>% 
+  dplyr::select(-c(field_date, sample_type, timestep)) %>% 
   group_by(year) %>% 
   complete(nesting(reach), week = seq(min(week), max(week), 1L)) %>% 
   ungroup() %>%
@@ -78,7 +80,7 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
 
 
 #---------------------------------------------------------------------------------------
-#CREATE MODEL FOR WITHIN-MAT DATA
+#CREATE MODEL FOR MICROCOLEUS WITHIN-MAT DATA
 pseudocount <- 0.00001
 
 #Gather data into stan list format
@@ -102,7 +104,7 @@ saveRDS(anatoxin_data,
         file = here::here("data/binding_toxins.rds"))
 
 
-#Gather latent states of microscopy abundances
+#Gather latent states of microscopy abundances from Within-Mat model
 matmodel_TM <- readRDS(here::here("data/WithinMat_Micro.rds"))
 
 TM_latent1 <- as.data.frame(matmodel_TM) %>% 
@@ -141,7 +143,7 @@ model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
                   "is_obs" = anatoxin_data$is_obs, #poisson edit
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
-                  "Nspecies" = as.integer(ncol(matalltaxaM)-2),
+                  "Nspecies" = as.integer(ncol(TM_latent)-1),
                   "X1" = X1,
                   "Npredictors" = ncol(X1)
 )
@@ -149,7 +151,7 @@ model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
 #---------------------------------------------------------------------------------------
 #River-Wide 
 #Gather latent states of microscopy abundances
-rivermodel <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
+rivermodel <- readRDS(here::here("data/Outputs for Simulations/Riverwide_AllVariables.rds"))
 
 River_latent1 <- as.data.frame(rivermodel) %>% 
   dplyr::select(matches("n\\[")) %>% 
@@ -188,7 +190,7 @@ model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
                   "is_obs" = anatoxin_data$is_obs, #poisson edit, was this an observed day?
                   "firstdays" = anatoxin_data$firstday,
                   "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
-                  "Nspecies" = as.integer(ncol(matalltaxaM)-2),
+                  "Nspecies" = as.integer(ncol(River_latent)-1),
                   "X2" = X2,
                   "Npredictors" = ncol(X2)
 )
@@ -196,7 +198,7 @@ model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
 #-------------------------------------------------------------------------------------------------
 #Run models
 
-setwd(here::here("data_cleaning")) #Set working directory to current folder
+setwd(here::here("data_analysis/Stan Models")) #Set working directory to current folder
 
 options(mc.cores = parallel::detectCores())
 
@@ -228,7 +230,7 @@ library(rstantools)
 #Can check posterior graphs in shinystan
 shinystan::launch_shinystan(as.shinystan(fit.atx))
 
-
+#Model Checks: Within-Mat
 mcmc_intervals(
   as.array(fit.atx.mat),
   pars = c("Ntheta", "Ptheta", "Atheta")) 
@@ -247,6 +249,7 @@ log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
 waic(log_lik_mat)
 #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
+#Model Checks: River-Wide
 mcmc_intervals(
   as.array(fit.atx.river),
   pars = c("Ntheta", "Ptheta", "Atheta")) 
