@@ -23,13 +23,13 @@ toxins <- readRDS(here::here("data/obs_toxins.rds"))
 uniqueID_toxins <- readRDS(here::here("data/binding_toxins.rds"))
 
 #Read in model data (from Missing Week Estimates)
-fit.atx.river <- readRDS(here::here("data/Anatoxin_Riverwide.rds"))
-fit.atx.mat <- readRDS(here::here("data/Anatoxin_Withinmat.rds"))
+fit.atx.river <- readRDS(here::here("data/Outputs for Simulations/Anatoxin_Riverwide.rds"))
+fit.atx.mat <- readRDS(here::here("data/Outputs for Simulations/Anatoxin_Withinmat.rds"))
 
 #MODEL INCLUDING JUST ATX_ALL--------------------------------------------------------------
 #OBSERVED DATA
 obs_data_toxins <- toxins %>% 
-  pivot_longer(cols = c(6:9), names_to = "Congener", values_to = "Concentration") %>% 
+  pivot_longer(cols = c("ATX_all_ug_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
   group_by(field_date, year, sample_type, Congener) %>% 
   dplyr::summarise(obs_mean = mean(Concentration), obs_SE = calcSE(Concentration)) %>% 
   ungroup() %>% 

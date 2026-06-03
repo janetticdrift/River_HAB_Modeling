@@ -141,7 +141,7 @@ microscopy <- microscopy1 %>%
                 Nostoc = nostoc,
                 'Other Coccoids' = other_coccoids,
                 Rare = rare) %>% 
-  pivot_longer(cols = c(10:"Rare"), names_to = "Species", values_to = "Abundance")
+  pivot_longer(cols = c("Anabaena":"Rare"), names_to = "Species", values_to = "Abundance")
 
 #############################################################################################
 #Index date by timesteps and week numbers: 1, 2, 3... n
