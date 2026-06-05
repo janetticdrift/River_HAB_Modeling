@@ -1,22 +1,35 @@
-#Data cleaning of SFE algae cover data per year
+###########################
+#Data Cleaning: Synthesizing Datasets for Analysis
+###########################
+#Read in datasets on benthic algal percent cover, microscopy community assembly,
+  #nutrient analyses (nitrate, phosphate, and ammonia), temperature,
+  #conductivity, discharge, shortwave radiation, and anatoxins. Clean, organize, and 
+  #synthesize datasets together into a final analytical framework to be used for 
+  #further modeling and analyses.
+
+#Nutrient analyses performed by UNR, temperature and conductivity collected by UNR,
+  #discharge rates acquired through USGS National Water Information System (NWIS), 
+  #shortwave radiation acquired through NASA North American Land Data Assimilation
+  #System (NLDAS), and toxin concentrations measured by SUNY College of Environmental
+  #Science and Forestry.
 
 #Packages for cleaning and visualizing data
-library(plyr)
+library(here)
 library(tidyverse)
 library(dplyr)
+library(plyr)
 library(ggpubr)
-library(gjam)
 library(devtools)
-library(here)
 library(lubridate)
-library(dataRetrieval)
 library(patchwork)
-library(ggpubr)
 library(gridExtra)
 library(MASS)
 library(slider)
 
-#Packages for radiation data
+#Package for retrieving discharge data
+library(dataRetrieval)
+
+#Packages for retrieving radiation data
 library("StreamLightUtils")
 library("StreamLight")
 library(zoo)
@@ -28,8 +41,11 @@ library(httr)
 #Read in functions
 source(here::here("data_cleaning/Functions.R"))
 
+
+
+
 #Read in river-wide raw data for percent cover by reach and year
-percover1 <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
+percover <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
 
 #Read in mat community raw data for mat proportion by reach and year
@@ -39,18 +55,15 @@ microdata <- read.csv(here::here("data/Target Microscopy.csv"))
 atx2223 <- read.csv(here::here("data/cyano_atx.csv"))
 atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 
-#Clean new percent cover data to match previous year formatting
-
-percover <- percover1 %>% 
+#Clean new percent cover data to match previous years' formatting
+percoverplot <- percover %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!(10:14)) %>%
   dplyr::mutate(field_date = as.Date(field_date)) %>% 
-  dplyr::mutate(year = year(field_date))
-
-percoverplot <- percover %>% 
+  dplyr::mutate(year = year(field_date)) %>% 
   pivot_longer(green_algae:other_nfixers, names_to = "Species", values_to = "Abundance")
 
-cleanpercover <- newpercover %>% 
+cleanpercoverplot <- newpercover %>% 
   dplyr::mutate(site_reach = case_when(Site == "Eel-4S" ~ "SFE-M-1S",
                                 Site == "Eel-BUG" ~ "SFE-M-2",
                                 Site == "Eel-3UP" ~ "SFE-M-3",
@@ -64,13 +77,11 @@ cleanpercover <- newpercover %>%
                    other_nfixers = mean(other_nfixers), bare_biofilm = mean(bare_biofilm)) %>% 
   tidyr::separate(site_reach, into = c("site", "M", "reach"), sep="-", remove = FALSE) %>% 
   tidyr::unite("site", c("site", "M"), sep = "-") %>% 
-  dplyr::mutate(year = year(field_date))
-
-cleanpercoverplot <- cleanpercover %>% 
+  dplyr::mutate(year = year(field_date)) %>% 
   pivot_longer(green_algae:bare_biofilm, names_to = "Species", values_to = "Abundance")
 
 allcoverdataplot <- rbind(percoverplot, cleanpercoverplot)
-allcoverdata <- rbind(percover, cleanpercover)
+allpercoverdata <- rbind(percover, cleanpercover)
 
 
 #Clean microscopy data to tidy slide replicates and consolidate rare species
@@ -105,11 +116,11 @@ averaged_slides <- microscopy_non_avg %>%
   dplyr::mutate(slide_rep = "Final") %>% 
   relocate(slide_rep, .after = sample_type)
 
-#Pull out already processed slides
+#Isolate already processed (averaged) slides
 processed_slides <- microscopy_non_avg %>% 
   dplyr::filter(slide_rep == "Final")
 
-#Bind together dataframes into final set
+#Bind together averaged replicate slides dataframes into final set
 microscopy1 <- rbind(averaged_slides, processed_slides)
 
 #Collapse rare species into one column
@@ -143,11 +154,12 @@ microscopy <- microscopy1 %>%
                 Rare = rare) %>% 
   pivot_longer(cols = c("Anabaena":"Rare"), names_to = "Species", values_to = "Abundance")
 
-#############################################################################################
-#Index date by timesteps and week numbers: 1, 2, 3... n
+
+#Index the dates by timesteps (which timestep in the series) and week numbers 
+  #(what number week of the year it is)
 
 #split dataset up into each year
-cover_indexdate <- allcoverdata %>% 
+cover_indexdate <- allpercoverdata %>% 
   group_split(year)
 
 micro_indexdate <- microscopy%>% 
@@ -161,6 +173,7 @@ year1micro <- micro_indexdate[[1]]
 year2micro <- micro_indexdate[[2]]
 year3micro <- micro_indexdate[[3]]
 
+#Add time step and week columns
 #year 2022
 year1_indexdate <- year1cover %>% 
   dplyr::mutate(timestep = dense_rank(field_date)) %>% 
@@ -195,10 +208,10 @@ year3_indexmicro <- year3micro %>%
   relocate(week, .after = field_date) %>% 
   dplyr::select(!real_week)
 
-#River-wide percent cover binding
+#River-Wide percent cover binding
 cover_indexweek <- rbind(year1_indexdate, year2_indexdate, year3_indexdate)
 
-#Mat community proportion binding
+#Within-Mat community composition binding
 micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %>% 
   unite(site_reach, c(site, reach), sep = "-", remove =F) %>% 
   arrange(field_date)
@@ -212,22 +225,23 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 #Tidy water chemistry data
 nut_data <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
-#Subset out the last year
+#Subset 2024 measurements and calculate NH4 (ammonium) using ammonia, pH, and temperature 
 x <- calculate_NH4(nut_data)[138:173,] %>% 
   dplyr::select(!c(pKa, f))
-#Fill back in the full dataset
+#Fill back 2024 ammonium calculations into the full dataset
 nut_data <- nut_data %>% 
   dplyr::slice(1:137)
 nut_data <- rbind(nut_data, x)
-nut_data[85, "nitrate_mg_N_L"] <- NA #Take out an outlier (recording mistake)
-nut_data[145, "cond_uS_cm"] <- 237 #Fix glitch reading from sensor with lowest HOBO estimate
 
-
+#Take out an outlier (recording mistake)
+nut_data[85, "nitrate_mg_N_L"] <- NA
+#Fix glitch reading from sensor with lowest HOBO estimate
+nut_data[145, "cond_uS_cm"] <- 237 
 
 #Pull out variables of interest
 nutrients <- nut_data %>% 
   dplyr::filter(site == "SFE-M") %>% 
-  dplyr::select(!c("time", 15:length(unique(nut_data)))) %>% #remove uninteresting nutrients
+  dplyr::select(!c("time", "assumed_pH":length(unique(nut_data)))) %>% #Remove nutrients that we will not be analyzing
   dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
   dplyr::mutate(year = year(field_date)) %>% 
   group_by(year) %>% 
@@ -240,7 +254,7 @@ nutrients <- nut_data %>%
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
-#Test for Normality, and transform data
+#Test for normality, and transform data as needed. Parameters that tested normal were not transformed
 #Nitrate
 shapiro.test(nutrients$nitrate_mg_N_L) #Test for Normality
 nutrients$nitrate_mg_N_L <- log(nutrients$nitrate_mg_N_L)
@@ -269,7 +283,8 @@ nutrients_avg <- nutrients %>%
                    ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
-#Prelim plot: Nitrate
+#Visualizing Patterns in Raw Env Data:
+#Nitrate
 ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
@@ -286,7 +301,7 @@ ggplot(nutrients_avg, aes(x = date, y = nitrate_mg_N_L)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-#Prelim plot: Phosphate
+#Phosphate
 ggplot(nutrients, aes(x = date, y = oPhos_ug_P_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
@@ -301,7 +316,7 @@ ggplot(nutrients_avg, aes(x = date, y = oPhos_ug_P_L)) +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-#Prelim plot: Ammonium
+#Ammonium
 ggplot(nutrients, aes(x = date, y = ammonium_mg_N_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
@@ -316,7 +331,7 @@ ggplot(nutrients_avg, aes(x = date, y = ammonium_mg_N_L)) +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-#Prelim plot: Conductivity
+#Conductivity
 ggplot(nutrients, aes(x = date, y = cond_uS_cm, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
@@ -333,11 +348,12 @@ ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
 
 
 #Discharge data ---------------------------------------------------------------------
+#Acquire discharge flow rates from USGS NWIS
 
 #2022 - startDate = "2022-06-26", endDate = "2022-09-18"
 miranda2022 <- renameNWISColumns(readNWISuv(
   siteNumbers = "11476500",
-  parameterCd = "00060", #discharge code, cubic feet per second!
+  parameterCd = "00060", #discharge code, cubic feet per second
   startDate = "2022-06-20", #"2021-11-07", for visualizing water year discharge patterns
   endDate = "2022-09-18")) %>% 
   dplyr::mutate(date = as.Date(dateTime)) %>% 
@@ -387,7 +403,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
 
 discharge <- rbind(miranda2022, miranda2023, miranda2024) %>% 
   dplyr::mutate(year = factor(year(date))) %>% 
-  # dplyr::mutate(season_year = if_else(month(date) >= 11, year(date) + 1, year(date)), #Make Nov and Dec of previous year belong to the same season year
+  # dplyr::mutate(season_year = if_else(month(date) >= 11, year(date) + 1, year(date)), #Make Nov and Dec of previous year belong to the same season year, if visualizing water year 
   #               season_year = factor(season_year)) %>%
   dplyr::mutate(fake_date = make_date(year = min(year(date)), day = day(date), month = month(date)),
                 fake_date = if_else(month(date) >= 11, fake_date - years(1), fake_date)) %>% 
@@ -396,7 +412,7 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
   #dplyr::mutate(year = as.numeric(as.character(year)))
 
 
-#Quick plot of discharge data
+#Visualization of raw discharge patterns
 ggplot(discharge, aes(x = fake_date, y = log_discharge, group = season_year, color = season_year)) +
   geom_point() +
   geom_line(size = 1) +
@@ -412,8 +428,9 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
-###The commented out code is no longer UTD as the data is housed elsewhere online now
-###Downloaded the data and saved on GitHub instead
+#The commented out code is no longer UTD as of November 17th 2025, as the data source is 
+  #housed in a new repository now
+#Downloaded the PAR data within relevant dates from last load, and now archived on GitHub instead
 
 # source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/Functions.R")
 # 
@@ -457,7 +474,7 @@ swradiation_raw <- rbind(PAR2022, PAR2023, PAR2024) %>%
 swradiation <- swradiation_raw %>% 
   dplyr::mutate(stand_rad = c(scale(radiation)))
 
-#Quick plot of radiation data
+#Visualization of raw radiation data
 ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year)) +
   geom_point() +
   geom_line() +
@@ -501,7 +518,3 @@ toxindf <- rbind(atx2223clean, atx24clean) %>%
   dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
                                         sample_type=="TAC" ~ "Anabaena"))
 
-
-
-#Calculation of average temperature
-calcSE(nutrients_avg$temp_C)
