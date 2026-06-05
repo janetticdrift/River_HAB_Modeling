@@ -17,8 +17,8 @@ library(patchwork)
 #Read in functions
 here::here("data/Functions.R")
 
-#Read in real data (from allcoverdataplot dataset in SFE_raw_analysis)
-coverpercent <- readRDS(here::here("data/allcoverdataplot.rds"))
+#Read in observed percent cover data (obs_river_wide_viz)
+source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Read in model data (from Missing Week Estimates)
 fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
@@ -31,7 +31,7 @@ fit.m7 <- readRDS(here::here("data/Riverwide_Abiotic_nonut.rds"))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
 #OBSERVED DATA
-obs_data_all <- coverpercent %>% 
+obs_data_all <- obs_river_wide_viz %>% 
   group_by(field_date, year, Species) %>% 
   dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   ungroup() %>% 

@@ -1,6 +1,13 @@
-#Missing week estimates
-#This code prepares data for using with STAN to estimate the percent cover values and
-#microscopy proportion values in the off-weeks of 2022 and 2024.
+###########################
+#Running River-Wide Models: Estimating Latent States of Observed and Skipped Weeks
+###########################
+#Create dataframes used for running Stan models that estimate the latent states of each
+  #algal species' percent cover abundance per week. The model also estimates the 
+  #percent covers during weeks where no field observations were made in 2022 and 2024.
+
+#RDS files saved are of model outputs, and are further used to build prediction
+  #simulations, as well as calculating goodness-of-fit indices.
+
 
 #Packages----
 library(rstan)

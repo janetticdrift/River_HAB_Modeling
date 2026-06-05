@@ -41,9 +41,6 @@ library(httr)
 #Read in functions
 source(here::here("data_cleaning/Functions.R"))
 
-
-
-
 #Read in river-wide raw data for percent cover by reach and year
 percover <- read.csv(here::here("data/percover_byreach.csv")) #2022 and 2023 data
 newpercover <- read.csv(here::here("data/SFE ATX % Cover.csv")) #2024 data
@@ -56,14 +53,16 @@ atx2223 <- read.csv(here::here("data/cyano_atx.csv"))
 atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 
 #Clean new percent cover data to match previous years' formatting
-percoverplot <- percover %>% 
+percoverMiranda <- percover %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!(10:14)) %>%
   dplyr::mutate(field_date = as.Date(field_date)) %>% 
-  dplyr::mutate(year = year(field_date)) %>% 
+  dplyr::mutate(year = year(field_date)) 
+
+percoverpivot <- percoverMiranda %>% 
   pivot_longer(green_algae:other_nfixers, names_to = "Species", values_to = "Abundance")
 
-cleanpercoverplot <- newpercover %>% 
+newpercoverMiranda <- newpercover %>% 
   dplyr::mutate(site_reach = case_when(Site == "Eel-4S" ~ "SFE-M-1S",
                                 Site == "Eel-BUG" ~ "SFE-M-2",
                                 Site == "Eel-3UP" ~ "SFE-M-3",
@@ -77,11 +76,18 @@ cleanpercoverplot <- newpercover %>%
                    other_nfixers = mean(other_nfixers), bare_biofilm = mean(bare_biofilm)) %>% 
   tidyr::separate(site_reach, into = c("site", "M", "reach"), sep="-", remove = FALSE) %>% 
   tidyr::unite("site", c("site", "M"), sep = "-") %>% 
-  dplyr::mutate(year = year(field_date)) %>% 
+  dplyr::mutate(year = year(field_date)) 
+
+newpercoverpivot <- newpercoverMiranda %>% 
   pivot_longer(green_algae:bare_biofilm, names_to = "Species", values_to = "Abundance")
 
-allcoverdataplot <- rbind(percoverplot, cleanpercoverplot)
-allpercoverdata <- rbind(percover, cleanpercover)
+
+#Create dataframe that will have Time Step Number and Week Number columns added next 
+  #within this file
+percoverdata <- rbind(percoverMiranda, newpercoverMiranda)
+
+#Save dataframe of observed percent cover data for plotting modeled vs observed value plots
+obs_river_wide_viz <- rbind(percoverpivot, newpercoverpivot)
 
 
 #Clean microscopy data to tidy slide replicates and consolidate rare species
@@ -159,7 +165,7 @@ microscopy <- microscopy1 %>%
   #(what number week of the year it is)
 
 #split dataset up into each year
-cover_indexdate <- allpercoverdata %>% 
+cover_indexdate <- percoverdata %>% 
   group_split(year)
 
 micro_indexdate <- microscopy%>% 
@@ -409,11 +415,11 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
                 fake_date = if_else(month(date) >= 11, fake_date - years(1), fake_date)) %>% 
   dplyr::mutate(log_discharge = log(discharge)) %>% #log-transform
   dplyr::mutate(stand_discharge = c(scale(log_discharge))) 
-  #dplyr::mutate(year = as.numeric(as.character(year)))
+  dplyr::mutate(year = as.numeric(as.character(year)))
 
 
 #Visualization of raw discharge patterns
-ggplot(discharge, aes(x = fake_date, y = log_discharge, group = season_year, color = season_year)) +
+ggplot(discharge, aes(x = fake_date, y = log_discharge, group = year, color = year)) +
   geom_point() +
   geom_line(size = 1) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b")+ #b = month?
