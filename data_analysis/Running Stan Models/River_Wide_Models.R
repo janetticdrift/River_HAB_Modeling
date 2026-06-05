@@ -2,13 +2,17 @@
 #Running River-Wide Models: Estimating Latent States of Observed and Skipped Weeks
 ###########################
 #Create dataframes used for running Stan models that estimate the latent states of each
-  #algal species' percent cover abundance per week. The models also estimates the 
-  #percent covers during weeks where no field observations were made in 2022 and 2024.
+  #algal species' percent cover abundance or microscopy abundance per week. The models 
+  #also estimates the percent covers and microscopy abundances during weeks where no 
+  #field observations were made in 2022 and 2024.
 
 #Four models estimating latent states are run using River-Wide data: 1) All variables
   #(biotic and abiotic together), 2) Only biotic (species interaction) variables 
   #included, 3) Only abiotic (environmental drivers) variables included, and 
   #4) Aboiotic Without Nutrients (Temp, Discharge, Conductivity, Radiation)
+
+#Two models estimating latent states are run using Within-Mat data: 1) Target
+  #Microcoleus mats (TM), and Target Anabaena mats (TA).
 
 #RDS files saved are of model outputs and are next used to build prediction
   #simulations, as well as calculating goodness-of-fit indices.
