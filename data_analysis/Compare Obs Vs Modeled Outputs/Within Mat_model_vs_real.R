@@ -18,11 +18,10 @@ library(lubridate)
 source(here::here("data_cleaning/cleaning_HAB.R"))
 #Dataframe of interest is "microscopy"
 
-#Run models (from Missing Week Estimates)
-#And read in join-matching data (matalltaxaM and matalltaxaA)
-source(here::here("data_cleaning/Missing Week Estimates.R"))
-matmodel_TM <- readRDS(here::here("data/WithinMat_Micro.rds"))
-matmodel_TA <- readRDS(here::here("data/WithinMat_Ana.rds"))
+#Read in data
+obs_TM_data <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_TM_data.rds"))
+matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
+
 
 #Clean dataframe of observed REAL data - This one is for TM only
 obs_data_mat_TM <- microscopy %>% 
@@ -31,6 +30,7 @@ obs_data_mat_TM <- microscopy %>%
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
                               as.Date("2022-09-08"))) %>%  #Change 2022/09/06 to 09/08 so the model can summarise correctly 
   dplyr::filter(Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")) %>% #Retain only Ana, Epi, and Geit
+  # This code was for relativizing microscopy abundances
   # group_by(field_date, reach) %>% 
   # dplyr::mutate(Abundance = Abundance / sum(Abundance) * 100) %>% #Divide the abundances by summed total, *100
   # dplyr::mutate(Abundance = replace_na(Abundance, 0)) %>% 
@@ -54,7 +54,7 @@ mat_params_TM <- as.data.frame(matmodel_TM) %>%
     #n_nc is just the standardized version for model construction
 
 #Set up dataframe to extract week/year info from
-yearweekTM <- matalltaxaM %>% 
+yearweekTM <- obs_TM_data %>% 
   # dplyr::rename(Anabaena = anabaena_and_cylindrospermum, 
   #               'Epithemia Diatoms' = e_diatoms,
   #               Geitlerinema = geitlerinema,
@@ -194,20 +194,11 @@ summary(model)
 #Model data plots
 
 #Create a color palette
-mycols <- c("brown", "darkolivegreen4", "darkorange", "chartreuse3", 
-            "lavender", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
-            "goldenrod", "lightblue1")
+mycols <- c("brown", "#07707B", "#F6926A")
 mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
-                 "Green Algae", "Leptolyngbya", "Microcoleus", 
-                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
-                 "Other Coccoids", "Rare")
+names(mypal) <- c("Anabaena", "Epithemia Diatoms", "Geitlerinema")
 colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
-
-myshap <- c(16, 17, 15, 3)
-names(myshap) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema")
-shapScale <- scale_shape_manual(values = myshap)
 
 ###TM: Ana + Geit + Epithemia
 ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
@@ -227,11 +218,7 @@ ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
   coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
-  
-ggarrange(plot1, plot2,
-          legend = "bottom",
-          common.legend = T)
+  colScale + filScale + theme_bw()
 
 
 ###First 6 species TAC---------------------------

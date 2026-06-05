@@ -354,7 +354,7 @@ p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
             data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
   
 
@@ -611,7 +611,7 @@ p4 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
             data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
 
@@ -968,7 +968,7 @@ p6 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
             data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
 
@@ -1281,7 +1281,7 @@ p8 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
             data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
+  labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
 

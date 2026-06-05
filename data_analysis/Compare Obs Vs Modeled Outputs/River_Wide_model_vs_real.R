@@ -251,9 +251,10 @@ p3 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 60)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Biotic Interactions") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p4 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
@@ -275,9 +276,10 @@ p4 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Combine plots and collect legends
 (p3 / p4) +
@@ -357,9 +359,10 @@ p5 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p6 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
@@ -381,9 +384,10 @@ p6 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Combine plots and collect legends
 (p5 / p6) +
@@ -462,9 +466,10 @@ p7 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 65)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions - No Nutrients") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p8 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
@@ -486,9 +491,10 @@ p8 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
             data = transform(obs_data_all,
                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  colScale + filScale + shapScale + theme_bw()
 
 # Combine plots and collect legends
 (p7 / p8) +

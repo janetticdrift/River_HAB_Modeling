@@ -8,20 +8,15 @@ library(abind)
 
 #Graphing palettes
 #Create a color palette
-mycols <- c("brown", "darkolivegreen4", "darkorange", "chartreuse3", 
-            "lavender", "darkcyan", "mediumpurple3","khaki1", "antiquewhite3",
-            "goldenrod", "lightblue1")
+mycols <- c("brown", "#00538A", "#F6926A")
 mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Epithemia Diatoms", "Geitlerinema", 
-                 "Green Algae", "Leptolyngbya", "Microcoleus", 
-                 "Non-Epithemia Diatoms", "Nostoc", "Oscillatoria",
-                 "Other Coccoids", "Rare")
+names(mypal) <- c("Anabaena", "Epithemia Diatoms", "Geitlerinema")
 colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
   
 #Read in latent states and effect coefficients
-M.fit <- readRDS(here::here("data/WithinMat_Micro_predictions.rds"))
-A.fit <- readRDS(here::here("data/WithinMat_Ana_predictions.rds"))
+M.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
+A.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
 
 
 #Pull out community abundances and demographics 
@@ -118,24 +113,6 @@ matsims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7))
 
-
-#Plot
-
-mat_p22 <- ggplot(subset(matsims2023, Species %in% c("Anabaena",
-                                                     "Epithemia Diatoms",
-                                                     "Geitlerinema")),
-                         aes(x = model_date, y = Abundance)) +
-  geom_line(size = 1.5, aes(color = Species)) +
-  geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2023", ],
-                          Species %in% c("Anabaena",
-                                         "Epithemia Diatoms",
-                                         "Geitlerinema")),
-            aes(x = model_date, y = mean, colour = Species),
-            linewidth = 4, alpha = .35) +
-  scale_y_continuous(breaks=c(seq(0,150,5))) +
-  #coord_cartesian(ylim = c(0,70)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "2023 Predictions") +
-  colScale
 
 
 #####################################
@@ -281,32 +258,23 @@ for(z in 1:runs){
 pred2024 <- n
 
 sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
+                Geitlerinema = V3) %>% 
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = c(1:9), names_to = "Species", values_to = "Abundance")
+  pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
 sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
+                Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIlower")
+  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
 sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:9, exp)) %>%
+  dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
-                Geitlerinema = V3, 'Green Algae' = V4, 
-                Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-                Nostoc = V7, 'Other Coccoids' = V8,
-                Rare = V9) %>% 
+                Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:9, names_to = "Species", values_to = "CIupper")
+  pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
 
 matsims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
@@ -319,38 +287,19 @@ matsims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) 
 matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>% 
   dplyr::rename(mean = Abundance)
 
-ggplot(subset(matsims2022, Species %in% c("Anabaena",
-                            "Epithemia Diatoms",
-                                               "Geitlerinema")),
-                       aes(x = model_date, y = Abundance)) +
-geom_line(size = 1.5, aes(color = Species)) +
-geom_line(data = subset(mat_params2_TM[mat_params2_TM$year %in% "2022", ],
-                         Species %in% c("Anabaena",
-                                        "Epithemia Diatoms",
-                                          "Geitlerinema")),
-                                                      aes(x = model_date, y = mean, colour = Species),
-                                                      linewidth = 4, alpha = .35) +
-                                            scale_y_continuous(breaks=c(seq(0,150,5))) +
-                                            #coord_cartesian(ylim = c(0,70)) +
-                                            labs(x = "Date", y = "Relative Abundance (%)", title = "2022 Predictions") +
-                                            colScale
-
 ###Create plot of TM microscopy predictions vs latent states
-ggplot(subset(matsimsallyears, Species %in% c("Anabaena", "Epithemia Diatoms",
-                                          "Geitlerinema")), 
-       aes(x = model_date, y = mean)) +
+ggplot(matsimsallyears, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.3) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5) +
   # Latent points/lines
-  geom_line(data = subset(mat_params2_TM, Species %in% c("Anabaena", "Epithemia Diatoms",
-                                         "Geitlerinema")),
-            aes(linetype = "Latent", colour = Species), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
+  geom_line(data = mat_params2_TM, aes(linetype = "Latent", colour = Species), 
+            linewidth = 2) +
+  scale_y_continuous(breaks = seq(0, 600, 5)) +
+  coord_cartesian(ylim = c(0,15)) +
   labs(x = "Date", y = "Relative Abundance (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 
 
@@ -360,6 +309,6 @@ predictives_TMmats <- exp(predictives_TMmats)
 
 #Save predictive output of Microcoleus model
 saveRDS(predictives_TMmats, 
-        file = here::here("data/WithinMat_Pred_TM.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
 
 

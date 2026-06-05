@@ -11,7 +11,7 @@ library(tidyverse)
                                #River-Wide
 
 #Read in OBSERVED states of River-Wide
-obs_river_data <- readRDS(here::here("data/Outputs for Model Fits/obs_river_data.rds"))
+obs_river_data <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_river_data.rds"))
 #Extract log-transformed observed data vectors from obs_river_data, 
 y_micro <- obs_river_data$microcoleus
 y_ana <- obs_river_data$anabaena_cylindrospermum
@@ -21,22 +21,22 @@ y_nfix <- obs_river_data$other_nfixers
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
 
 #Read in LATENT states of River-Wide
-allfit <- readRDS(here::here("data/Outputs for Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
-bioticfit <- readRDS(here::here("data/Outputs for Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
-abioticfit <- readRDS(here::here("data/Outputs for Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
-abioticnonutfit <- readRDS(here::here("data/Outputs for Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
+allfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
 
 #Read in SIMULATED states of River-Wide
-pred.allfit <- readRDS(here::here("data/Outputs for Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
-pred.bioticfit <- readRDS(here::here("data/Outputs for Model Fits/Predicted States/Riverwide_Pred_Biotic.rds"))
-pred.abioticfit <- readRDS(here::here("data/Outputs for Model Fits/Predicted States/Riverwide_Pred_Abiotic.rds"))
-pred.abioticnonutfit <- readRDS(here::here("data/Outputs for Model Fits/Predicted States/Riverwide_Pred_AbioticNoNut.rds"))
+pred.allfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
+pred.bioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Biotic.rds"))
+pred.abioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Abiotic.rds"))
+pred.abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AbioticNoNut.rds"))
 
 
                                #Within-Mat
 
 #Read in OBSERVED states of Within-Mat: TM
-obs_mat_data <- readRDS(here::here("data/Outputs for Model Fits/obs_TM_data.rds"))
+obs_mat_data <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_TM_data.rds"))
 #Extract log-transformed observed data vectors from obs_mat_data, raw data object
 y_ana <- obs_mat_data$Anabaena                  #1
 y_epi <- obs_mat_data$`Epithemia Diatoms`       #2
@@ -45,10 +45,10 @@ y_geit <- obs_mat_data$Geitlerinema             #3
 y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
 
 #Read in LATENT states of Within-Mat: TM
-TMfit <- readRDS(here::here("data/Outputs for Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
+TMfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
 
 #Read in SIMULATED states of Within-Mat
-TM.pred <- readRDS(here::here("data/Outputs for Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
+TM.pred <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
 
 ###############------------------------------------------------------------------
 #Create lists of the models to iterate through in for loop
@@ -171,7 +171,7 @@ for (m in 1:length(model_list)) {
     metrics <- list(
       "Bayesian R2" = BayesR2_vals,
       "RMSE" = RMSE_vals, 
-      "R2" = R2_vals
+      "r2" = R2_vals
     )
     
     #Calculate median and CIs for each metric
@@ -203,40 +203,81 @@ for (m in 1:length(model_list)) {
 ###############------------------------------------------------------------------
 #Quick visualization of indices so far
 str(model.indices)
-model.indices$model <- factor(  #Manually order model name 
-  model.indices$model,
-  levels = c("allfit", "bioticfit", "abioticfit", "abioticnonutfit", "TMfit")
+
+clean.model.indices <- model.indices %>% 
+  dplyr::mutate(species = case_when(species == "ana" ~ "Anabaena",
+                                    species == "epi" ~ "Epithemia Diatoms",
+                                    species == "geit" ~ "Geitlerinema",
+                                    species == "green" ~ "Green Algae",
+                                    species == "micro" ~ "Microcoleus",
+                                    species == "nfix" ~ "Other N Fixers")) %>% 
+  dplyr::mutate(model = case_when(model == "allfit" ~ "All Variables",
+                                    model == "bioticfit" ~ "Biotic Only",
+                                    model == "abioticfit" ~ "Abiotic Only",
+                                    model == "abioticnonutfit" ~ "Abiotic Minus Nutrients",
+                                    model == "TMfit" ~ "Target Microcoleus"))
+
+clean.model.indices$model <- factor(  #Manually order model name 
+  clean.model.indices$model,
+  levels = c("All Variables", "Biotic Only", "Abiotic Only", "Abiotic Minus Nutrients", "Target Microcoleus")
 )
 
-ggplot(model.indices, aes(x = value, y = model, shape = species, color = species)) +
+#Create a color palette
+mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange", "#00538A", "#F6926A")
+mypal <- palette(mycols)
+names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
+                  "Other N Fixers", "Epithemia Diatoms", "Geitlerinema")
+colScale <- scale_color_manual(values = mypal)
+myshap <- c(16, 17, 15, 6, 8, 9)
+names(myshap) <- c("Anabaena", "Green Algae", 
+                   "Microcoleus", "Other N Fixers", "Epithemia Diatoms", 
+                   "Geitlerinema")
+shapScale <- scale_shape_manual(values = myshap)
+
+#Plot River-Wide Metrics
+ggplot(subset(clean.model.indices, category %in% "River-Wide"), aes(x = value, y = model, shape = species, color = species)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(model.indices$model))) +
-  scale_shape_manual(values = c("ana" = 16, "epi" = 17, "geit" = 15,
-                                "green" = 6, "micro" = 8, "nfix" = 9)) +
+  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) + #Reverses order of yaxis
+  colScale + shapScale +
   theme_bw() +
-  labs(x = "Metric value",
-       y = "Model",
+  labs(x = "Metric Value",
+       y = "Model Name",
+       title = "River-Wide Goodness-of-Fit",
        shape = "Species",
        color = "Species")
 
 
-
-ggplot(subset(model.indices, metric == "RMSE"), aes(x = value, y = model, shape = species, color = species)) +
+ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "RMSE"), aes(x = value, y = model, shape = species, color = species)) +
   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(model.indices$model))) +
-  scale_shape_manual(values = c("ana" = 16, "epi" = 17, "geit" = 15,
-                                "green" = 6, "micro" = 8, "nfix" = 9)) +
+  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) +
+  colScale + shapScale +
   coord_cartesian(xlim = c(0, 10)) +
   theme_bw() +
   labs(title = "RMSE",
        x = "Metric value",
        y = "Model",
+       shape = "Species",
+       color = "Species")
+
+#Plot Within-Mat Metrics
+ggplot(subset(clean.model.indices, category %in% "Within-Mat"), aes(x = value, y = model, shape = species, color = species)) +
+  facet_wrap(~ metric, scales = "free_x") +
+  geom_point(position = position_dodge(width = 0.4), #position_dodge seps species apart
+             size = 3) +
+  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
+                 position = position_dodge(width = 0.)) +
+  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[5])) + #Reverses order of yaxis
+  colScale + shapScale +
+  theme_bw() +
+  labs(x = "Metric Value",
+       y = "Model Name",
+       title = "Within-Mat Goodness-of-Fit",
        shape = "Species",
        color = "Species")

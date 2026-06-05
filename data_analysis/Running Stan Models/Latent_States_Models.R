@@ -86,8 +86,8 @@ alltaxatime <- yearriverdata %>%
 #Ignore warning because NaNs are replaced with -99
 
 # #Save observed data for model fit comparisons
-# saveRDS(alltaxatime, 
-#         file = here::here("data/Model Fits/obs_river_data.rds"))
+saveRDS(alltaxatime,
+        file = here::here("data/Outputs for Sims and Model Fits/obs_river_data.rds"))
 
 model.1 <- list("uniqueID" = nrow(alltaxatime), 
                 "Nspecies" = as.integer(ncol(alltaxatime)-3),
@@ -123,7 +123,7 @@ matalltaxaM <- yearmatdata %>%
 
 #Save observed data for model fit comparisons
 saveRDS(matalltaxaM, 
-        file = here::here("data/Outputs for Model Fits/obs_TM_data.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/obs_TM_data.rds"))
 
 
 model.2 <- list("uniqueID" = nrow(matalltaxaM),

@@ -30,7 +30,7 @@ toxins <- toxindf %>%
 
 #Save cleaned output for visualizing observational vs latent states
 saveRDS(toxins, 
-        file = here::here("data/obs_toxins.rds"))
+        file = here::here("data/Outputs for Obs vs Real/obs_toxins.rds"))
 
 
 anaCsplit <- toxins %>% 
