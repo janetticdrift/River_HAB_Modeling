@@ -8,7 +8,7 @@ library(patchwork)
 
 #Read in model output
 allvar <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds")) #Model used includes all biotic and abiotic variables
-abiotic <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds")) #Model used includes all biotic and abiotic variables
+abiotic <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds")) #Model used includes abiotic variables
 
 
 ###############

@@ -2,10 +2,15 @@
 #Running River-Wide Models: Estimating Latent States of Observed and Skipped Weeks
 ###########################
 #Create dataframes used for running Stan models that estimate the latent states of each
-  #algal species' percent cover abundance per week. The model also estimates the 
+  #algal species' percent cover abundance per week. The models also estimates the 
   #percent covers during weeks where no field observations were made in 2022 and 2024.
 
-#RDS files saved are of model outputs, and are further used to build prediction
+#Four models estimating latent states are run using River-Wide data: 1) All variables
+  #(biotic and abiotic together), 2) Only biotic (species interaction) variables 
+  #included, 3) Only abiotic (environmental drivers) variables included, and 
+  #4) Aboiotic Without Nutrients (Temp, Discharge, Conductivity, Radiation)
+
+#RDS files saved are of model outputs and are next used to build prediction
   #simulations, as well as calculating goodness-of-fit indices.
 
 
@@ -61,7 +66,7 @@ yearmatdata <- rbind(yearmatdata_TM, yearmatdata_TAC) %>%
   arrange(year, week)
 
 #-------------------------------------------------------------------------------------------------
-#River-Wide - Gather percent cover data into STAN list format
+#River-Wide - Gather percent cover data into Stan list format for modeling
 
 alltaxatime <- yearriverdata %>% 
   group_by(year, week) %>% 
@@ -74,10 +79,11 @@ alltaxatime <- yearriverdata %>%
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(green_algae:other_nfixers, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+#Ignore warning because NaNs are replaced with -99
 
-#Save observed data for model fit comparisons
-saveRDS(alltaxatime, 
-        file = here::here("data/Model Fits/obs_river_data.rds"))
+# #Save observed data for model fit comparisons
+# saveRDS(alltaxatime, 
+#         file = here::here("data/Model Fits/obs_river_data.rds"))
 
 model.1 <- list("uniqueID" = nrow(alltaxatime), 
                 "Nspecies" = as.integer(ncol(alltaxatime)-3),
@@ -100,7 +106,7 @@ model.1 <- list("uniqueID" = nrow(alltaxatime),
 #Target Microcoleus, averaged reaches
 matalltaxaM <- yearmatdata %>% 
   dplyr::filter(sample_type == "TM") %>% 
-  dplyr::select(c(1:9)) %>% #Retain only Ana, Epi, and Geit
+  dplyr::select(c(1:6, "Anabaena", "Epithemia Diatoms", "Geitlerinema")) %>% #Retain only Ana, Epi, and Geit
   dplyr::mutate(across(c(Anabaena:Geitlerinema),
                        ~ . + pseudocount)) %>%  #Cannot have zeros for log transforming
   group_by(year, week) %>%
@@ -113,7 +119,7 @@ matalltaxaM <- yearmatdata %>%
 
 #Save observed data for model fit comparisons
 saveRDS(matalltaxaM, 
-        file = here::here("data/Model Fits/obs_TM_data.rds"))
+        file = here::here("data/Outputs for Model Fits/obs_TM_data.rds"))
 
 
 model.2 <- list("uniqueID" = nrow(matalltaxaM),
@@ -163,7 +169,7 @@ model.3 <- list("uniqueID" = nrow(matalltaxaA),
 #-------------------------------------------------------------------------------------------------
 #Run models
 
-setwd(here::here("data_cleaning")) #Set working directory to current folder
+setwd(here::here("data_analysis/Stan Models")) #Set working directory to current folder
 
 options(mc.cores = parallel::detectCores())
 
@@ -238,40 +244,40 @@ print(fit.m4, par = "Ptheta")
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.1, permuted=FALSE), 
-        file = here::here("data/Riverwide_AllVariables.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Model Fits/Riverwide_AllVar_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.2, permuted=FALSE), 
-        file = here::here("data/Riverwide_Biotic.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.2, pars = c('Alpha', 'Beta', 'n', 'sigma_p')), 
-        file = here::here("data/Model Fits/Riverwide_Biotic_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
 
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.3, permuted=FALSE), 
-        file = here::here("data/Riverwide_Abiotic.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Model Fits/Riverwide_Abiotic_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.4, permuted=FALSE), 
-        file = here::here("data/Riverwide_Abiotic_nonut.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Model Fits/Riverwide_AbioticNonut_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
 
 
 ##Save Within-Mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
@@ -281,24 +287,24 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta'), permuted=FALSE), 
-        file = here::here("data/WithinMat_Micro.rds"))
+        file = here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Model Fits/WithinMat_Micro_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
 
 #TAC output
 saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta'), permuted=FALSE), 
-        file = here::here("data/WithinMat_Ana.rds"))
+        file = here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
 saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
-        file = here::here("data/Model Fits/WithinMat_Ana_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
 
 
 #To read: object <- readRDS(here::here("data/file_name.rds"))

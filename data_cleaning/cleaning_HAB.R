@@ -94,10 +94,14 @@ obs_river_wide_viz <- rbind(percoverpivot, newpercoverpivot)
 microscopy_non_avg <- microdata %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE"
   #Updated ID changes: Merge leptolyngbya and geitlerinema
-  dplyr::mutate(leptolyngbya_and_geitlerinema = leptolyngbya + geitlerinema) %>% 
+  dplyr::mutate(leptolyngbya_and_geitlerinema = if_else(is.na(leptolyngbya),
+                                                        geitlerinema,
+                                                        leptolyngbya + geitlerinema)) %>% 
   dplyr::select(!c("leptolyngbya", "geitlerinema")) %>% 
-  #Updated ID changes: Move Homeothrix IDs to Calothrix
-  dplyr::mutate(calothrix = calothrix + homoeothrix) %>% 
+  #Updated ID changes: Move Homoeothrix IDs to Calothrix
+  dplyr::mutate(calothrix = if_else(is.na(homoeothrix),
+                                    calothrix,
+                                    calothrix + homoeothrix)) %>% 
   dplyr::select(!"homoeothrix") %>% 
   #Updated ID changes: Rivularia may be Gloeotrichia pre akinete formation
   dplyr::rename(rivularia_or_early_stage_gloeotrichia = rivularia) %>% 
@@ -415,7 +419,7 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
                 fake_date = if_else(month(date) >= 11, fake_date - years(1), fake_date)) %>% 
   dplyr::mutate(log_discharge = log(discharge)) %>% #log-transform
   dplyr::mutate(stand_discharge = c(scale(log_discharge))) 
-  dplyr::mutate(year = as.numeric(as.character(year)))
+  #dplyr::mutate(year = as.numeric(as.character(year))) #Use when using season_year
 
 
 #Visualization of raw discharge patterns
