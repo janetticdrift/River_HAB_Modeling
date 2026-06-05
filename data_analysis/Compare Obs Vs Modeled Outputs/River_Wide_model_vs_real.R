@@ -20,11 +20,11 @@ here::here("data/Functions.R")
 #Read in observed percent cover data (obs_river_wide_viz)
 source(here::here("data_cleaning/cleaning_HAB.R"))
 
-#Read in model data (from Missing Week Estimates)
-fit.m4 <- readRDS(here::here("data/Riverwide_AllVariables.rds"))
-fit.m5 <- readRDS(here::here("data/Riverwide_Biotic.rds"))
-fit.m6 <- readRDS(here::here("data/Riverwide_Abiotic.rds"))
-fit.m7 <- readRDS(here::here("data/Riverwide_Abiotic_nonut.rds"))
+#Read in model data (from Latent_States_Models.R)
+fit.m4 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
+fit.m5 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
+fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
+fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
 
 #Read in join-matching data (from Missing Week Estimates)
 # alltaxatime <- readRDS(here::here("data/alltaxatime.rds"))
@@ -102,13 +102,13 @@ params2_all <- as.data.frame(params1_all) %>%
 #Create a color palette
 mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
 mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Green Algae", "Microcoleus", 
+names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
                  "Other N Fixers")
 colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
 
 myshap <- c(16, 17, 15, 3)
-names(myshap) = c("Anabaena", "Green Algae", "Microcoleus", 
+names(myshap) <- c("Anabaena", "Green Algae", "Microcoleus", 
                   "Other N Fixers")
 shapScale <- scale_shape_manual(values = myshap)
 
@@ -136,7 +136,8 @@ p1 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  coord_cartesian(y = c(0, 65)) +
+  colScale + filScale + shapScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p2 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
@@ -160,7 +161,8 @@ p2 <- ggplot(params2_all, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  colScale + filScale + shapScale
+  coord_cartesian(y = c(0, 25)) +
+  colScale + filScale + shapScale + theme_bw()
 
 # Combine plots and collect legends
 (p1 / p2) +

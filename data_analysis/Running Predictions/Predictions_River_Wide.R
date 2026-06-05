@@ -1,4 +1,10 @@
-#Historical Predictions, 2022
+###########################
+#Making Predictions: Running Simulations Using Latent States
+###########################
+#
+
+
+#Packages for tidying and visualizing prediction simulations
 library(ggplot2)
 library(ggpubr)
 library(tidyverse)
@@ -11,7 +17,7 @@ library(abind)
 #Create a color palette
 mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
 mypal <- palette(mycols)
-names(mypal) = c("Anabaena", "Green Algae", "Microcoleus", 
+names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
                  "Other N Fixers")
 colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
@@ -20,10 +26,10 @@ linScale <- scale_linetype_manual(name = "State Type",
                                              "Predicted" = "solid"))
 
 #Read in latent states and effect coefficients
-allfit <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds"))
-bioticfit <- readRDS(here::here("data/Riverwide_Biotic_predictions.rds"))
-abioticfit <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds"))
-abioticnonutfit <- readRDS(here::here("data/Riverwide_AbioticNonut_predictions.rds"))
+allfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
+bioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
+abioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
+abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
 
 #----------------------------------------------------------------------------
 #River-wide: All Variables
@@ -67,7 +73,7 @@ for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
   Beta <- betas[z,,]
-  n[z,,1] <- abundances[z,] #interations, species, time
+  n[z,,1] <- abundances[z,] #iterations, species, time
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
@@ -87,13 +93,10 @@ for(z in 1:runs){
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
-    # #Biotic only
-    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
-    #                          Sigma = sigma)
   }
 }
 
-#Create datafram for model checking
+#Create dataframe for model fit check
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
@@ -124,21 +127,6 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
-
-# #Plot
-# ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
-#   geom_line(data=params2_all[params2_all$year %in% "2022", ],
-#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"),
-#             linewidth = 2) +
-#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-#                   fill = Species), color = NA, alpha = 0.2) +
-#   scale_y_continuous(breaks=c(seq(0,810,30))) +
-#   coord_cartesian(ylim = c(0,810)) +
-#   labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
-#   colScale + filScale + linScale
-  
-
 
 
 #
@@ -185,8 +173,6 @@ for(z in 1:runs){
   cTheta <- Ctheta[z,]
   rTheta <- Rtheta[z,]
   
-  
-  
   for(t in 2:time){
     
     #Everything included
@@ -194,11 +180,6 @@ for(z in 1:runs){
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
-    
-    # #Remove env drivers
-    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
-    #                          Sigma = sigma)
-
     
   }
 }
@@ -236,20 +217,6 @@ sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
   #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7))
-
-
-
-# p23 <- ggplot(sims2023, aes(x = model_date, y = Abundance, colour = Species)) +
-#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
-#   geom_line(data=params2_all[params2_all$year %in% "2023", ], 
-#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"), 
-#             linewidth = 2) +
-#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-#                   fill = Species), color = NA, alpha = 0.2) +
-#   scale_y_continuous(breaks=c(seq(0,100,5))) +
-#   coord_cartesian(ylim = c(0,50)) +
-#   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
-#   colScale + filScale + linScale
 
 
 #
@@ -304,9 +271,6 @@ for(z in 1:runs){
                                pTheta*phos[t-1] + aTheta*amon[t-1] + dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
-    # #Remove env drivers
-    # n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1],
-    #                          Sigma = sigma)
     
   }
 }
@@ -343,23 +307,6 @@ sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
                                             (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
-# p24 <- ggplot(sims2024, aes(x = model_date, y = Abundance, colour = Species)) +
-#   geom_line(aes(linetype = "Predicted"), size = 1.5) +
-#   geom_line(data=params2_all[params2_all$year %in% "2024", ],
-#             aes(x = model_date, y = mean, colour = Species, linetype = "Latent"),
-#             linewidth = 2) +
-#   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-#                   fill = Species), color = NA, alpha = 0.2) +
-#   scale_y_continuous(breaks=c(seq(0,100,5))) +
-#   coord_cartesian(ylim = c(0,50)) +
-#   labs(x = "Date", y = "Percent Cover (%)", title = "2023 Predictions") +
-#   colScale + filScale + linScale
-# 
-# 
-# ggarrange(
-#   p22, p23, p24, labels = c("A", "B", "C"), ncol = 3,
-#   common.legend = TRUE, legend = "bottom"
-# )
 
 #Join together simulation data
 simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
@@ -384,9 +331,9 @@ p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,90)) +
+  coord_cartesian(ylim = c(0,75)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
@@ -406,9 +353,9 @@ p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,60)) +
+  coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
   
 
 # Combine plots and collect legends
@@ -424,7 +371,7 @@ predictives.river.all <- exp(predictives.river.all)
 
 #Save predictive output of All Variables model
 saveRDS(predictives.river.all, 
-        file = here::here("data/Riverwide_Pred_AllVar.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
 
 
 
@@ -641,9 +588,9 @@ p3 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,70)) +
+  coord_cartesian(ylim = c(0,65)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Biotic Interactions") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p4 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
@@ -665,7 +612,7 @@ p4 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 
 # Combine plots and collect legends
@@ -678,9 +625,9 @@ predictives.river.biotic <- abind(modelcheck_2022, modelcheck_2023,
                                modelcheck_2024, along = 3)
 predictives.river.biotic <- exp(predictives.river.biotic)
 
-#Save predictive output of All Variables model
+#Save predictive output of Biotic model
 saveRDS(predictives.river.biotic, 
-        file = here::here("data/Riverwide_Pred_Biotic.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Biotic.rds"))
 
 
 #-----------------------------------------------------------------------------
@@ -782,19 +729,6 @@ sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
-
-#Plot
-ggplot(sims2022, aes(x = model_date, y = Abundance, colour = Species)) +
-  geom_line(aes(linetype = "Predicted"), size = 1.5) +
-  geom_line(data=params2_all[params2_all$year %in% "2022", ],
-            aes(x = model_date, y = mean, colour = Species, linetype = "Latent"),
-            linewidth = 2) +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`,
-                  fill = Species), color = NA, alpha = 0.2) +
-  scale_y_continuous(breaks=c(seq(0,810,30))) +
-  coord_cartesian(ylim = c(0,810)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "2022 Predictions") +
-  colScale + filScale + linScale
 #
 #Historical Predictions, 2023
 #
@@ -1011,9 +945,9 @@ p5 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,80)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions Minus Nutrients") +
-  colScale + filScale + linScale
+  coord_cartesian(ylim = c(0,75)) +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions") +
+  colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p6 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
@@ -1035,7 +969,7 @@ p6 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 
 # Combine plots and collect legends
@@ -1048,9 +982,9 @@ predictives.river.abiotic <- abind(modelcheck_2022, modelcheck_2023,
                                         modelcheck_2024, along = 3)
 predictives.river.abiotic <- exp(predictives.river.abiotic)
 
-#Save predictive output of All Variables model
+#Save predictive output of Abiotic model
 saveRDS(predictives.river.abiotic, 
-        file = here::here("data/Riverwide_Pred_Abiotic.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Abiotic.rds"))
 
 #-----------------------------------------------------------------------------
 #River-wide: Abiotic Variables Minus Nutrients
@@ -1324,9 +1258,9 @@ p7 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,80)) +
+  coord_cartesian(ylim = c(0,70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions Minus Nutrients") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
 p8 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
@@ -1348,7 +1282,7 @@ p8 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,20)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale
+  colScale + filScale + linScale + theme_bw()
 
 
 # Combine plots and collect legends
@@ -1361,7 +1295,7 @@ predictives.river.abioticnonut <- abind(modelcheck_2022, modelcheck_2023,
                                    modelcheck_2024, along = 3)
 predictives.river.abioticnonut <- exp(predictives.river.abioticnonut)
 
-#Save predictive output of All Variables model
+#Save predictive output of Abiotic Minus Nutrient model
 saveRDS(predictives.river.abioticnonut, 
-        file = here::here("data/Riverwide_Pred_AbioticNoNut.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AbioticNoNut.rds"))
 
