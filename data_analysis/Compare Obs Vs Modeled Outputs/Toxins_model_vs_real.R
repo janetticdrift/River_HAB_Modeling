@@ -19,12 +19,12 @@ library(rstan)
 here::here("data/Functions.R")
 
 #Read in cleaned real data (from Toxin_Models.R - should be put in other files eventually)
-toxins <- readRDS(here::here("data/obs_toxins.rds"))
-uniqueID_toxins <- readRDS(here::here("data/binding_toxins.rds"))
+toxins <- readRDS(here::here("data/Outputs for Obs vs Real/obs_toxins.rds"))
+uniqueID_toxins <- readRDS(here::here("data/Outputs for Obs vs Real/stanformat_toxins.rds"))
 
 #Read in model data (from Missing Week Estimates)
-fit.atx.river <- readRDS(here::here("data/Outputs for Simulations/Anatoxin_Riverwide.rds"))
-fit.atx.mat <- readRDS(here::here("data/Outputs for Simulations/Anatoxin_Withinmat.rds"))
+fit.atx.river <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Riverwide.rds"))
+fit.atx.mat <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
 
 #MODEL INCLUDING JUST ATX_ALL--------------------------------------------------------------
 #OBSERVED DATA
@@ -87,7 +87,7 @@ tox_params2_river <- as.data.frame(tox_params_river) %>%
 
 
 
-#MODELED DATA - Within-Mat
+                                  #MODELED DATA - Within-Mat
 tox_params_mat <- as.data.frame(fit.atx.mat) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
@@ -131,11 +131,12 @@ tox_params2_mat <- as.data.frame(tox_params_mat) %>%
 
 
 #FIGURES--------------------------------------------------------------------------------
-
-###Anatoxins
-ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
+  
+#River-Wide
+ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
   facet_wrap(~year, scales = "free_x") +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), alpha = 0.2) +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
   # Latent points/lines
   geom_point(aes(colour = Congener), size = 3) +
   geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
@@ -146,9 +147,35 @@ ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
   geom_line(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 50, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(y = c(0, 50)) +
-  labs(x = "Date", y = "Anatoxin Concentration", title = "Observed vs. Latent Concentrations") +
-  labs(color = "Latent", fill = "Latent", shape = "Observed")
-  #colScale + filScale + shapScale
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations: River-Wide") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw()
+
+#Within-Mat
+ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
+  # Latent points/lines
+  geom_point(aes(colour = Congener), size = 3) +
+  geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
+  # Observed points/lines
+  geom_point(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
+             aes(x = model_date, y = obs_mean, shape = Congener),
+             size = 2.5) +
+  geom_line(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
+            aes(x = model_date, y = obs_mean, group = Congener),
+            size = 0.5) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  coord_cartesian(y = c(0, 50)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations: Within-Mat") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw()
+
 

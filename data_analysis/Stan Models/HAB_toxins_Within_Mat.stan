@@ -21,10 +21,6 @@ parameters {
   real Beta2;            
   real Beta3;            
   
-  real BetaAna;        
-  real BetaEpi;        
-  real BetaGeit;          
-  
   real Ntheta; 
   real Ptheta; 
   real Atheta; 
@@ -50,12 +46,6 @@ transformed parameters {
   beta[9] = Ttheta;
   beta[10] = Ctheta;
   beta[11] = Rtheta;
-  
-  vector[3] beta_lag;
-  
-  beta_lag[1] = BetaAna;
-  beta_lag[2] = BetaEpi;
-  beta_lag[3] = BetaGeit;
 }
 
 model {
@@ -68,10 +58,6 @@ model {
   Beta1 ~ normal(0,0.3);
   Beta2 ~ normal(0,0.3);
   Beta3 ~ normal(0,0.3);
-
-  BetaAna ~ normal(0,0.3);
-  BetaEpi ~ normal(0,0.3);
-  BetaGeit ~ normal(0,0.3);
   
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);
@@ -85,15 +71,14 @@ model {
   
   // Initial states for timesteps the lag skips
   tox[1] ~ normal(0, sigma_p);
-  tox[2] ~ normal(0, sigma_p);
   
-  for(t in 3:uniqueID){
+  for(t in 2:uniqueID){
     if(firstdays[t] == 1){
       tox[t] ~ normal(0, sigma_p); 
       continue;
     }
     
-    tox[t] ~ normal(X1[t-1,]*beta + X1[t-2, 2:4]*beta_lag, sigma_p);
+    tox[t] ~ normal(X1[t-1,]*beta, sigma_p);
   }
   
   //Observation model

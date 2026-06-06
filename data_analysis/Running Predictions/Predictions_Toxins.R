@@ -5,8 +5,8 @@ library(tidyverse)
 library(abind)
 
 #Read in latent states and effect coefficients
-River.fit <- readRDS(here::here("data/Outputs for Model Fits/Anatoxin_River_predictions.rds"))
-Mat.fit <- readRDS(here::here("data/Outputs for Model Fits/Anatoxin_Mat_predictions.rds"))
+River.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_River_predictions.rds"))
+Mat.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 
 ######Simulate Toxins using microscopy data
 
@@ -17,10 +17,6 @@ Beta0 <- x[["Beta0"]]
 Beta1 <- x[["Beta1"]]
 Beta2 <- x[["Beta2"]]
 Beta3 <- x[["Beta3"]]
-BetaAna  <- x[["BetaAna"]]
-BetaEpi  <- x[["BetaEpi"]]
-BetaGeit <- x[["BetaGeit"]]
-
 sigma_p <- x[["sigma_p"]]
 
 #Pull out environmental effects
@@ -74,38 +70,26 @@ for (z in 1:runs) {
     Rtheta[z]
   )
   
-  beta_lag <- c(
-    BetaAna[z],
-    BetaEpi[z],
-    BetaGeit[z]
-  )
-  
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
-  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
   #Simulation
-  for (t in 3:time) {
+  for (t in 2:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta), sigma_p[z])
   }
 }
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(pred2022, 2, mean)) %>% 
+sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2022lquant <- as.data.frame(apply(pred2022, 2, quantile, probs = 0.025)) %>% 
-  dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
+sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
+  dplyr::rename(CIlower = 1) %>%
   dplyr::mutate(time = 1:time)
-sims2022uquant <- as.data.frame(apply(pred2022, 2, quantile, probs = 0.975)) %>% 
+sims2022uquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -160,38 +144,26 @@ for (z in 1:runs) {
     Rtheta[z]
   )
   
-  beta_lag <- c(
-    BetaAna[z],
-    BetaEpi[z],
-    BetaGeit[z]
-  )
-  
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
-  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
   #Simulation
-  for (t in 3:time) {
+  for (t in 2:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta), sigma_p[z])
   }
 }
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(pred2023, 2, mean)) %>% 
+sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2023lquant <- as.data.frame(apply(pred2023, 2, quantile, probs = 0.025)) %>% 
+sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-sims2023uquant <- as.data.frame(apply(pred2023, 2, quantile, probs = 0.975)) %>% 
+sims2023uquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -246,38 +218,26 @@ for (z in 1:runs) {
     Rtheta[z]
   )
   
-  beta_lag <- c(
-    BetaAna[z],
-    BetaEpi[z],
-    BetaGeit[z]
-  )
-  
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
-  tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
   #Simulation
-  for (t in 3:time) {
+  for (t in 2:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta), sigma_p[z])
   }
 }
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(pred2024, 2, mean)) %>% 
+sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2024lquant <- as.data.frame(apply(pred2024, 2, quantile, probs = 0.025)) %>% 
+sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-sims2024uquant <- as.data.frame(apply(pred2024, 2, quantile, probs = 0.975)) %>% 
+sims2024uquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -296,7 +256,7 @@ matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024)
 
 #Graphing palettes
 #Create a color palette
-mycols <- c("lightsalmon2", "forestgreen")
+mycols <- c("#791c55", "#af6c5d")
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
 colScale <- scale_color_manual(name = "State Type", values = mypal)
@@ -309,15 +269,15 @@ ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
               alpha = 0.3) +
-  # Predicted points/lines
-  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   # Latent points/lines
   geom_line(data = tox_params2_mat,
             aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 3500, 1000)) +
-  coord_cartesian(ylim = c(0,3500)) +
+  # Predicted points/lines
+  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  coord_cartesian(ylim = c(0,60)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
-  colScale + filScale + linScale + theme_bw()
+  colScale + linScale + filScale + theme_bw()
 
 
 
@@ -327,7 +287,7 @@ predictives_toxins_mats <- exp(predictives_toxins_mats)
 
 #Save predictive output of Toxin Within-Mat model
 saveRDS(predictives_toxins_mats, 
-        file = here::here("data/Toxins_Pred_Withinmat.rds"))    # Eek change file path 
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_Pred_Withinmat.rds")) 
 
 
 
@@ -408,17 +368,14 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(pred2022, 2, mean)) %>% 
+sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2022lquant <- as.data.frame(apply(pred2022, 2, quantile, probs = 0.025)) %>% 
+sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-sims2022uquant <- as.data.frame(apply(pred2022, 2, quantile, probs = 0.975)) %>% 
+sims2022uquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -493,17 +450,14 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(pred2023, 2, mean)) %>% 
+sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2023lquant <- as.data.frame(apply(pred2023, 2, quantile, probs = 0.025)) %>% 
+sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-sims2023uquant <- as.data.frame(apply(pred2023, 2, quantile, probs = 0.975)) %>% 
+sims2023uquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -579,17 +533,14 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(pred2024, 2, mean)) %>% 
+sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
-  dplyr::mutate(toxins = exp(toxins)) %>% 
   dplyr::mutate(time = 1:time) 
-sims2024lquant <- as.data.frame(apply(pred2024, 2, quantile, probs = 0.025)) %>% 
+sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
   dplyr::rename(CIlower = 1) %>% 
-  dplyr::mutate(CIlower = exp(CIlower)) %>% 
   dplyr::mutate(time = 1:time)
-sims2024uquant <- as.data.frame(apply(pred2024, 2, quantile, probs = 0.975)) %>% 
+sims2024uquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.975)) %>% 
   dplyr::rename(CIupper = 1) %>% 
-  dplyr::mutate(CIupper = exp(CIupper)) %>% 
   dplyr::mutate(time = 1:time)
 
 #Join together mean and CI ranges
@@ -608,7 +559,7 @@ riversimsallyears <- rbind(riversims2022, riversims2023, riversims2024)
 
 #Graphing palettes
 #Create a color palette
-mycols <- c("lightsalmon2", "brown")
+mycols <- c("#791C55", "#41789A")
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
 colScale <- scale_color_manual(name = "State Type", values = mypal)
@@ -625,9 +576,9 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
   geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   # Latent points/lines
   geom_line(data = tox_params2_river,
-            aes(y = mean*1000, linetype = "Latent", color = "Latent"), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 10000, 1000)) +
-  coord_cartesian(ylim = c(0,10000)) +
+            aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations") +
   colScale + filScale + linScale + theme_bw()
 

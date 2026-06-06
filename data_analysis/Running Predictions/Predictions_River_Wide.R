@@ -100,22 +100,19 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
   dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -187,8 +184,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -197,15 +193,13 @@ sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>%
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -278,22 +272,19 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
   dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -331,7 +322,7 @@ p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,75)) +
+  coord_cartesian(ylim = c(0,80)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
   colScale + filScale + linScale + theme_bw()
 
@@ -410,22 +401,19 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
   dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -472,8 +460,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -482,15 +469,13 @@ sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>%
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -537,22 +522,19 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
   dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -700,22 +682,19 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -796,22 +775,19 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -892,22 +868,19 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1043,22 +1016,19 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1124,22 +1094,19 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1205,22 +1172,19 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:4, exp)) %>%
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  

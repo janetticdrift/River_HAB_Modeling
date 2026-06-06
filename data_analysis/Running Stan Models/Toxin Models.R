@@ -101,11 +101,11 @@ anatoxin_data <- atx %>%
 
 #Save cleaned output for visualizing observational vs latent states
 saveRDS(anatoxin_data, 
-        file = here::here("data/binding_toxins.rds"))
+        file = here::here("data/Outputs for Obs vs Real/stanformat_toxins.rds"))
 
 
 #Gather latent states of microscopy abundances from Within-Mat model
-matmodel_TM <- readRDS(here::here("data/WithinMat_Micro.rds"))
+matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
 
 TM_latent1 <- as.data.frame(matmodel_TM) %>% 
   dplyr::select(matches("n\\[")) %>% 
@@ -151,7 +151,7 @@ model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
 #---------------------------------------------------------------------------------------
 #River-Wide 
 #Gather latent states of microscopy abundances
-rivermodel <- readRDS(here::here("data/Outputs for Simulations/Riverwide_AllVariables.rds"))
+rivermodel <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 
 River_latent1 <- as.data.frame(rivermodel) %>% 
   dplyr::select(matches("n\\[")) %>% 
@@ -212,16 +212,17 @@ init_fun_atx <- function() list(
   tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length
  )
 
+#Estimate anatoxins in river-wide assemblages
+fit.atx.river <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.river, chains = 3, iter = 6000,
+                       warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                       max_treedepth = 15))
+
 #Estimate anatoxins in TM mats
-fit.atx.mat <-  stan(file = "HAB_toxins_poisson.stan", data = model.atx.mat, chains = 3, iter = 6000,
+fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.mat, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-fit.atx.river <-  stan(file = "HAB_toxins_poisson_Riverwide.stan", data = model.atx.river, chains = 3, iter = 6000,
-                 warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
-                                                                                 max_treedepth = 15))
-
- #Model checks and evaluation
+  #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
@@ -246,7 +247,7 @@ mcmc_intervals(
 #Extract log-likelihood
 log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
 #Calculate WAIC
-waic(log_lik_mat)
+loo(log_lik_mat)
 #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
 #Model Checks: River-Wide
@@ -267,9 +268,9 @@ mcmc_intervals(
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.atx.river, permuted=FALSE), 
-        file = here::here("data/Outputs for Simulations/Anatoxin_Riverwide.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_Riverwide.rds"))
 saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE), 
-        file = here::here("data/Outputs for Simulations/Anatoxin_Withinmat.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
 
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.atx.river, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
@@ -278,13 +279,12 @@ saveRDS(rstan::extract(fit.atx.river, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3
                                               'Atheta', 'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
-        file = here::here("data/Outputs for Model Fits/Anatoxin_River_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
-                                             'BetaAna', 'BetaEpi', 'BetaGeit',
                                              'Ntheta','Ptheta', 'Atheta', 'Dtheta',
                                              'Ttheta', 'Ctheta', 'Rtheta', 'sigma_p',
                                              'tox_raw')), 
-        file = here::here("data/Outputs for Model Fits/Anatoxin_Mat_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 
 
 
