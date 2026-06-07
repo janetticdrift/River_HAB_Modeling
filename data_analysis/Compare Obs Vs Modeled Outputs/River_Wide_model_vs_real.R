@@ -19,15 +19,14 @@ here::here("data/Functions.R")
 
 #Read in observed percent cover data (obs_river_wide_viz)
 source(here::here("data_cleaning/cleaning_HAB.R"))
+#Read in join-matching data (from Missing Week Estimates)
+alltaxatime <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_river_data.rds"))
 
 #Read in model data (from Latent_States_Models.R)
 fit.m4 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 fit.m5 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
 fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
-
-#Read in join-matching data (from Missing Week Estimates)
-# alltaxatime <- readRDS(here::here("data/alltaxatime.rds"))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
 #OBSERVED DATA
@@ -94,7 +93,8 @@ params2_all <- as.data.frame(params1_all) %>%
                               (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::filter(Species != "bare_biofilm") %>% 
   dplyr::mutate(Species = as.factor(Species))
-  #dplyr::mutate(CIupper = replace(CIupper, CIupper>70, 70))
+
+#Save dataframe for building Predictions
 
 
  #FIGURES--------------------------------------------------------------------------------

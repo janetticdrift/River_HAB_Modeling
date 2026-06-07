@@ -10,8 +10,8 @@ library(ggpubr)
 library(tidyverse)
 library(abind)
 
-#Read in latent states, params2_all
-#source(here::here("data_analysis/model_vs_real_data.R"))
+#Read in cleaned latent states, params2_all. This file also reads in the cleaning_HAB.R file
+source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/River_Wide_model_vs_real.R"))
 
 #Create plot palettes for graphing
 #Create a color palette
@@ -35,7 +35,7 @@ abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Late
 #River-wide: All Variables
 
 #Pull out community abundances and demographics 
-x <- allfit #m4 = all vars, m5 = biotic only
+x <- allfit 
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
@@ -359,6 +359,12 @@ p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
 predictives.river.all <- abind(modelcheck_2022, modelcheck_2023, 
                         modelcheck_2024, along = 3)
 predictives.river.all <- exp(predictives.river.all)
+
+maxcover <- apply(predictives.river.all, 1, max) 
+arrangemaxcover <- sort(maxcover, decreasing = TRUE)
+head(arrangemaxcover, n = 10)
+
+sum(apply(predictives.river.all, 1, function(x) any(x > 10000)))
 
 #Save predictive output of All Variables model
 saveRDS(predictives.river.all, 
