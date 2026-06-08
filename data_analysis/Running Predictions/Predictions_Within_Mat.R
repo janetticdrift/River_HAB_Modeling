@@ -5,6 +5,9 @@ library(tidyverse)
 library(abind)
 
 #files mat_params2 and mat_params2_groups are in WithinMatModel_vs_real
+#Read in cleaned latent states, params2_all. This file also reads in the cleaning_HAB.R file
+source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/Within_Mat_model_vs_real.R"))
+
 
 #Graphing palettes
 #Create a color palette
@@ -88,26 +91,23 @@ pred2022 <- n
 # Nostoc = V7, 'Other Coccoids' = V8,
 # Rare = V9)
 
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2022median <- as.data.frame(t(as.data.frame(apply(exp(pred2022), c(2,3), median)))) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   mutate(time = 1:time) %>% 
   pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
-sims2022lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(pred2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
-sims2022uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(pred2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
 
-matsims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+matsims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -173,26 +173,24 @@ for(z in 1:runs){
 
 pred2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
+sims2023median <- as.data.frame(t(as.data.frame(apply(exp(pred2023), c(2,3), median)))) %>% 
   dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   mutate(time = 1:time) %>% 
   pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
-sims2023lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(pred2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
-sims2023uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(pred2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
 
-matsims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+matsims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -257,26 +255,23 @@ for(z in 1:runs){
 
 pred2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2024median <- as.data.frame(t(as.data.frame(apply(exp(pred2024), c(2,3), median)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   mutate(time = 1:time) %>% 
   pivot_longer(cols = c(1:3), names_to = "Species", values_to = "Abundance")
-sims2024lquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.025)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(pred2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIlower")
-sims2024uquant <- as.data.frame(t(as.data.frame(apply(n, c(2,3), quantile, probs = 0.975)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
+sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(pred2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:3, names_to = "Species", values_to = "CIupper")
 
-matsims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+matsims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -285,7 +280,7 @@ matsims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) 
 
 #Join together simulation data
 matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>% 
-  dplyr::rename(mean = Abundance)
+  dplyr::rename(median = Abundance)
 
 ###Create plot of TM microscopy predictions vs latent states
 ggplot(matsimsallyears, aes(x = model_date, y = median)) +
@@ -304,8 +299,7 @@ ggplot(matsimsallyears, aes(x = model_date, y = median)) +
 
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives_TMmats <- abind(pred2022, pred2023, pred2024, along = 3)
-predictives_TMmats <- exp(predictives_TMmats)
+predictives_TMmats <- abind(exp(pred2022), exp(pred2023), exp(pred2024), along = 3)
 
 #Save predictive output of Microcoleus model
 saveRDS(predictives_TMmats, 
