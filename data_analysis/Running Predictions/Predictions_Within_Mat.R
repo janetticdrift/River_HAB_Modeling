@@ -19,8 +19,6 @@ filScale <- scale_fill_manual(values = mypal)
   
 #Read in latent states and effect coefficients
 M.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
-A.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
-
 
 #Pull out community abundances and demographics 
 x <- M.fit #m1 = averaged reaches for Microcoleus
@@ -85,11 +83,6 @@ for(z in 1:runs){
 }
 
 pred2022 <- n
-
-# 'Green Algae' = V4, 
-# Microcoleus = V5, 'Non-Epithemia Diatoms' = V6,
-# Nostoc = V7, 'Other Coccoids' = V8,
-# Rare = V9)
 
 sims2022median <- as.data.frame(t(as.data.frame(apply(exp(pred2022), c(2,3), median)))) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
@@ -174,7 +167,6 @@ for(z in 1:runs){
 pred2023 <- n
 
 sims2023median <- as.data.frame(t(as.data.frame(apply(exp(pred2023), c(2,3), median)))) %>% 
-  dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
   mutate(time = 1:time) %>% 
