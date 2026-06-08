@@ -46,8 +46,8 @@ model {
   //tauP ~ inv_gamma(1,1); site random var
   //tauT ~ inv_gamma(1,1); time random var
   
-  sigma_p ~ inv_gamma(3,1); #process model var
-  sigma_o ~ inv_gamma(3,1); //T[0,]; #observation model var
+  sigma_p ~ inv_gamma(3,1); #process model standard deviation
+  sigma_o ~ inv_gamma(3,1); //T[0,]; #observation model standard deviation
   
   //gamma ~ normal(0,tauP); //random effect for site (later pop) //gamma[s]*tauP
   //omega ~ normal(0,tauT); //random effect for time //omega[t]*tauT if convergence issues

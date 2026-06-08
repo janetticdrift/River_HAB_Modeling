@@ -669,9 +669,12 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-        n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-          tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+        n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
+                            pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+                            dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                            cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                          sd = sigma[s])
+        
     }
   }
 }
@@ -762,9 +765,11 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-        pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
+                          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
     }
   }
 }
@@ -855,9 +860,11 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1]+
-        pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + dTheta[s]*dis[t-1] +
-        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
+                          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
     }
   }
 }
@@ -1003,8 +1010,10 @@ for(z in 1:runs){
     for(s in 1:4){
 
       #Remove nutrients
-        n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
-          tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
     }
   }
 }
@@ -1080,8 +1089,10 @@ for(z in 1:runs){
     for(s in 1:4){
       
       #Remove nutrients
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
-        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
       
     }
   }
@@ -1158,9 +1169,10 @@ for(z in 1:runs){
     for(s in 1:4){
       
       #Remove nutrients too
-      n[z,s,t] <- Alpha[s] + Beta[s]*n[z,s,t-1] + dTheta[s]*dis[t-1] +
-        tTheta[s]*temp[t-1] + cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1]
-      
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
     }
   }
 }
@@ -1241,7 +1253,7 @@ p8 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
-  coord_cartesian(ylim = c(0,15)) +
+  coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
