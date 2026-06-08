@@ -100,7 +100,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
+sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -119,7 +119,7 @@ sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
                         left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -184,7 +184,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
+sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -206,7 +206,7 @@ sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -272,7 +272,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
+sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -291,7 +291,7 @@ sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -300,51 +300,51 @@ sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
 
 
 #Join together simulation data
-simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
-  dplyr::rename(mean = Abundance)
+simsall <- rbind(sims2022, sims2023, sims2024) %>% 
+  dplyr::rename(median = Abundance)
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p1 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p1 <- ggplot(simsall, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA),
+              data = transform(simsall,
+                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-             data = transform(simsallyears,
-                              mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
-                                            mean, NA))) +
+             data = transform(simsall,
+                              median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
+                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,80)) +
+  coord_cartesian(ylim = c(0,72)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p2 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA),
+              data = transform(simsall,
+                               median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
-                                           mean, NA))) +
+            data = transform(simsall,
+                             median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 5)) +
+  coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
   
@@ -356,15 +356,8 @@ p2 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
 
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives.river.all <- abind(modelcheck_2022, modelcheck_2023, 
-                        modelcheck_2024, along = 3)
-predictives.river.all <- exp(predictives.river.all)
-
-maxcover <- apply(predictives.river.all, 1, max) 
-arrangemaxcover <- sort(maxcover, decreasing = TRUE)
-head(arrangemaxcover, n = 10)
-
-sum(apply(predictives.river.all, 1, function(x) any(x > 10000)))
+predictives.river.all <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
+                        exp(modelcheck_2024), along = 3)
 
 #Save predictive output of All Variables model
 saveRDS(predictives.river.all, 
@@ -407,7 +400,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
+sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -426,7 +419,7 @@ sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -466,7 +459,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
+sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -488,7 +481,7 @@ sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -528,7 +521,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
+sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -547,58 +540,58 @@ sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 #Join together simulation data
-simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
-  dplyr::rename(mean = Abundance)
+simsbiotic <- rbind(sims2022, sims2023, sims2024) %>% 
+  dplyr::rename(median = Abundance)
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p3 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p3 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA),
+              data = transform(simsbiotic,
+                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
-                                           mean, NA))) +
+            data = transform(simsbiotic,
+                             median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,65)) +
+  coord_cartesian(ylim = c(0,59)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Biotic Interactions") +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p4 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p4 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA),
+              data = transform(simsbiotic,
+                               median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
-                                           mean, NA))) +
+            data = transform(simsbiotic,
+                             median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 5)) +
+  coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
@@ -609,9 +602,8 @@ p4 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   theme(legend.position = "right", legend.box = "vertical")
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives.river.biotic <- abind(modelcheck_2022, modelcheck_2023, 
-                               modelcheck_2024, along = 3)
-predictives.river.biotic <- exp(predictives.river.biotic)
+predictives.river.biotic <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
+                                  exp(modelcheck_2024), along = 3)
 
 #Save predictive output of Biotic model
 saveRDS(predictives.river.biotic, 
@@ -688,7 +680,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
+sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -707,7 +699,7 @@ sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 25, year = 2022) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -781,7 +773,7 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
+sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -800,7 +792,7 @@ sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -874,7 +866,7 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
+sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -893,7 +885,7 @@ sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 24, year = 2024) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -902,51 +894,51 @@ sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
 
 
 #Join together simulation data
-simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
-  dplyr::rename(mean = Abundance)
+simsabiotic <- rbind(sims2022, sims2023, sims2024) %>% 
+  dplyr::rename(median = Abundance)
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p5 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p5 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA),
+              data = transform(simsabiotic,
+                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
-                                           mean, NA))) +
+            data = transform(simsabiotic,
+                             median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,75)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions") +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p6 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p6 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA),
+              data = transform(simsabiotic,
+                               median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
-                                           mean, NA))) +
+            data = transform(simsabiotic,
+                             median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 5)) +
+  coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
@@ -957,9 +949,8 @@ p6 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   theme(legend.position = "right", legend.box = "vertical")
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives.river.abiotic <- abind(modelcheck_2022, modelcheck_2023, 
-                                        modelcheck_2024, along = 3)
-predictives.river.abiotic <- exp(predictives.river.abiotic)
+predictives.river.abiotic <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
+                                   exp(modelcheck_2024), along = 3)
 
 #Save predictive output of Abiotic model
 saveRDS(predictives.river.abiotic, 
@@ -1022,7 +1013,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
+sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1041,7 +1032,7 @@ sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2022 <- left_join(sims2022mean, sims2022lquant, by=c("Species", "time")) %>%
+sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 25, year = 2022) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -1100,7 +1091,7 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
+sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1119,7 +1110,7 @@ sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2023 <- left_join(sims2023mean, sims2023lquant, by=c("Species", "time")) %>%
+sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -1178,7 +1169,7 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
+sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1197,7 +1188,7 @@ sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
-sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
+sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 24, year = 2024) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
@@ -1206,51 +1197,51 @@ sims2024 <- left_join(sims2024mean, sims2024lquant, by=c("Species", "time")) %>%
 
 
 #Join together simulation data
-simsallyears <- rbind(sims2022, sims2023, sims2024) %>% 
-  dplyr::rename(mean = Abundance)
+simsabioticnonut <- rbind(sims2022, sims2023, sims2024) %>% 
+  dplyr::rename(median = Abundance)
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p7 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p7 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA),
+              data = transform(simsabioticnonut,
+                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
-                                           mean, NA))) +
+            data = transform(simsabioticnonut,
+                             median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), mean, NA))) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,70)) +
+  coord_cartesian(ylim = c(0,69)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions Minus Nutrients") +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p8 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
+p8 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsallyears,
-                               mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA),
+              data = transform(simsabioticnonut,
+                               median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsallyears,
-                             mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
-                                           mean, NA))) +
+            data = transform(simsabioticnonut,
+                             median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
+                                           median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), mean, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,20)) +
+            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  scale_y_continuous(breaks = seq(0, 600, 5)) +
+  coord_cartesian(ylim = c(0,15)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   colScale + filScale + linScale + theme_bw()
 
@@ -1261,9 +1252,8 @@ p8 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   theme(legend.position = "right", legend.box = "vertical")
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives.river.abioticnonut <- abind(modelcheck_2022, modelcheck_2023, 
-                                   modelcheck_2024, along = 3)
-predictives.river.abioticnonut <- exp(predictives.river.abioticnonut)
+predictives.river.abioticnonut <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
+                                   exp(modelcheck_2024), along = 3)
 
 #Save predictive output of Abiotic Minus Nutrient model
 saveRDS(predictives.river.abioticnonut, 
