@@ -88,7 +88,7 @@ pred2022 <- n
 # Nostoc = V7, 'Other Coccoids' = V8,
 # Rare = V9)
 
-sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
   dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
@@ -173,7 +173,7 @@ for(z in 1:runs){
 
 pred2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
   dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
@@ -257,7 +257,7 @@ for(z in 1:runs){
 
 pred2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(n, c(2,3), median)))) %>% 
   dplyr::mutate(across(1:3, exp)) %>%
   dplyr::rename(Anabaena = V1, 'Epithemia Diatoms' = V2,
                 Geitlerinema = V3) %>% 
@@ -288,7 +288,7 @@ matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>%
   dplyr::rename(mean = Abundance)
 
 ###Create plot of TM microscopy predictions vs latent states
-ggplot(matsimsallyears, aes(x = model_date, y = mean)) +
+ggplot(matsimsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.3) +
   # Predicted points/lines

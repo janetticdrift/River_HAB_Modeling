@@ -100,7 +100,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -184,7 +184,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -272,7 +272,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -305,7 +305,7 @@ simsallyears <- rbind(sims2022, sims2023, sims2024) %>%
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p1 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -327,7 +327,7 @@ p1 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p2 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p2 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -407,7 +407,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe for plotting
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -466,7 +466,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2023 <- n
 
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -528,7 +528,7 @@ for(z in 1:runs){
 #Create datafram for model checking
 modelcheck_2024 <- n
 
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>% 
@@ -559,7 +559,7 @@ simsallyears <- rbind(sims2022, sims2023, sims2024) %>%
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p3 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p3 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -581,7 +581,7 @@ p3 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p4 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p4 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -688,7 +688,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -781,7 +781,7 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -874,7 +874,7 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -907,7 +907,7 @@ simsallyears <- rbind(sims2022, sims2023, sims2024) %>%
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p5 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p5 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -929,7 +929,7 @@ p5 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p6 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p6 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -1022,7 +1022,7 @@ for(z in 1:runs){
 modelcheck_2022 <- n
 
 #Create dataframe
-sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), mean)))) %>% 
+sims2022mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1100,7 +1100,7 @@ for(z in 1:runs){
 modelcheck_2023 <- n
 
 #Create dataframe
-sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), mean)))) %>% 
+sims2023mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1178,7 +1178,7 @@ for(z in 1:runs){
 modelcheck_2024 <- n
 
 #Create dataframe
-sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), mean)))) %>% 
+sims2024mean <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
@@ -1211,7 +1211,7 @@ simsallyears <- rbind(sims2022, sims2023, sims2024) %>%
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p7 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p7 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
@@ -1233,7 +1233,7 @@ p7 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
   colScale + filScale + linScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p8 <- ggplot(simsallyears, aes(x = model_date, y = mean)) +
+p8 <- ggplot(simsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,

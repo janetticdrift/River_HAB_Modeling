@@ -82,7 +82,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
+sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -156,7 +156,7 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
+sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -230,7 +230,7 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
+sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -368,7 +368,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
+sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -450,7 +450,7 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
+sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -533,7 +533,7 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
+sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
