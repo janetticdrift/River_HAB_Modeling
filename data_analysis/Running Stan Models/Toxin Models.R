@@ -125,6 +125,10 @@ TM_latent <- as.data.frame(TM_latent1) %>%
   pivot_wider(names_from = Species, values_from = mean) %>% 
   arrange(time)
 
+#Save cleaned microscopy latent dataframe for making toxin prediction simulation
+saveRDS(TM_latent, 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_LatentStates.rds"))
+
 #Create design matrix
 X1 <- cbind(
   intercept = 1,
@@ -171,6 +175,10 @@ River_latent <- as.data.frame(River_latent1) %>%
   dplyr::select(-group) %>% 
   pivot_wider(names_from = Species, values_from = mean) %>% 
   arrange(time)
+
+#Save cleaned percent cover latent dataframe for making toxin prediction simulation
+saveRDS(River_latent, 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_LatentStates.rds"))
 
 #Create design matrix
 X2 <- cbind(

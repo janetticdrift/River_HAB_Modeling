@@ -4,9 +4,13 @@ library(ggpubr)
 library(tidyverse)
 library(abind)
 
-#Read in latent states and effect coefficients
+#Read in latent states and effect coefficients for toxin concentrations (River.fit and
+  #Mat.fit) and latent states of percent cover and microscopy abundances 
+  #(percentcover_latent and microscopyTM_latent)
 River.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_River_predictions.rds"))
 Mat.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
+percentcover_latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_LatentStates.rds"))
+microscopyTM_latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_LatentStates.rds"))
 
 ######Simulate Toxins using microscopy data
 
@@ -21,23 +25,17 @@ sigma_p <- x[["sigma_p"]]
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]]
-
 Ptheta <- x[["Ptheta"]]
-
 Atheta <- x[["Atheta"]]
-
 Dtheta <- x[["Dtheta"]]
-
 Ttheta <- x[["Ttheta"]]
-
 Ctheta <- x[["Ctheta"]]
-
 Rtheta <- x[["Rtheta"]]
 
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[, -1][1:time, ],  #Abundances are log-transformed
+  microscopyTM_latent[, -1][1:time, ],  #Abundances are on the log-scale
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
@@ -82,7 +80,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
+sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -92,8 +90,8 @@ sims2022uquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-matsims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
+#Join together median and CI ranges
+matsims2022 <- dplyr::left_join(sims2022median, sims2022lquant, by=c("time")) %>%
   dplyr::left_join(., sims2022uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -116,7 +114,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
+  microscopyTM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
@@ -156,7 +154,7 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
+sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -166,8 +164,8 @@ sims2023uquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-matsims2023 <- dplyr::left_join(sims2023mean, sims2023lquant, by=c("time")) %>%
+#Join together median and CI ranges
+matsims2023 <- dplyr::left_join(sims2023median, sims2023lquant, by=c("time")) %>%
   dplyr::left_join(., sims2023uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -191,7 +189,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
+  microscopyTM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
@@ -230,7 +228,7 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
+sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -240,8 +238,8 @@ sims2024uquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-matsims2024 <- dplyr::left_join(sims2024mean, sims2024lquant, by=c("time")) %>%
+#Join together median and CI ranges
+matsims2024 <- dplyr::left_join(sims2024median, sims2024lquant, by=c("time")) %>%
   dplyr::left_join(., sims2024uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -271,7 +269,7 @@ ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
               alpha = 0.3) +
   # Latent points/lines
   geom_line(data = tox_params2_mat,
-            aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
+            aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
@@ -311,17 +309,11 @@ sigma_p <- x[["sigma_p"]]
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]]
-
 Ptheta <- x[["Ptheta"]]
-
 Atheta <- x[["Atheta"]]
-
 Dtheta <- x[["Dtheta"]]
-
 Ttheta <- x[["Ttheta"]]
-
 Ctheta <- x[["Ctheta"]]
-
 Rtheta <- x[["Rtheta"]]
 
 #Inputs
@@ -331,7 +323,7 @@ time <- 13
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  River_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
+  percentcover_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
@@ -368,7 +360,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022mean <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
+sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -378,8 +370,8 @@ sims2022uquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-riversims2022 <- dplyr::left_join(sims2022mean, sims2022lquant, by=c("time")) %>%
+#Join together median and CI ranges
+riversims2022 <- dplyr::left_join(sims2022median, sims2022lquant, by=c("time")) %>%
   dplyr::left_join(., sims2022uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -401,7 +393,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  River_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
+  percentcover_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
@@ -450,7 +442,7 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023mean <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
+sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -460,8 +452,8 @@ sims2023uquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-riversims2023 <- dplyr::left_join(sims2023mean, sims2023lquant, by=c("time")) %>%
+#Join together median and CI ranges
+riversims2023 <- dplyr::left_join(sims2023median, sims2023lquant, by=c("time")) %>%
   dplyr::left_join(., sims2023uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -485,7 +477,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- cbind(
   intercept = rep(1, time),
-  TM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
+  percentcover_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
@@ -533,7 +525,7 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024mean <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
+sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -543,8 +535,8 @@ sims2024uquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0
   dplyr::rename(CIupper = 1) %>% 
   dplyr::mutate(time = 1:time)
 
-#Join together mean and CI ranges
-riversims2024 <- dplyr::left_join(sims2024mean, sims2024lquant, by=c("time")) %>%
+#Join together median and CI ranges
+riversims2024 <- dplyr::left_join(sims2024median, sims2024lquant, by=c("time")) %>%
   dplyr::left_join(., sims2024uquant, by=c("time")) %>% 
   dplyr::mutate(real_week = time + 26, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(
@@ -576,7 +568,7 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
   geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   # Latent points/lines
   geom_line(data = tox_params2_river,
-            aes(y = mean, linetype = "Latent", color = "Latent"), linewidth = 2) +
+            aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,50)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations") +
