@@ -25,8 +25,9 @@ library(dataRetrieval)
 
 #Read in needed data
 source(here::here("data_cleaning/cleaning_HAB.R"))
-#Set pseudocount here for tidying data before log-transforming
-pseudocount <- 0.001
+#Set pseudocount here for tidying data before log-transforming. 1 is a reasonable
+  #number for percents in non-decimal format
+pseudocount <- 1
 
 #Tidy dataframes into format needed for STAN
 
