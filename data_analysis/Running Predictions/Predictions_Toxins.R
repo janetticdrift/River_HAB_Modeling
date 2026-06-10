@@ -4,15 +4,18 @@ library(ggpubr)
 library(tidyverse)
 library(abind)
 
-#Read in latent states and effect coefficients for toxin concentrations (River.fit and
-  #Mat.fit) and latent states of percent cover and microscopy abundances 
+#Read in raw latent states and effect coefficients for toxin concentrations (River.fit and
+  #Mat.fit), summarized latent states for toxin concentrations(River.tox.latent and
+  #Mat.tox.latent),and latent states of percent cover and microscopy abundances 
   #(percentcover_latent and microscopyTM_latent)
 River.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_River_predictions.rds"))
 Mat.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
+River.tox.latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Tox_LatentStates.rds"))
+Mat.tox.latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Tox_LatentStates.rds"))
 percentcover_latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_LatentStates.rds"))
 microscopyTM_latent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_LatentStates.rds"))
 
-######Simulate Toxins using microscopy data
+######Simulate Toxins using microscopy data------
 
 #Pull out community abundances and demographics 
 x <- Mat.fit 
@@ -100,9 +103,9 @@ matsims2022 <- dplyr::left_join(sims2022median, sims2022lquant, by=c("time")) %>
   ))
 
 
-#####################################
+####
 #Historical Predictions, 2023
-#####################################
+####
 #Pull out new starting year
 tox_conc <- x[["tox_raw"]][,14:15] #iterations, time
 
@@ -175,9 +178,9 @@ matsims2023 <- dplyr::left_join(sims2023median, sims2023lquant, by=c("time")) %>
 
 
 
-#####################################
+###
 #Historical Predictions, 2024
-#####################################
+###
 #Pull out new starting year
 tox_conc <- x[["tox_raw"]][,27:28] #iterations, time
 
@@ -222,7 +225,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 2:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta), sigma_p[z])
+    tox[z,t] <- rnorm(1, sum(X1[t-1, ]*beta), sigma_p[z])
   }
 }
 
@@ -268,12 +271,12 @@ ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
               alpha = 0.3) +
   # Latent points/lines
-  geom_line(data = tox_params2_mat,
+  geom_line(data = Mat.tox.latent,
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,60)) +
+  coord_cartesian(ylim = c(0,40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
   colScale + linScale + filScale + theme_bw()
 
@@ -290,7 +293,7 @@ saveRDS(predictives_toxins_mats,
 
 
 
-                    ######Simulate Toxins using percent cover data
+######Simulate Toxins using percent cover data-----
 
 #Pull out community abundances and demographics 
 x <- River.fit 
@@ -360,7 +363,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
+sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -379,9 +382,9 @@ riversims2022 <- dplyr::left_join(sims2022median, sims2022lquant, by=c("time")) 
     "week", week_start = 7))
 
 
-#####################################
+###
 #Historical Predictions, 2023
-#####################################
+###
 #Pull out new starting year
 tox_conc <- x[["tox_raw"]][,14:15] #iterations, time
 
@@ -391,7 +394,7 @@ time <- 13
 tox <- matrix(NA, runs, time)
 
 #Create design matrix
-X1 <- cbind(
+X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
@@ -401,48 +404,30 @@ X1 <- cbind(
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
-)
+))
 
 
 for (z in 1:runs) {
-  
-  # Build parameter vectors
-  beta <- c(
-    Beta0[z],
-    Beta1[z],
-    Beta2[z],
-    Beta3[z],
-    Ntheta[z],
-    Ptheta[z],
-    Atheta[z],
-    Dtheta[z],
-    Ttheta[z],
-    Ctheta[z],
-    Rtheta[z]
-  )
-  
-  beta_lag <- c(
-    BetaAna[z],
-    BetaEpi[z],
-    BetaGeit[z]
-  )
   
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
   tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
+  #Identify timesteps in coefficient matrices
+  beta <- beta_matrix[z, ]
+  beta_lag <- beta_lag_matrix[z, ]
+  
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
+                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
   }
 }
 
 pred2023 <- tox
 
-sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
+sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -463,9 +448,9 @@ riversims2023 <- dplyr::left_join(sims2023median, sims2023lquant, by=c("time")) 
 
 
 
-#####################################
+###
 #Historical Predictions, 2024
-#####################################
+###
 #Pull out new starting year
 tox_conc <- x[["tox_raw"]][,27:28] #iterations, time
 
@@ -475,7 +460,7 @@ time <- 15
 tox <- matrix(NA, runs, time)
 
 #Create design matrix
-X1 <- cbind(
+X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
@@ -485,47 +470,29 @@ X1 <- cbind(
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
-)
+))
 
 for (z in 1:runs) {
-  
-  # Build parameter vectors
-  beta <- c(
-    Beta0[z],
-    Beta1[z],
-    Beta2[z],
-    Beta3[z],
-    Ntheta[z],
-    Ptheta[z],
-    Atheta[z],
-    Dtheta[z],
-    Ttheta[z],
-    Ctheta[z],
-    Rtheta[z]
-  )
-  
-  beta_lag <- c(
-    BetaAna[z],
-    BetaEpi[z],
-    BetaGeit[z]
-  )
   
   #Set initial tox concentrations for the first two skipped days
   tox[z,1] <- log(tox_conc[z,1] + 1e-6)
   tox[z,2] <- log(tox_conc[z,2] + 1e-6)
   
+  #Identify timesteps in coefficient matrices
+  beta <- beta_matrix[z, ]
+  beta_lag <- beta_lag_matrix[z, ]
+  
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, sum(X1[t-1, ] * beta) +
-                        sum(X1[t-2, 2:4] * beta_lag)
-                      , sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
+                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
   }
 }
 
 pred2024 <- tox
 
-sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
+sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -567,10 +534,10 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
   # Latent points/lines
-  geom_line(data = tox_params2_river,
+  geom_line(data = River.tox.latent,
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,50)) +
+  coord_cartesian(ylim = c(0,40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations") +
   colScale + filScale + linScale + theme_bw()
 

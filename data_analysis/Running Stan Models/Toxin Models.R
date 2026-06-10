@@ -56,7 +56,7 @@ year2_index <- year2 %>%
   dplyr::mutate(timestep = dense_rank(field_date)) %>% 
   dplyr::mutate(week = timestep)
 
-############################Note in 2023 they did not sample anatoxins the first week of %covers
+####Note in 2023 they did not sample anatoxins the first week of %covers
 
 #year 2024
 year3_index <- year3 %>% 
@@ -78,9 +78,6 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
   ungroup() %>%
   dplyr::mutate(reach = as.numeric(factor(reach))) 
 
-
-#---------------------------------------------------------------------------------------
-#CREATE MODEL FOR MICROCOLEUS WITHIN-MAT DATA
 pseudocount <- 0.00001
 
 #Gather data into stan list format
@@ -103,6 +100,8 @@ anatoxin_data <- atx %>%
 saveRDS(anatoxin_data, 
         file = here::here("data/Outputs for Obs vs Real/stanformat_toxins.rds"))
 
+#---------------------------------------------------------------------------------------
+#CREATE MODEL FOR MICROCOLEUS WITHIN-MAT DATA
 
 #Gather latent states of microscopy abundances from Within-Mat model
 matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
@@ -116,13 +115,13 @@ TM_latent <- as.data.frame(TM_latent1) %>%
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
   group_by(group) %>% 
-  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE)) %>% 
   dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Anabaena',
                                     grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
                                     grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   dplyr::select(-group) %>% 
-  pivot_wider(names_from = Species, values_from = mean) %>% 
+  pivot_wider(names_from = Species, values_from = median) %>% 
   arrange(time)
 
 #Save cleaned microscopy latent dataframe for making toxin prediction simulation
@@ -154,7 +153,7 @@ model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
 
 #---------------------------------------------------------------------------------------
 #River-Wide 
-#Gather latent states of microscopy abundances
+#Gather latent states of percent cover abundances
 rivermodel <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 
 River_latent1 <- as.data.frame(rivermodel) %>% 
@@ -166,14 +165,14 @@ River_latent <- as.data.frame(River_latent1) %>%
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
   group_by(group) %>% 
-  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE)) %>% 
   dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Green Algae',
                                     grepl("[2,", group, fixed=TRUE) ~ 'Microcoleus',
                                     grepl("[3,", group, fixed=TRUE) ~ 'Anabaena',
                                     grepl("[4,", group, fixed=TRUE) ~ 'Other N Fixers')) %>% 
   mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
   dplyr::select(-group) %>% 
-  pivot_wider(names_from = Species, values_from = mean) %>% 
+  pivot_wider(names_from = Species, values_from = median) %>% 
   arrange(time)
 
 #Save cleaned percent cover latent dataframe for making toxin prediction simulation
@@ -237,7 +236,7 @@ library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(as.shinystan(fit.atx))
+shinystan::launch_shinystan(as.shinystan(fit.atx.mat))
 
 #Model Checks: Within-Mat
 mcmc_intervals(

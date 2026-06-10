@@ -8,7 +8,6 @@
 #Package library
 library(tidyverse)
 library(here)
-library(shinystan)
 library(bayesplot)
 library(ggplot2)
 library(lubridate)
@@ -60,14 +59,14 @@ yearweek_atx <- uniqueID_toxins %>%
                names_to = "Congener", values_to = "mean") %>% 
   dplyr::mutate(time = rep(seq(41), each = length(unique(Congener))))   #41 is mat timeseries length
 
-#Manually calculate mean posteriors for microscopy proportions
+#Manually calculate median posteriors for microscopy proportions
 tox_params2_river <- as.data.frame(tox_params_river) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
   group_by(group) %>% 
-  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
-                   se_mean = calcSE(c_across(starts_with("V"))),
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE),
+                   se_median = calcSE(c_across(starts_with("V"))),
                    CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
                    CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
   dplyr::mutate(Congener = "Total Anatoxins") %>% 
@@ -85,6 +84,10 @@ tox_params2_river <- as.data.frame(tox_params_river) %>%
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
+#Save cleaned and summarized River-Wide toxin model latent states for visualizing 
+  #predictive toxin simulations
+saveRDS(tox_params2_river, 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Tox_LatentStates.rds"))
 
 
                                   #MODELED DATA - Within-Mat
@@ -102,14 +105,14 @@ yearweek_atx <- uniqueID_toxins %>%
                names_to = "Congener", values_to = "mean") %>% 
   dplyr::mutate(time = rep(seq(41), each = length(unique(Congener))))   #41 is mat timeseries length
 
-#Manually calculate mean posteriors for microscopy proportions
+#Manually calculate median posteriors for microscopy proportions
 tox_params2_mat <- as.data.frame(tox_params_mat) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
   group_by(group) %>% 
-  dplyr::summarise(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
-                   se_mean = calcSE(c_across(starts_with("V"))),
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE),
+                   se_median = calcSE(c_across(starts_with("V"))),
                    CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
                    CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
   dplyr::mutate(Congener = "Total Anatoxins") %>% 
@@ -127,13 +130,17 @@ tox_params2_mat <- as.data.frame(tox_params_mat) %>%
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
+saveRDS(tox_params2_mat, 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Tox_LatentStates.rds"))
+
+
 
 
 
 #FIGURES--------------------------------------------------------------------------------
   
 #River-Wide
-ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
+ggplot(tox_params2_river, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
               alpha = 0.2) +
@@ -148,7 +155,7 @@ ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 50)) +
+  coord_cartesian(y = c(0, 40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations: River-Wide") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
@@ -156,7 +163,7 @@ ggplot(tox_params2_river, aes(x = model_date, y = mean)) +
   theme_bw()
 
 #Within-Mat
-ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
+ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
               alpha = 0.2) +
@@ -171,7 +178,7 @@ ggplot(tox_params2_mat, aes(x = model_date, y = mean)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 50)) +
+  coord_cartesian(y = c(0, 40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations: Within-Mat") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
