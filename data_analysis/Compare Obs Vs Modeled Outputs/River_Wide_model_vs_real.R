@@ -8,7 +8,6 @@
 #Package library
 library(tidyverse)
 library(here)
-library(shinystan)
 library(bayesplot)
 library(ggplot2)
 library(lubridate)
@@ -29,10 +28,10 @@ fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds
 fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
-#OBSERVED DATA
+#OBSERVED DATA - calculate average values
 obs_data_all <- obs_river_wide_viz %>% 
   group_by(field_date, year, Species) %>% 
-  dplyr::summarise(obs_median = median(Abundance), obs_SE = calcSE(Abundance)) %>% 
+  dplyr::summarise(obs_mean = mean(Abundance), obs_SE = calcSE(Abundance)) %>% 
   ungroup() %>% 
   dplyr::group_by(year) %>% 
   dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
@@ -125,12 +124,12 @@ p1 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   # Observed points/lines
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 200, 10)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
@@ -150,12 +149,12 @@ p2 <- ggplot(params2_all, aes(x = model_date, y = median)) +
              data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   labs(x = "Date", y = "Percent Cover (%)") +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
@@ -167,12 +166,12 @@ p2 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical") 
   
-#Pulling out basic numbers
+#Pulling out basic numbers: the median latent percent cover per species, per year
 aggregate(median ~ Species + year, data = params2_all, max)
-aggregate(obs_median ~ Species + year, data = obs_data_all, max)
+aggregate(obs_mean ~ Species + year, data = obs_data_all, max)
 
 #Columns plot - need to add barebio back into params2_all for this
-ggplot(obs_data_all, aes(x = model_date, y = obs_median, fill = Species)) +
+ggplot(obs_data_all, aes(x = model_date, y = obs_mean, fill = Species)) +
   facet_wrap(~year, scales = "free") +
   geom_col(position = "fill", width = 5) #+
   #scale_x_continuous(breaks=c(seq(1,17,2))) This was when x = week
@@ -230,24 +229,24 @@ params2_all <- as.data.frame(params1_all) %>%
 # Plot 1: Only show Green Algae + Other N Fixers
 p3 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
+  #Latent points and lines
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
               data = transform(params2_all,
                                median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
-  # Latent points/lines
   geom_point(aes(colour = Species), size = 3,
              data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  # Observed points/lines
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  # Observed points and lines
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 60)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Biotic Interactions") +
@@ -257,6 +256,7 @@ p3 <- ggplot(params2_all, aes(x = model_date, y = median)) +
 # Plot 2: Only show Anabaena + Microcoleus
 p4 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
+  #Latent points and lines
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
               data = transform(params2_all,
@@ -267,12 +267,13 @@ p4 <- ggplot(params2_all, aes(x = model_date, y = median)) +
              data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  #Observed points and lines
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
@@ -350,12 +351,12 @@ p5 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   # Observed points/lines
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 70)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions") +
@@ -375,12 +376,12 @@ p6 <- ggplot(params2_all, aes(x = model_date, y = median)) +
              data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
@@ -457,12 +458,12 @@ p7 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   # Observed points/lines
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 65)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions - No Nutrients") +
@@ -482,12 +483,12 @@ p8 <- ggplot(params2_all, aes(x = model_date, y = median)) +
              data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
-  geom_point(aes(y = obs_median, shape = Species), size = 2.5,
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
-                              obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
-  geom_line(aes(y = obs_median, group = Species), size = 0.5,
+                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
             data = transform(obs_data_all,
-                             obs_median = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_median, NA))) +
+                             obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
   scale_y_continuous(breaks = seq(0, 150, 10)) +
   coord_cartesian(y = c(0, 25)) +
   labs(x = "Date", y = "Percent Cover (%)") +
