@@ -79,13 +79,13 @@ model {
   BetaAna ~ normal(0,0.3);
   BetaNFix ~ normal(0,0.3);  
   
-  Ntheta ~ normal(0,0.3);
-  Ptheta ~ normal(0,0.3);
-  Atheta ~ normal(0,0.3);
-  Dtheta ~ normal(0,0.3);
-  Ttheta ~ normal(0,0.3);
-  Ctheta ~ normal(0,0.3);
-  Rtheta ~ normal(0,0.3);
+  Ntheta ~ normal(0,1);
+  Ptheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  Dtheta ~ normal(0,1);
+  Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
+  Rtheta ~ normal(0,1);
   
   //Process model
   

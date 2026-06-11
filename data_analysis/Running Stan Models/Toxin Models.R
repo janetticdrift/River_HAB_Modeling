@@ -51,12 +51,10 @@ year1_index <- year1 %>%
                                  timestep == 6 ~ 11,
                                  timestep == 7 ~ 13))
 
-#year 2023
+#year 2023 - Note that they did not sample anatoxins the first week of %covers
 year2_index <- year2 %>% 
   dplyr::mutate(timestep = dense_rank(field_date)) %>% 
   dplyr::mutate(week = timestep)
-
-####Note in 2023 they did not sample anatoxins the first week of %covers
 
 #year 2024
 year3_index <- year3 %>% 
@@ -78,17 +76,12 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
   ungroup() %>%
   dplyr::mutate(reach = as.numeric(factor(reach))) 
 
-pseudocount <- 0.00001
-
 #Gather data into stan list format
 anatoxin_data <- atx %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson
+  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson distribution
                 ATX_all_ug_g = ATX_all_ug_g*1000) %>%
-  # dplyr::mutate(across(ATX_all_ug_g,
-  #                      ~ . + pseudocount)) %>% #Cannot have zeros for log transforming
-  # dplyr::mutate(across(ATX_all_ug_g, log)) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
@@ -229,7 +222,7 @@ fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.mat, 
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-  #Model checks and evaluation
+#Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
