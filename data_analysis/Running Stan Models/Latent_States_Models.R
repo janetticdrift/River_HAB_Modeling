@@ -203,7 +203,7 @@ fit.m1.4 <-  stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, i
                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
-###### Within-Mat
+ ###### Within-Mat
 # Set values to initialize models
 
 init_fun_M <- function() list(
@@ -227,12 +227,12 @@ init_fun_A <- function() list(
 fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                                               max_treedepth = 15))
-#Averaged, TAC
+ #Averaged, TAC
 fit.m3 <-  stan(file = "HAB_mat_community.stan", data = model.3, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                               max_treedepth = 15))
 
- #-------------------------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
