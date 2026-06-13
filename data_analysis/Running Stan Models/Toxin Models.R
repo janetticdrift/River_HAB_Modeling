@@ -222,7 +222,7 @@ fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.mat, 
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
-#Model checks and evaluation
+ #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
 library(ggplot2)
@@ -299,54 +299,5 @@ lag_df <- data.frame(time = TM_latent$time,
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
-
-###
-#Examine DeltaATX ~ DeltaPercent + DeltaEnv
-
-obs_TM_mat <- microscopy %>% 
-  dplyr::filter(sample_type %in% "TM") %>% 
-  dplyr::arrange(field_date) %>% 
-  dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
-                                     as.Date("2022-09-08"))) %>%  #Change 2022/09/06 to 09/08 so the model can summarise correctly 
-  dplyr::filter(Species %in% c("Anabaena", "Epithemia Diatoms", "Geitlerinema")) %>% 
-  pivot_wider(names_from = Species, values_from = Abundance)
-
-common_rows <- inner_join(obs_TM_mat, toxins, by = c("field_date", "reach", "year")) %>% 
-  dplyr::slice(-17) #Remove odd duplicate row
-
-deltadf <- data.frame(date = common_rows$field_date,
-                      year = common_rows$year,
-                      reach = common_rows$reach,
-                      ATX = common_rows$ATX_all_ug_g, 
-                      Anabaena = common_rows$Anabaena,
-                      Epithemia = common_rows$`Epithemia Diatoms`,
-                      Geitlerinema = common_rows$Geitlerinema) %>% 
-  group_by(year, reach) %>% 
-  arrange(date) %>% 
-  dplyr::mutate(across(ATX:Geitlerinema, ~ .x - lag(.x), .names = "change_{.col}")) %>% 
-  pivot_longer(c(9:11), names_to = "Species", values_to = "changepercent")
-
-
-ggplot(deltadf, aes(x = changepercent, y = change_ATX, group = Species, color = Species)) +
-  facet_grid(reach~year, scales = "free_x") +
-  geom_point(size = 2) +
-  #geom_smooth(method = "lm", formula = y ~ x + I(x^2), se = F) +
-  labs(x = "Change in Within-Mat Percent Abundance", y = "Change in ATX") +
-  coord_cartesian(ylim = c(-120, 120))
-
-common_rows <- inner_join(obs_TM_mat, toxins, by = c("field_date", "reach", "year")) %>% 
-  dplyr::slice(-17) #Remove odd duplicate row
-
-deltadf <- data.frame(date = common_rows$field_date,
-                      year = common_rows$year,
-                      reach = common_rows$reach,
-                      ATX = common_rows$ATX_all_ug_g, 
-                      Anabaena = common_rows$Anabaena,
-                      Epithemia = common_rows$`Epithemia Diatoms`,
-                      Geitlerinema = common_rows$Geitlerinema) %>% 
-  group_by(year, reach) %>% 
-  arrange(date) %>% 
-  dplyr::mutate(across(ATX:Geitlerinema, ~ .x - lag(.x), .names = "change_{.col}")) %>% 
-  pivot_longer(c(9:11), names_to = "Species", values_to = "changepercent")
   
                       

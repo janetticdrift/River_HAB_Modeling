@@ -260,7 +260,7 @@ matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024)
 mycols <- c("#791c55", "#af6c5d")
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
-colScale <- scale_color_manual(name = "State Type", values = mypal)
+matcolScale <- scale_color_manual(name = "State Type", values = mypal)
 filScale <- scale_fill_manual(name = "State Type", values = mypal)
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
@@ -278,7 +278,7 @@ ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
-  colScale + linScale + filScale + theme_bw()
+  matcolScale + linScale + filScale + theme_bw()
 
 
 
@@ -521,7 +521,7 @@ riversimsallyears <- rbind(riversims2022, riversims2023, riversims2024)
 mycols <- c("#791C55", "#41789A")
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
-colScale <- scale_color_manual(name = "State Type", values = mypal)
+rivercolScale <- scale_color_manual(name = "State Type", values = mypal)
 filScale <- scale_fill_manual(name = "State Type", values = mypal)
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
@@ -539,7 +539,7 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations") +
-  colScale + filScale + linScale + theme_bw()
+  rivercolScale + filScale + linScale + theme_bw()
 
 
 

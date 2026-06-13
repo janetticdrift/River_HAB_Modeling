@@ -240,7 +240,7 @@ library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.m1)
+shinystan::launch_shinystan(fit.m1.1)
 print(fit.m4, par = "Ptheta")
 
 
