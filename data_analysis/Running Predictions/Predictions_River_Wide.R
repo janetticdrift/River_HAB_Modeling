@@ -47,14 +47,14 @@ time <- 13 #number of weeks in 2022
 n <- array(NA, dim = c(runs, 4, time)) # "4" is number of species
 
 #Pull out environmental effects
-# Ntheta <- x[["Ntheta"]][,]
-# nitrate <- stand_nut$nitrate_mg_N_L[1:time]
-# 
-# Ptheta <- x[["Ptheta"]][,]
-# phos <- stand_nut$oPhos_ug_P_L[1:time]
-# 
-# Atheta <- x[["Atheta"]][,]
-# amon <- stand_nut$ammonium_mg_N_L[1:time]
+Ntheta <- x[["Ntheta"]][,]
+nitrate <- stand_nut$nitrate_mg_N_L[1:time]
+
+Ptheta <- x[["Ptheta"]][,]
+phos <- stand_nut$oPhos_ug_P_L[1:time]
+
+Atheta <- x[["Atheta"]][,]
+amon <- stand_nut$ammonium_mg_N_L[1:time]
 
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
@@ -77,9 +77,9 @@ for(z in 1:runs){
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
-  # nTheta <- Ntheta[z,]
-  # pTheta <- Ptheta[z,]
-  # aTheta <- Atheta[z,]
+  nTheta <- Ntheta[z,]
+  pTheta <- Ptheta[z,]
+  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -89,8 +89,8 @@ for(z in 1:runs){
   for(t in 2:time){
       
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + #nTheta*nitrate[t-1]+
-                               #pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -163,9 +163,9 @@ for(z in 1:runs){
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
-  # nTheta <- Ntheta[z,]
-  # pTheta <- Ptheta[z,]
-  # aTheta <- Atheta[z,]
+  nTheta <- Ntheta[z,]
+  pTheta <- Ptheta[z,]
+  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -174,8 +174,8 @@ for(z in 1:runs){
   for(t in 2:time){
     
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + #nTheta*nitrate[t-1]+
-                               #pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -251,9 +251,9 @@ for(z in 1:runs){
   sigma <- diag(sigmas[z,])
   
   #Pull env covariates
-  # nTheta <- Ntheta[z,]
-  # pTheta <- Ptheta[z,]
-  # aTheta <- Atheta[z,]
+  nTheta <- Ntheta[z,]
+  pTheta <- Ptheta[z,]
+  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -263,8 +263,8 @@ for(z in 1:runs){
   for(t in 2:time){
     
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + #nTheta*nitrate[t-1]+
-                               #pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
