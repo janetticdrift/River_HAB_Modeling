@@ -186,7 +186,7 @@ fit.m1.1 <- stan(file = "HAB_all_years.stan", data = model.1, chains = 3, iter =
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
-#Only biotic variables, all species, averaged reach
+ #Only biotic variables, all species, averaged reach
 fit.m1.2 <-  stan(file = "HAB_biotic.stan", data = model.1, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
@@ -241,7 +241,7 @@ library(rstantools)
 
 #Can check posterior graphs in shinystan
 shinystan::launch_shinystan(fit.m1.1)
-print(fit.m4, par = "Ptheta")
+print(fit.m1.1, par = "Ntheta")
 
 
 ################
@@ -252,7 +252,7 @@ saveRDS(rstan::extract(fit.m1.1, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
+                                        #'Ntheta','Ptheta', 'Atheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))

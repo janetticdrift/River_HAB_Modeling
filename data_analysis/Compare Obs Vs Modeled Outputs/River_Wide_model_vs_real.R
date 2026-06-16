@@ -99,6 +99,7 @@ params2_all <- as.data.frame(params1_all) %>%
 #Create a color palette
 mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
 mypal <- palette(mycols)
+mypal <- palette(mycols)
 names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
                  "Other N Fixers")
 colScale <- scale_color_manual(values = mypal)

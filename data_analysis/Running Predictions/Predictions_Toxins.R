@@ -327,9 +327,9 @@ time <- 13
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
+  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
+  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -339,8 +339,8 @@ X1 <- as.matrix(cbind(
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
-              Ctheta, Rtheta)
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4,  Dtheta, Ttheta,
+              Ctheta, Rtheta) #Ntheta, Ptheta, Atheta,
 beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
 
 for (z in 1:runs) {
@@ -363,7 +363,7 @@ for (z in 1:runs) {
 
 pred2022 <- tox
 
-sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, mean)) %>% 
+sims2022median <- as.data.frame(apply(exp(pred2022)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2022lquant <- as.data.frame(apply(exp(pred2022)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -397,9 +397,9 @@ tox <- matrix(NA, runs, time)
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
+  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -427,7 +427,7 @@ for (z in 1:runs) {
 
 pred2023 <- tox
 
-sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, mean)) %>% 
+sims2023median <- as.data.frame(apply(exp(pred2023)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2023lquant <- as.data.frame(apply(exp(pred2023)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -463,9 +463,9 @@ tox <- matrix(NA, runs, time)
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
+  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -492,7 +492,7 @@ for (z in 1:runs) {
 
 pred2024 <- tox
 
-sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, mean)) %>% 
+sims2024median <- as.data.frame(apply(exp(pred2024)/1000, 2, median)) %>% 
   dplyr::rename(toxins = 1) %>% 
   dplyr::mutate(time = 1:time) 
 sims2024lquant <- as.data.frame(apply(exp(pred2024)/1000, 2, quantile, probs = 0.025)) %>% 
@@ -520,6 +520,7 @@ riversimsallyears <- rbind(riversims2022, riversims2023, riversims2024)
 #Create a color palette
 mycols <- c("#791C55", "#41789A")
 mypal <- palette(mycols)
+mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
 rivercolScale <- scale_color_manual(name = "State Type", values = mypal)
 filScale <- scale_fill_manual(name = "State Type", values = mypal)
@@ -538,7 +539,7 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations") +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide No Nutrients: Latent vs. Predicted Toxin Concentrations") +
   rivercolScale + filScale + linScale + theme_bw()
 
 

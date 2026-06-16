@@ -27,9 +27,9 @@ parameters {
   real BetaAna;          
   real BetaNFix;         
   
-  real Ntheta; 
-  real Ptheta; 
-  real Atheta; 
+  // real Ntheta; 
+  // real Ptheta; 
+  // real Atheta; 
   real Dtheta; 
   real Ttheta; 
   real Ctheta; 
@@ -46,13 +46,13 @@ transformed parameters {
   beta[4] = Beta3;
   beta[5] = Beta4;
 
-  beta[6] = Ntheta;
-  beta[7] = Ptheta;
-  beta[8] = Atheta;
-  beta[9] = Dtheta;
-  beta[10] = Ttheta;
-  beta[11] = Ctheta;
-  beta[12] = Rtheta;
+  //beta[6] = Ntheta;
+  //beta[7] = Ptheta;
+  //beta[8] = Atheta;
+  beta[6] = Dtheta;
+  beta[7] = Ttheta;
+  beta[8] = Ctheta;
+  beta[9] = Rtheta;
   
   vector[4] beta_lag;
   
@@ -66,7 +66,7 @@ model {
   
   // Priors
   
-  sigma_p ~ inv_gamma(3,1); //normal(0,0.3);
+  sigma_p ~ normal(0,0.3);
   
   Beta0 ~ normal(0,0.3);
   Beta1 ~ normal(0,0.3);
@@ -79,9 +79,9 @@ model {
   BetaAna ~ normal(0,0.3);
   BetaNFix ~ normal(0,0.3);  
   
-  Ntheta ~ normal(0,0.3);
-  Ptheta ~ normal(0,0.3);
-  Atheta ~ normal(0,0.3);
+  //Ntheta ~ normal(0,0.3);
+  //Ptheta ~ normal(0,0.3);
+  //Atheta ~ normal(0,0.3);
   Dtheta ~ normal(0,0.3);
   Ttheta ~ normal(0,0.3);
   Ctheta ~ normal(0,0.3);
