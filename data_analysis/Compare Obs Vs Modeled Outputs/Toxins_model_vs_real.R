@@ -42,6 +42,11 @@ obs_data_toxins <- toxins %>%
                                     Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
   dplyr::mutate(Congener = as.factor(Congener))
 
+ggplot(subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), aes(x = model_date, y = obs_mean)) + 
+  facet_wrap(~year, scales = "free_x") +
+  geom_line() +
+  labs(x = "Date", y = "Concentration", title = "Anabaena Mat Toxins")
+
 
                                   #MODELED DATA - River-Wide
 

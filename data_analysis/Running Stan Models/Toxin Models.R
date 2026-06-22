@@ -20,7 +20,7 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Isolate Microcoleus mats
 toxins <- toxindf %>% 
-  dplyr::filter(sample_type == "Microcoleus") %>% 
+  dplyr::filter(sample_type == "Anabaena") %>% 
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2023-07-11"), 
                                      as.Date("2023-07-10"))) %>%  #Replace 2023-07-11 with 07/10 so they are on the same week
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
@@ -276,8 +276,8 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 saveRDS(rstan::extract(fit.atx.river, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                               'BetaGreen','BetaMicro', 'BetaAna', 
                                               'BetaNFix', 
-                                              # 'Ntheta','Ptheta', 
-                                              # 'Atheta', 
+                                              'Ntheta','Ptheta',
+                                              'Atheta',
                                               'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 

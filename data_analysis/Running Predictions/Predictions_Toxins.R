@@ -327,9 +327,9 @@ time <- 13
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[-c(14:15, 29:30), -1][1:time, ],  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
-  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -339,7 +339,7 @@ X1 <- as.matrix(cbind(
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4,  Dtheta, Ttheta,
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
               Ctheta, Rtheta) #Ntheta, Ptheta, Atheta,
 beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
 
@@ -356,8 +356,8 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
-                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+                         sigma_p[z])
   }
 }
 
@@ -397,9 +397,9 @@ tox <- matrix(NA, runs, time)
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[-c(14:15, 29:30), -1][14:(13+time), ],  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
-  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -420,8 +420,8 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
-                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+                         sigma_p[z])
   }
 }
 
@@ -463,9 +463,9 @@ tox <- matrix(NA, runs, time)
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
   percentcover_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
-  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -485,8 +485,8 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] +
-                        beta_lag%*%X1[t-2, 2:5], sigma_p[z])
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+                         sigma_p[z])
   }
 }
 
@@ -539,7 +539,7 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide No Nutrients: Latent vs. Predicted Toxin Concentrations") +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide No t-2 Algal Abundances: Latent vs. Predicted Toxin Concentrations") +
   rivercolScale + filScale + linScale + theme_bw()
 
 

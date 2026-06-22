@@ -527,4 +527,3 @@ toxindf <- rbind(atx2223clean, atx24clean) %>%
   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
   dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
                                         sample_type=="TAC" ~ "Anabaena"))
-
