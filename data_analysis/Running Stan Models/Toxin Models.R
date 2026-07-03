@@ -18,7 +18,7 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Clean dataframes to feed into the toxin model
 
-#Isolate Microcoleus mats
+#Isolate Anabaena (not Microcoleus right now) mats
 toxins <- toxindf %>% 
   dplyr::filter(sample_type == "Anabaena") %>% 
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2023-07-11"), 
@@ -26,7 +26,7 @@ toxins <- toxindf %>%
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
                                      as.Date("2022-09-08"))) %>%  #Replace 2022/09/06 to 09/08 so they are on the same week 
   dplyr::filter(field_date != as.Date("2024-06-19")) %>% #Remove 6/19/24 as it wasn't sampled in microscopy data
-  dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y"))
+  dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) 
 
 #Save cleaned output for visualizing observational vs latent states
 saveRDS(toxins, 
@@ -173,6 +173,7 @@ saveRDS(River_latent,
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_LatentStates.rds"))
 
 #Create design matrix
+  #For Microcoleus Mats
 X2 <- cbind(
   intercept = 1,
   River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
@@ -185,7 +186,20 @@ X2 <- cbind(
   rad = swradiation$stand_rad[-c(14:15, 29:30)]
 )
 
-#Combine with other information into model list
+  #For Anabaena Mats
+X2 <- cbind(
+  intercept = 1,
+  River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 13:16, 29:33, 41:45)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)]
+)
+
+#Combine with other model variables into model list
 model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
                   "is_obs" = anatoxin_data$is_obs, #poisson edit, was this an observed day?
                   "firstdays" = anatoxin_data$firstday,

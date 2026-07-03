@@ -303,12 +303,13 @@ ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = date, y = nitrate_mg_N_L)) +
+nitrateplot <- ggplot(nutrients_avg, aes(x = date, y = nitrate_mg_N_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  labs(title = "Nitrate") +
   theme_bw()
 
 #Phosphate
@@ -319,11 +320,12 @@ ggplot(nutrients, aes(x = date, y = oPhos_ug_P_L, colour = reach)) +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = date, y = oPhos_ug_P_L)) +
+phosplot <- ggplot(nutrients_avg, aes(x = date, y = oPhos_ug_P_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
+  labs(title = "Phosphate") +
   theme_bw()
 
 #Ammonium
@@ -334,11 +336,12 @@ ggplot(nutrients, aes(x = date, y = ammonium_mg_N_L, colour = reach)) +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = date, y = ammonium_mg_N_L)) +
+ammplot <- ggplot(nutrients_avg, aes(x = date, y = ammonium_mg_N_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
+  labs(title = "Ammonium") +
   theme_bw()
 
 #Conductivity
@@ -349,11 +352,12 @@ ggplot(nutrients, aes(x = date, y = cond_uS_cm, colour = reach)) +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
   theme_bw()
 
-ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
+condplot <- ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
   viridis::scale_color_viridis(discrete=TRUE, option="viridis") +
+  labs(title = "Conductivity") +
   theme_bw()
 
 
@@ -440,7 +444,7 @@ ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
 
 #The commented out code is no longer UTD as of November 17th 2025, as the data source is 
   #housed in a new repository now
-#Downloaded the PAR data within relevant dates from last load, and now archived on GitHub instead
+#I downloaded the PAR data within relevant dates from last load, and now archived on GitHub instead
 
 # source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/Functions.R")
 # 
