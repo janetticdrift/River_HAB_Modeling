@@ -514,7 +514,9 @@ scale_factor <- 5000 #Rough estimate to scale up nitrate by
 envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
   facet_wrap(~year) +
   geom_line(aes(y = discharge, color = "Discharge"), size = 1) +
+  geom_point(aes(y = discharge, color = "Discharge")) +
   geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1) +
+  geom_point(aes(y = nitrate*scale_factor, color = "Nitrate")) +
   scale_y_continuous(
     name = "Discharge (cfs)",
     sec.axis = sec_axis(

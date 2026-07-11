@@ -7,8 +7,8 @@ library(ggplot2)
 library(patchwork)
 
 #Read in model output
-allvar <- readRDS(here::here("data/Riverwide_AllVar_predictions.rds")) #Model used includes all biotic and abiotic variables
-abiotic <- readRDS(here::here("data/Riverwide_Abiotic_predictions.rds")) #Model used includes abiotic variables
+allvar <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds")) #Model used includes all biotic and abiotic variables
+abioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds")) #Model used includes abiotic variables
 
 
 ###############
@@ -79,7 +79,7 @@ for(z in 1:9000){
   }
 }
 
-#Clean output for plotting
+#Clean output for plotting "Includes Abiotic Terms" eq. abundances
 eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star") %>%
   dplyr::mutate(
     env_peturb = as.numeric(as.character(env_peturb)),
@@ -94,32 +94,35 @@ eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star")
   dplyr::filter(is.finite(w_star)) #Remove those Inf values
 
 #Read in model output-------------------------------------------------------------
-#Model used includes only abiotic variables
+#Model used includes only abiotic variables minus nutrients
 
-x <- abiotic 
+x <- abioticnonut 
 
 #Pull out species demographics
 betas <- as.array(x[["Beta"]])[,]
 alphas <- x[["Alpha"]][,]
 
 #Pull out environmental effects
-Ntheta <- x[["Ntheta"]][,]
-Ptheta <- x[["Ptheta"]][,]
-Atheta <- x[["Atheta"]][,]
+# Ntheta <- x[["Ntheta"]][,]
+# Ptheta <- x[["Ptheta"]][,]
+# Atheta <- x[["Atheta"]][,]
 Dtheta <- x[["Dtheta"]][,]
 Ttheta <- x[["Ttheta"]][,]
 Ctheta <- x[["Ctheta"]][,]
 Rtheta <- x[["Rtheta"]][,]
 #Combine env theta effects into a list
 theta_list <- list(
-  N = Ntheta,
-  P = Ptheta,
-  A = Atheta,
+  # N = Ntheta,
+  # P = Ptheta,
+  # A = Atheta,
   D = Dtheta,
   Tt = Ttheta,
   C = Ctheta,
   R = Rtheta
 )
+
+#Recreate env_names vector without nutrient names
+env_names <- names(theta_list)      #Names of env variables
 
 w_star_exclude <- array(        # iteration, env_var, perturbation, species
   NA, 
@@ -156,7 +159,7 @@ for(z in 1:9000){
   }
 }
 
-#Clean output for plotting
+#Clean output for plotting No Nutrients eq. abundances
 eq_abund_exclude <- as.data.frame.table(w_star_exclude, responseName = "w_star") %>%
   dplyr::mutate(
     env_peturb = as.numeric(as.character(env_peturb)),

@@ -292,15 +292,68 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
 
 
 ##### Exploratory business: Significant lag between toxins and abundances?#####
+#Create new dataframe of variables that we want to check the lagged relationship between
 lag_df <- data.frame(time = TM_latent$time,
                      ATX = anatoxin_data$ATX_all_ug_g/1000, 
                      Anabaena_mat = exp(TM_latent$Anabaena),
                      Microcoleus_river = exp(alltaxatime$microcoleus)[-c(14:15, 29:30)],
                      Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum[-c(14:15, 29:30)]))
 
-#Plots
+#Cross-Correlation
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
-  
+
+#Instead of CCF plots, stack regression relationship 
+#Create dataframe of different time lags
+lag_df_regression <- lag_df %>%
+  dplyr::mutate("Anabaena (t-1)" = lag(Anabaena_river, 1),     #This column lags the abundance of Ana by 1 time step
+                "Anabaena (t-2)" = lag(Anabaena_river, 2),     #This column lags the abundance of Anabaena by 2 time steps
+                "Anabaena (t-3)" = lag(Anabaena_river, 3),     #and so on...
+                "Microcoleus (t-1)" = lag(Microcoleus_river, 1),     
+                "Microcoleus (t-2)" = lag(Microcoleus_river, 2),
+                "Microcoleus (t-3)" = lag(Microcoleus_river, 3)) %>% 
+  dplyr::select(!Anabaena_mat) %>% #Remove within-mat microscopy abundance
+  dplyr::rename("Anabaena (t)" = Anabaena_river, "Microcoleus (t)" = Microcoleus_river)
+
+#Pivot dataframe to group by amount of lag
+lag_dfpivot <- lag_df_regression %>% 
+  pivot_longer(cols = "Microcoleus (t)":"Microcoleus (t-3)",
+               names_to = "lag",
+               values_to = "Abundance") %>% 
+  #Add a column for categorizing the Microcoleus from Anabaena samples
+  dplyr::mutate(taxa = case_when(
+                 lag = str_starts(lag, "Micro") ~ "Microcoleus",
+                 lag = str_starts(lag, "Ana") ~ "Anabaena"))
+
+#Plot lagged relationships between percent cover abundances of Microcoleus and Anabaena
+  #and toxin concentrations
+
+microlag <- ggplot(subset(lag_dfpivot, taxa %in% "Microcoleus"), aes(x = Abundance, y = ATX, color = lag)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("black", "#F1C6C6", "#DE7C7C", "#A52A29"),
+                     breaks = c("Microcoleus (t)",
+                                "Microcoleus (t-1)",
+                                "Microcoleus (t-2)",
+                                "Microcoleus (t-3)")) +
+  coord_cartesian(y = c(0, 46)) + 
+  labs(x = "Percent Cover Abundance", y = "Toxin Concentration (ug/g)", color = "Lag Time") +
+  theme_bw()
+
+analag <- ggplot(subset(lag_dfpivot, taxa %in% "Anabaena"), aes(x = Abundance, y = ATX, color = lag)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("black", "#B7E5E5", "#5CBFBF", "#0B7E7D"),
+                     breaks = c("Anabaena (t)",
+                                "Anabaena (t-1)",
+                                "Anabaena (t-2)",
+                                "Anabaena (t-3)")) +
+  coord_cartesian(y = c(0, 46)) + 
+  labs(x = "Percent Cover Abundance", y = "Toxin Concentration (ug/g)", color = "") +
+  theme_bw()
+
+(microlag / analag) +
+  plot_layout(guides = "collect", axes = "collect") + 
+  plot_annotation(title = "Toxins from TM Mats")
                       
