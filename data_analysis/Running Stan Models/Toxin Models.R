@@ -18,9 +18,9 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Clean dataframes to feed into the toxin model
 
-#Isolate Anabaena (not Microcoleus right now) mats
+#Isolate Microcoleus mats
 toxins <- toxindf %>% 
-  dplyr::filter(sample_type == "Anabaena") %>% 
+  dplyr::filter(sample_type == "Microcoleus") %>% 
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2023-07-11"), 
                                      as.Date("2023-07-10"))) %>%  #Replace 2023-07-11 with 07/10 so they are on the same week
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
@@ -178,19 +178,6 @@ X2 <- cbind(
   intercept = 1,
   River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
-  temp = stand_nut$temp_C[-c(14:15, 29:30)],
-  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-  rad = swradiation$stand_rad[-c(14:15, 29:30)]
-)
-
-  #For Anabaena Mats
-X2 <- cbind(
-  intercept = 1,
-  River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 13:16, 29:33, 41:45)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],

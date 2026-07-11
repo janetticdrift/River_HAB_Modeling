@@ -293,6 +293,10 @@ nutrients_avg <- nutrients %>%
                    ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
+peryeartempavg <- nutrients_avg %>% 
+  group_by(year) %>% 
+  dplyr::summarise(mean = mean(temp_C), SE = calcSE(temp_C))
+
 #Visualizing Patterns in Raw Env Data:
 #Nitrate
 ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
@@ -409,7 +413,7 @@ miranda2024 <- renameNWISColumns(readNWISuv(
   dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
   dplyr::mutate(discharge = slide_dbl(
       discharge, mean,
-      .before = 6, # include previous 6 days into mean for 7 week rolling avg
+      .before = 6, # include previous 6 days into mean for 7 day avg
       .complete = TRUE # calculate mean on full 7-day window
     )) %>%
   dplyr::filter(!is.na(discharge)) %>%
