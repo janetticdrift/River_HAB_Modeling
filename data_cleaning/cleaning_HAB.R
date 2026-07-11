@@ -504,14 +504,17 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
 #Merge together nitrate and discharge data
 nitrate.discharge <- cbind(nutrients_avg[, c("year", "nitrate_mg_N_L")], 
                            discharge[, c("discharge", "fake_date"), drop = FALSE]) %>% 
-  dplyr::rename(nitrate = nitrate_mg_N_L)
+  dplyr::rename(nitrate = nitrate_mg_N_L) %>% 
+  #To make the "fake" dates within the same year match perfectly with field dates, replace the last date 
+    #(10-09-2022) with the real field date (10-13-2022)
+  dplyr::mutate(fake_date = replace(fake_date, 45, "2022-10-13")) #45 means at index position 45
 
 scale_factor <- 5000 #Rough estimate to scale up nitrate by 
 
 envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
   facet_wrap(~year) +
-  geom_line(aes(y = discharge, color = "Discharge"), size = 1.5) +
-  geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1.5) +
+  geom_line(aes(y = discharge, color = "Discharge"), size = 1) +
+  geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1) +
   scale_y_continuous(
     name = "Discharge (cfs)",
     sec.axis = sec_axis(
@@ -520,8 +523,8 @@ envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
     )
   ) +
   scale_color_manual(name = "Env. Variable", 
-                     values = c("Discharge" = "steelblue",
-                                "Nitrate" = "firebrick")) +
+                     values = c("Discharge" = "#813B9A",
+                                "Nitrate" = "#1a7531")) +
   labs(x = "Date") +
   theme_bw()
 
