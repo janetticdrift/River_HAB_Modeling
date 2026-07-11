@@ -19,8 +19,10 @@ mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
 mypal <- palette(mycols)
 names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
                  "Other N Fixers")
-colScale <- scale_color_manual(values = mypal)
-filScale <- scale_fill_manual(values = mypal)
+colScale <- scale_color_manual(name = "Taxa", values = mypal, breaks = c("Microcoleus",
+                                                                         "Anabaena"))
+filScale <- scale_fill_manual(name = "Taxa", values = mypal, breaks = c("Microcoleus",
+                                                                        "Anabaena"))
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
@@ -126,7 +128,12 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   group_by(Species) %>% 
-  tidyr::complete(model_date = seq.Date(min(model_date), as.Date("2022-10-13"), by = "1 week")) %>%  #Expand the end date to October, to match with 2024 x-axis
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2022-10-15"), 
+                                        by = "1 week")) %>%
   dplyr::mutate(year = 2022) %>% 
   dplyr::arrange(model_date) %>% 
   ungroup()
@@ -218,8 +225,11 @@ sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   group_by(Species) %>% 
-  tidyr::complete(model_date = seq.Date(min(model_date), as.Date("2023-10-13"), by = "1 week")) %>%  #Expand the end date to October, to match with 2024 x-axis
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2023-10-15"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
   dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = 2023) %>% 
   ungroup()
 
 
@@ -306,7 +316,14 @@ sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2024) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  dplyr::mutate(year = 2024) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 
@@ -361,7 +378,13 @@ p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
   
 
 # Combine plots and collect legends
+  # See colScale code on line 22 to add/remove taxa from the Taxa list, using the breaks function
 (p1 / p2) +
+  plot_layout(guides = "collect", axes = "collect") &
+  theme(legend.position = "right", legend.box = "vertical")
+
+# Combine Microcoleus/Anabaena plot with environmental variables plot
+(p2 / envplot) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 

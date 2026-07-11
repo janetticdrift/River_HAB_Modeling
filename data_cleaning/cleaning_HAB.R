@@ -431,7 +431,7 @@ discharge <- rbind(miranda2022, miranda2023, miranda2024) %>%
 
 
 #Visualization of raw discharge patterns
-ggplot(discharge, aes(x = fake_date, y = log_discharge, group = year, color = year)) +
+ggplot(discharge, aes(x = fake_date, y = discharge, group = year, color = year)) +
   geom_point() +
   geom_line(size = 1) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b")+ #b = month?
@@ -498,6 +498,32 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
   geom_line() +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") #b = month?
 
+#############################################################################################
+                        #Plot Nitrate and Discharge Together for Figure 2
+
+#Merge together nitrate and discharge data
+nitrate.discharge <- cbind(nutrients_avg[, c("year", "nitrate_mg_N_L")], 
+                           discharge[, c("discharge", "fake_date"), drop = FALSE]) %>% 
+  dplyr::rename(nitrate = nitrate_mg_N_L)
+
+scale_factor <- 5000 #Rough estimate to scale up nitrate by 
+
+envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
+  facet_wrap(~year) +
+  geom_line(aes(y = discharge, color = "Discharge"), size = 1.5) +
+  geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1.5) +
+  scale_y_continuous(
+    name = "Discharge (cfs)",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "Nitrate (mg N/L)"
+    )
+  ) +
+  scale_color_manual(name = "Env. Variable", 
+                     values = c("Discharge" = "steelblue",
+                                "Nitrate" = "firebrick")) +
+  labs(x = "Date") +
+  theme_bw()
 
 #############################################################################################
                                 #Tidy Anatxoin Concentration data.
