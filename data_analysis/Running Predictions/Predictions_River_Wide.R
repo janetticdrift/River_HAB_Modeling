@@ -124,7 +124,12 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
                         left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(min(model_date), as.Date("2022-10-13"), by = "1 week")) %>%  #Expand the end date to October, to match with 2024 x-axis
+  dplyr::mutate(year = 2022) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 #
@@ -191,8 +196,7 @@ sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
   mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>% 
-  mutate(real_week = time + 24, year = 2023) %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>%
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
@@ -210,9 +214,13 @@ sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
 
 sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
-  #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
+  dplyr::mutate(real_week = time + 24, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(min(model_date), as.Date("2023-10-13"), by = "1 week")) %>%  #Expand the end date to October, to match with 2024 x-axis
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 #

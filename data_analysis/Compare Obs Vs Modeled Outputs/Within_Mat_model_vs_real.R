@@ -193,7 +193,7 @@ colScale <- scale_color_manual(values = mypal)
 filScale <- scale_fill_manual(values = mypal)
 
 ###TM: Ana + Geit + Epithemia
-ggplot(mat_params2_TM, aes(x = model_date, y = mean)) +
+ggplot(mat_params2_TM, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.2) +
   # Latent points/lines
