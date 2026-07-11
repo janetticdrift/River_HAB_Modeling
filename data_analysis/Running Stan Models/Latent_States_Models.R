@@ -106,7 +106,9 @@ model.1 <- list("uniqueID" = nrow(alltaxatime),
 #-------------------------------------------------------------------------------------------------
 #Within-Mat: Microcoleus - Gather percent cover data into STAN list format
 
-#Important note: Only Ana, Epithemia, and Geit are retained here
+#Important note: Only Ana, Epithemia, and Geitlerinema taxa are retained here; the other 
+  #species were not included in the model because we do not hypothesize much interaction 
+  #between non-nitrogen fixers and anatoxin production.
 
 #Target Microcoleus, averaged reaches
 matalltaxaM <- yearmatdata %>% 
@@ -232,7 +234,7 @@ fit.m3 <-  stan(file = "HAB_mat_community.stan", data = model.3, chains = 3, ite
                 warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
                                                                               max_treedepth = 15))
 
-  #-------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
 library(shinystan)
 library(bayesplot)
@@ -244,8 +246,9 @@ shinystan::launch_shinystan(fit.m1.1)
 print(fit.m1.1, par = "Ntheta")
 
 
-################
+######################
 #Save River-Wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+######################
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.1, permuted=FALSE), 
@@ -285,7 +288,11 @@ saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
 
 
+
+
+######################
 ##Save Within-Mat output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+######################
 
 #TM output
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
@@ -312,4 +319,4 @@ saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
 
 
-#To read: object <- readRDS(here::here("data/file_name.rds"))
+#Code to read saved RDS files: object <- readRDS(here::here("data/file_name.rds"))
