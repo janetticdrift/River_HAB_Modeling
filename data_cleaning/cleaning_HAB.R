@@ -30,8 +30,8 @@ library(slider)
 library(dataRetrieval)
 
 #Packages for retrieving radiation data
-library("StreamLightUtils")
-library("StreamLight")
+#library("StreamLightUtils") #Package used to retrieve data from outdated repository
+#library("StreamLight") 
 library(zoo)
 library(ncdf4)
 library(CFtime)
@@ -399,20 +399,17 @@ condplot <- ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
   labs(title = "Conductivity") +
   theme_bw()
 
-cor(nutrients_avg$ammonium_mg_N_L[-c(14:15, 29:30)], anatoxin_data$ATX_all_ug_g)
-
 #Discharge data ---------------------------------------------------------------------
 #Acquire discharge flow rates from USGS NWIS
 
-#2022 - startDate = "2022-06-26", endDate = "2022-09-18"
-miranda2022 <- renameNWISColumns(readNWISuv(
-  siteNumbers = "11476500",
-  parameterCd = "00060", #discharge code, cubic feet per second
-  startDate = "2022-06-20", #"2021-11-07", for visualizing water year discharge patterns
-  endDate = "2022-09-18")) %>% 
-  dplyr::mutate(date = as.Date(dateTime)) %>% 
+#2022 - startDate = "2022-06-20", endDate = "2022-09-18"
+miranda2022 <- read_waterdata_continuous(
+  monitoring_location_id = "USGS-11476500",
+  parameter_code = "00060",
+  time = "2022-06-20T00:00:00Z/2022-09-18T12:31:12Z") %>%  #Bounded time interval using RFC 3339; #"2021-11-07", for visualizing water year discharge patterns
+  dplyr::mutate(date = as.Date(time)) %>% 
   group_by(date) %>% 
-  dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::summarise(discharge = mean(value)) %>% 
   dplyr::mutate(discharge = slide_dbl(
     discharge, mean,
     .before = 6, # include previous 6 days into mean for 7 week rolling avg
@@ -421,15 +418,14 @@ miranda2022 <- renameNWISColumns(readNWISuv(
   dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
-#2023 - startDate = "2023-06-20", endDate = "2023-09-24"
-miranda2023 <- renameNWISColumns(readNWISuv(
-  siteNumbers = "11476500",
-  parameterCd = "00060", #discharge code
-  startDate = "2023-06-14", #"2022-11-07",
-  endDate = "2023-09-25")) %>% 
-  dplyr::mutate(date = as.Date(dateTime)) %>% 
+#2023 - startDate = "2023-06-11", endDate = "2023-09-25"
+miranda2023 <-  read_waterdata_continuous(
+  monitoring_location_id = "USGS-11476500",
+  parameter_code = "00060",
+  time = "2023-06-12T00:00:00Z/2023-09-25T12:31:12Z") %>%  
+  dplyr::mutate(date = as.Date(time)) %>% 
   group_by(date) %>% 
-  dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::summarise(discharge = mean(value)) %>%  
   dplyr::mutate(discharge = slide_dbl(
     discharge, mean,
     .before = 6, # include previous 6 days into mean for 7 week rolling avg
@@ -438,15 +434,14 @@ miranda2023 <- renameNWISColumns(readNWISuv(
   dplyr::filter(!is.na(discharge)) %>%
   dplyr::filter(row_number() %% 7 == 1)
 
-#2024 - startDate = "2024-06-19", endDate = "2024-10-10"
-miranda2024 <- renameNWISColumns(readNWISuv(
-  siteNumbers = "11476500",
-  parameterCd = "00060", #discharge code
-  startDate = "2024-06-13", #"2023-11-02",
-  endDate = "2024-10-10")) %>% 
-  dplyr::mutate(date = as.Date(dateTime)) %>% 
+#2024 - startDate = "2024-06-13", endDate = "2024-10-10"
+miranda2024 <- read_waterdata_continuous(
+  monitoring_location_id = "USGS-11476500",
+  parameter_code = "00060",
+  time = "2024-06-13T00:00:00Z/2024-10-10T12:31:12Z") %>%  
+  dplyr::mutate(date = as.Date(time)) %>% 
   group_by(date) %>% 
-  dplyr::summarise(discharge = mean(Flow_Inst)) %>% 
+  dplyr::summarise(discharge = mean(value)) %>%  
   dplyr::mutate(discharge = slide_dbl(
       discharge, mean,
       .before = 6, # include previous 6 days into mean for 7 day avg
@@ -473,18 +468,12 @@ ggplot(discharge, aes(x = fake_date, y = discharge, group = year, color = year))
   scale_x_date(date_breaks = "1 month", date_labels = "%b")+ #b = month?
   labs(x = "Date")
 
-#Zoom in on the dates past the spring peak
-ggplot(discharge, aes(x = fake_date, y = log_discharge, color = year)) +
-  geom_point() +
-  geom_line() +
-  coord_cartesian(xlim = as.Date(c('2022-06-01', '2022-11-01')), ylim = c(0,7))
-
 #############################################################################################
 #Import and tidy photosynthetically active radiation (PAR) data
 
 #The commented out code is no longer UTD as of November 17th 2025, as the data source is 
   #housed in a new repository now
-#I downloaded the PAR data within relevant dates from last load, and now archived on GitHub instead
+#The PAR data within relevant dates from last load were downloaded, and it is now archived on GitHub
 
 # source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/Functions.R")
 # 
@@ -537,34 +526,35 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
 #############################################################################################
                         #Plot Nitrate and Discharge Together for Figure 2
 
-#Merge together nitrate and discharge data
-nitrate.discharge <- cbind(nutrients_raw_clean[, c("year", "nitrate_mg_N_L")], 
-                           discharge[, c("discharge", "fake_date"), drop = FALSE]) %>% 
-  dplyr::rename(nitrate = nitrate_mg_N_L) %>% 
-  #To make the "fake" dates within the same year match perfectly with field dates, replace the last date 
-    #(10-09-2022) with the real field date (10-13-2022)
-  dplyr::mutate(fake_date = replace(fake_date, 45, "2022-10-13")) #45 means at index position 45
-
-scale_factor <- 5000 #Rough estimate to scale up nitrate by 
-
-envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
-  facet_wrap(~year) +
-  geom_line(aes(y = discharge, color = "Discharge"), size = 1) +
-  geom_point(aes(y = discharge, color = "Discharge")) +
-  geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1) +
-  geom_point(aes(y = nitrate*scale_factor, color = "Nitrate")) +
-  scale_y_continuous(
-    name = "Discharge (cfs)",
-    sec.axis = sec_axis(
-      ~ . / scale_factor,
-      name = "Nitrate (mg N/L)"
-    )
-  ) +
-  scale_color_manual(name = "Env. Variable", 
-                     values = c("Discharge" = "#813B9A",
-                                "Nitrate" = "#1a7531")) +
-  labs(x = "Date") +
-  theme_bw()
+# #Merge together nitrate and discharge data
+# nitrate.discharge <- rowr::cbind.fill(nutrients_raw_clean[, c("year", "nitrate_mg_N_L")], 
+#                            discharge[, c("discharge", "fake_date"), drop = TRUE],
+#                            fill = NA) %>% 
+#   dplyr::rename(nitrate = nitrate_mg_N_L) %>% 
+#   #To make the "fake" dates within the same year match perfectly with field dates, replace the last date 
+#     #(10-09-2022) with the real field date (10-13-2022)
+#   dplyr::mutate(fake_date = replace(fake_date, 45, "2022-10-13")) #45 means at index position 45
+# 
+# scale_factor <- 5000 #Rough estimate to scale up nitrate by 
+# 
+# envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
+#   facet_wrap(~year) +
+#   geom_line(aes(y = discharge, color = "Discharge"), size = 1) +
+#   geom_point(aes(y = discharge, color = "Discharge")) +
+#   geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1) +
+#   geom_point(aes(y = nitrate*scale_factor, color = "Nitrate")) +
+#   scale_y_continuous(
+#     name = "Discharge (cfs)",
+#     sec.axis = sec_axis(
+#       ~ . / scale_factor,
+#       name = "Nitrate (mg N/L)"
+#     )
+#   ) +
+#   scale_color_manual(name = "Env. Variable", 
+#                      values = c("Discharge" = "#813B9A",
+#                                 "Nitrate" = "#1a7531")) +
+#   labs(x = "Date") +
+#   theme_bw()
 
 #############################################################################################
                                 #Tidy Anatxoin Concentration data.

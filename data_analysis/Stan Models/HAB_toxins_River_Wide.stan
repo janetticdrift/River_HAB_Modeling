@@ -30,6 +30,7 @@ parameters {
   real Ntheta; 
   real Ptheta; 
   real Atheta; 
+  real DINtheta;
   real Dtheta; 
   real Ttheta; 
   real Ctheta; 
@@ -49,10 +50,11 @@ transformed parameters {
   beta[6] = Ntheta;
   beta[7] = Ptheta;
   beta[8] = Atheta;
-  beta[9] = Dtheta;
-  beta[10] = Ttheta;
-  beta[11] = Ctheta;
-  beta[12] = Rtheta;
+  beta[9] = DINtheta;
+  beta[10] = Dtheta;
+  beta[11] = Ttheta;
+  beta[12] = Ctheta;
+  beta[13] = Rtheta;
   
   vector[4] beta_lag;
   
@@ -82,6 +84,7 @@ model {
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);
   Atheta ~ normal(0,0.3);
+  DINtheta ~ normal(0,0.3);
   Dtheta ~ normal(0,0.3);
   Ttheta ~ normal(0,0.3);
   Ctheta ~ normal(0,0.3);

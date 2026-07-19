@@ -30,6 +30,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
+DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -42,6 +43,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -65,6 +67,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -121,6 +124,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -139,6 +143,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -196,6 +201,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -213,6 +219,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -314,6 +321,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
+DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -330,6 +338,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -339,7 +348,7 @@ X1 <- as.matrix(cbind(
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, DINtheta, Dtheta, Ttheta,
               Ctheta, Rtheta) #Ntheta, Ptheta, Atheta,
 beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
 
@@ -356,7 +365,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
                          sigma_p[z])
   }
 }
@@ -400,6 +409,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -420,7 +430,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
                          sigma_p[z])
   }
 }
@@ -466,6 +476,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -485,7 +496,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ], #+ beta_lag%*%X1[t-2, 2:5]
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
                          sigma_p[z])
   }
 }
@@ -545,9 +556,9 @@ ggplot(riversimsallyears, aes(x = model_date, y = toxins)) +
 
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives_toxins_mats <- abind(pred2022, pred2023, pred2024, along = 2)
-predictives_toxins_mats <- exp(predictives_toxins_mats)
+predictives_toxins_river <- abind(pred2022, pred2023, pred2024, along = 2)
+predictives_toxins_river <- exp(predictives_toxins_river)
 
 #Save predictive output of Toxin Within-Mat model
-saveRDS(predictives_toxins_mats, 
-        file = here::here("data/Toxins_Pred_Withinmat.rds"))
+saveRDS(predictives_toxins_river, 
+        file = here::here("data/Toxins_Pred_RiverWide.rds"))

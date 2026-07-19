@@ -11,7 +11,7 @@
   #included, and 3) Only abiotic (environmental drivers) variables included
 
 #Four additional models estimating latent states are run using River-Wide data: 1) Only
-  #Nitrate included, 2) Only Phostphate included, 3) Only Ammonium included, and
+  #Nitrate included, 2) Only Phosphate included, 3) Only Ammonium included, and
   #4) only Dissolved Inorganic Nitrogen included.
 
 #Two models estimating latent states are run using Within-Mat data: 1) Target
@@ -101,6 +101,7 @@ model.1 <- list("uniqueID" = nrow(alltaxatime),
                 "nitrate" = stand_nut$nitrate_mg_N_L,
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
+                "DIN" = stand_nut$DIN,
                 "discharge" = discharge$stand_discharge,
                 "temp" = stand_nut$temp_C,
                 "cond" = stand_nut$cond_uS_cm,
@@ -136,9 +137,10 @@ model.2 <- list("uniqueID" = nrow(matalltaxaM),
                 "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
                 "firstdays" = matalltaxaM$firstday,
                 "N" = matalltaxaM[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Can subset 2024 out with 29:45
+                "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Must subset 2024 out with additional 29:45
                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
+                "DIN" = stand_nut$DIN[-c(14:15, 29:30)],
                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -170,6 +172,7 @@ model.3 <- list("uniqueID" = nrow(matalltaxaA),
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)], #Remove first weeks where TAC was not sampled
                 "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 39:45)], 
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)],
+                "DIN" = stand_nut$DIN[-c(1:2, 14:16, 29:31, 39:45)],
                 "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 39:45)],
                 "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 39:45)],
                 "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 39:45)],
@@ -203,11 +206,36 @@ fit.m1.3 <-  stan(file = "HAB_abiotic.stan", data = model.1, chains = 3, iter = 
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
-#Only abiotic variables, no nutrients, all species, averaged reach
+#Only abiotic variables, but no nutrients, all species, averaged reach
 fit.m1.4 <-  stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
+
+ ###### River-Wide: Nutrients Isolation
+#Only nitrate abiotic
+fit.m1.5 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                            stepsize = 0.001,
+                                                            max_treedepth = 13))
+
+#Only phosphate abiotic
+fit.m1.6 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                            stepsize = 0.001,
+                                                            max_treedepth = 13))
+
+#Only ammonium abiotic
+fit.m1.7 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                            stepsize = 0.001,
+                                                            max_treedepth = 13))
+
+#Only DIN abiotic
+fit.m1.8 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
+                                                            stepsize = 0.001,
+                                                            max_treedepth = 13))
  ###### Within-Mat
 # Set values to initialize models
 
