@@ -26,7 +26,7 @@ library(gridExtra)
 library(MASS)
 library(slider)
 
-#Package for retrieving discharge data
+#Package for retrieving USGS discharge data
 library(dataRetrieval)
 
 #Packages for retrieving radiation data
@@ -235,32 +235,37 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 #Tidy water chemistry data
 nut_dat <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
+#If there is a replacement entry for nitrate or ammonia (usually the minimum 
+#detection level), use it instead
+nut_data <- nut_dat %>% 
+  dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_mg_N_L, !is.na(nitrate_replace) ~ nitrate_replace),
+                ammonia = replace_when(ammonia, !is.na(ammonia_replace) ~ ammonia_replace)) 
+                #For any instance where the replacement value is not an NA, replace it with replacement value in the real column
+
 #Subset 2024 measurements and calculate NH4 (ammonium) using ammonia, pH, and temperature 
-x <- calculate_NH4(nut_dat)[138:173,] %>% 
+x <- calculate_NH4(nut_data)[138:173,] %>% 
   dplyr::select(!c(pKa, f))
 #Fill back 2024 ammonium calculations into the full dataset
-nut_data <- nut_dat %>% 
+nut_data1 <- nut_data %>% 
   dplyr::slice(1:137)
-nut_data1 <- rbind(nut_data, x)
+nut_data2 <- rbind(nut_data1, x)
 
 #Take out an outlier (recording mistake)
-nut_data1[85, "nitrate_mg_N_L"] <- NA
+nut_data2[85, "nitrate_mg_N_L"] <- NA
 #Fix glitch reading from sensor with lowest HOBO estimate
-nut_data1[145, "cond_uS_cm"] <- 237 
-#If there is a replacement entry for nitrate or ammonia (usually the minimum 
-  #detection level), use it instead
-nut_data2 <- nut_data1 %>% 
-  dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_replace == T ~ nitrate_replace))
+nut_data2[145, "cond_uS_cm"] <- 237 
 #Add Dissolved Inorganic Nitrates calculations (sum of nitrate + ammonium)
-nut_data2 <- nut_data1 %>% 
+nut_data3 <- nut_data2 %>% 
+  dplyr::mutate(DIN = nitrate_mg_N_L + ammonium_mg_N_L) %>% 
+  dplyr::relocate(DIN, .after = ammonium_mg_N_L)
   
 
 
 #Pull out environmental variables of interest. This cleaned dataset is to be used for 
   #visualizing raw collected variables.
-nutrients_raw <- nut_data2 %>% 
+nutrients_raw <- nut_data3 %>% 
   dplyr::filter(site == "SFE-M") %>% 
-  dplyr::select(!c("time", "assumed_pH":length(unique(nut_data)))) %>% #Remove variables that we will not be analyzing
+  dplyr::select(!c("time", "assumed_pH":length(unique(nut_data3)))) %>% #Remove variables that we will not be analyzing
   dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% #Update data type
   dplyr::mutate(year = year(field_date)) #Add a grouping column for year
 #Average all environmental variables by reach
@@ -268,7 +273,7 @@ nutrients_raw <- nut_data2 %>%
 nutrients_raw_clean <- nutrients_raw %>% 
   group_by(field_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L, na.rm = T),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN, na.rm = T), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
   
 
@@ -282,7 +287,7 @@ nutrients <- nutrients_raw %>%
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% #per year week
   ungroup() %>% 
-  dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
+  dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN, real_week), 
                        ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                       (real_week - 1) * 7 - 1, "week", week_start = 7))
@@ -291,7 +296,7 @@ nutrients <- nutrients_raw %>%
 nutrients_avg <- nutrients %>% 
   group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
 #Calculate the averae water temperature per year
@@ -312,13 +317,17 @@ nutrients$oPhos_ug_P_L <- log(nutrients$oPhos_ug_P_L)
 shapiro.test(nutrients$ammonium_mg_N_L) #Test for Normality
 nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L)
 
+#DIN
+shapiro.test(nutrients$DIN) #Test for Normality
+nutrients$DIN <- log(nutrients$DIN)
+
 #Standardize all nutrients to appear on the same scale
 stand_nut <- nutrients %>% 
-  dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
+  dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
   group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L),temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
 #Visualizing Patterns in Raw Env Data:
@@ -529,7 +538,7 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
                         #Plot Nitrate and Discharge Together for Figure 2
 
 #Merge together nitrate and discharge data
-nitrate.discharge <- cbind(nutrients_avg[, c("year", "nitrate_mg_N_L")], 
+nitrate.discharge <- cbind(nutrients_raw_clean[, c("year", "nitrate_mg_N_L")], 
                            discharge[, c("discharge", "fake_date"), drop = FALSE]) %>% 
   dplyr::rename(nitrate = nitrate_mg_N_L) %>% 
   #To make the "fake" dates within the same year match perfectly with field dates, replace the last date 
