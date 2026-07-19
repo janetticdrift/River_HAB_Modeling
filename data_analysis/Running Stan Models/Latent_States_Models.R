@@ -6,10 +6,13 @@
   #also estimates the percent covers and microscopy abundances during weeks where no 
   #field observations were made in 2022 and 2024.
 
-#Four models estimating latent states are run using River-Wide data: 1) All variables
+#Three initial models estimating latent states are run using River-Wide data: 1) All variables
   #(biotic and abiotic together), 2) Only biotic (species interaction) variables 
-  #included, 3) Only abiotic (environmental drivers) variables included, and 
-  #4) Aboiotic Without Nutrients (Temp, Discharge, Conductivity, Radiation)
+  #included, and 3) Only abiotic (environmental drivers) variables included
+
+#Four additional models estimating latent states are run using River-Wide data: 1) Only
+  #Nitrate included, 2) Only Phostphate included, 3) Only Ammonium included, and
+  #4) only Dissolved Inorganic Nitrogen included.
 
 #Two models estimating latent states are run using Within-Mat data: 1) Target
   #Microcoleus mats (TM), and Target Anabaena mats (TA).

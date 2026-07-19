@@ -233,36 +233,71 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 
 #############################################################################################
 #Tidy water chemistry data
-nut_data <- read.csv(here::here("data/water_chemistry.csv")) #All years included
+nut_dat <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
 #Subset 2024 measurements and calculate NH4 (ammonium) using ammonia, pH, and temperature 
-x <- calculate_NH4(nut_data)[138:173,] %>% 
+x <- calculate_NH4(nut_dat)[138:173,] %>% 
   dplyr::select(!c(pKa, f))
 #Fill back 2024 ammonium calculations into the full dataset
-nut_data <- nut_data %>% 
+nut_data <- nut_dat %>% 
   dplyr::slice(1:137)
-nut_data <- rbind(nut_data, x)
+nut_data1 <- rbind(nut_data, x)
 
 #Take out an outlier (recording mistake)
-nut_data[85, "nitrate_mg_N_L"] <- NA
+nut_data1[85, "nitrate_mg_N_L"] <- NA
 #Fix glitch reading from sensor with lowest HOBO estimate
-nut_data[145, "cond_uS_cm"] <- 237 
+nut_data1[145, "cond_uS_cm"] <- 237 
+#If there is a replacement entry for nitrate or ammonia (usually the minimum 
+  #detection level), use it instead
+nut_data2 <- nut_data1 %>% 
+  dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_replace == T ~ nitrate_replace))
+#Add Dissolved Inorganic Nitrates calculations (sum of nitrate + ammonium)
+nut_data2 <- nut_data1 %>% 
+  
 
-#Pull out variables of interest
-nutrients <- nut_data %>% 
+
+#Pull out environmental variables of interest. This cleaned dataset is to be used for 
+  #visualizing raw collected variables.
+nutrients_raw <- nut_data2 %>% 
   dplyr::filter(site == "SFE-M") %>% 
-  dplyr::select(!c("time", "assumed_pH":length(unique(nut_data)))) %>% #Remove nutrients that we will not be analyzing
-  dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
-  dplyr::mutate(year = year(field_date)) %>% 
+  dplyr::select(!c("time", "assumed_pH":length(unique(nut_data)))) %>% #Remove variables that we will not be analyzing
+  dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% #Update data type
+  dplyr::mutate(year = year(field_date)) #Add a grouping column for year
+#Average all environmental variables by reach
+  #This dataframe is used to create a panel in Figure 1
+nutrients_raw_clean <- nutrients_raw %>% 
+  group_by(field_date, year) %>% 
+  dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L, na.rm = T),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
+                   cond_uS_cm = mean(cond_uS_cm))
+  
+
+#Create similar dataset that interpolates environmental variables for the 
+  #weeks in 2022 and 2024 where samples were not collected. Samples in these years 
+  #were collected on a biweekly schedule, and 2023 samples were collected weekly
+
+nutrients <- nutrients_raw %>% 
   group_by(year) %>% 
   dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1) %>% 
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% #per year week
   ungroup() %>% 
   dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, real_week), 
-                ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
+                       ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
+
+#Average environmental variables by reach 
+nutrients_avg <- nutrients %>% 
+  group_by(date, year) %>% 
+  dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
+                   cond_uS_cm = mean(cond_uS_cm))
+
+#Calculate the averae water temperature per year
+peryeartempavg <- nutrients_avg %>% 
+  group_by(year) %>% 
+  dplyr::summarise(mean = mean(temp_C), SE = calcSE(temp_C))  
 
 #Test for normality, and transform data as needed. Parameters that tested normal were not transformed
 #Nitrate
@@ -277,6 +312,7 @@ nutrients$oPhos_ug_P_L <- log(nutrients$oPhos_ug_P_L)
 shapiro.test(nutrients$ammonium_mg_N_L) #Test for Normality
 nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L)
 
+#Standardize all nutrients to appear on the same scale
 stand_nut <- nutrients %>% 
   dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
@@ -285,20 +321,10 @@ stand_nut <- nutrients %>%
                    ammonium_mg_N_L = mean(ammonium_mg_N_L),temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
-
-#Averaged by reach 
-nutrients_avg <- nutrients %>% 
-  group_by(date, year) %>% 
-  dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), temp_C = mean(temp_C),
-                   cond_uS_cm = mean(cond_uS_cm))
-
-peryeartempavg <- nutrients_avg %>% 
-  group_by(year) %>% 
-  dplyr::summarise(mean = mean(temp_C), SE = calcSE(temp_C))
-
 #Visualizing Patterns in Raw Env Data:
+
 #Nitrate
+  #Grouped by reach
 ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
@@ -307,7 +333,7 @@ ggplot(nutrients, aes(x = date, y = nitrate_mg_N_L, colour = reach)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-nitrateplot <- ggplot(nutrients_avg, aes(x = date, y = nitrate_mg_N_L)) +
+ggplot(nutrients_raw_clean, aes(x = field_date, y = nitrate_mg_N_L)) +
   facet_wrap(~year, scales = "free_x") +
   geom_point() +
   geom_line() +
@@ -364,6 +390,7 @@ condplot <- ggplot(nutrients_avg, aes(x = date, y = cond_uS_cm)) +
   labs(title = "Conductivity") +
   theme_bw()
 
+cor(nutrients_avg$ammonium_mg_N_L[-c(14:15, 29:30)], anatoxin_data$ATX_all_ug_g)
 
 #Discharge data ---------------------------------------------------------------------
 #Acquire discharge flow rates from USGS NWIS

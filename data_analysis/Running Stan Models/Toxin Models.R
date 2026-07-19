@@ -356,4 +356,6 @@ analag <- ggplot(subset(lag_dfpivot, taxa %in% "Anabaena"), aes(x = Abundance, y
 (microlag / analag) +
   plot_layout(guides = "collect", axes = "collect") + 
   plot_annotation(title = "Toxins from TM Mats")
-                      
+
+#Calculate correlation between toxin concentration and Anabanena at t-2
+cor(lag_df_regression$ATX, lag_df_regression$`Anabaena (t-2)`, use="complete.obs")
