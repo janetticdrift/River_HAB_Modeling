@@ -214,25 +214,25 @@ fit.m1.4 <-  stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, i
 
  ###### River-Wide: Nutrients Isolation
 #Only nitrate abiotic
-fit.m1.5 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+fit.m1.5 <- stan(file = "HAB_nitrate.stan", data = model.1, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             stepsize = 0.001,
                                                             max_treedepth = 13))
 
 #Only phosphate abiotic
-fit.m1.6 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+fit.m1.6 <- stan(file = "HAB_phosphate.stan", data = model.1, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             stepsize = 0.001,
                                                             max_treedepth = 13))
 
 #Only ammonium abiotic
-fit.m1.7 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+fit.m1.7 <- stan(file = "HAB_ammonium.stan", data = model.1, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             stepsize = 0.001,
                                                             max_treedepth = 13))
 
 #Only DIN abiotic
-fit.m1.8 <- stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, iter = 6000,
+fit.m1.8 <- stan(file = "HAB_DIN.stan", data = model.1, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             stepsize = 0.001,
                                                             max_treedepth = 13))
@@ -318,7 +318,32 @@ saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
 
+####Nutrient Isolation Models####
 
+#For building the latent state vs predictions plots, and calculating fit indices
+saveRDS(rstan::extract(fit.m1.5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                          'Ntheta',
+                                          'Dtheta', 'Ttheta', 'Ctheta', 
+                                          'Rtheta')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
+
+saveRDS(rstan::extract(fit.m1.6, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                          'Ptheta',
+                                          'Dtheta', 'Ttheta', 'Ctheta', 
+                                          'Rtheta')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Phos_predictions.rds"))
+
+saveRDS(rstan::extract(fit.m1.7, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                          'Atheta',
+                                          'Dtheta', 'Ttheta', 'Ctheta', 
+                                          'Rtheta')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Ammonium_predictions.rds"))
+
+saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+                                          'DINtheta',
+                                          'Dtheta', 'Ttheta', 'Ctheta', 
+                                          'Rtheta')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
 
 
 ######################
