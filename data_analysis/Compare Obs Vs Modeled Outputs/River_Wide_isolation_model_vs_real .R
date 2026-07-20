@@ -22,12 +22,12 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 alltaxatime <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_river_data.rds"))
 
 #Read in model data (from Latent_States_Models.R)
-fit.m5 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
-fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
-fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
-fit.m8 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
+fit.m5 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Nitrate.rds"))
+fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Phos.rds"))
+fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Ammonium.rds"))
+fit.m8 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_DIN.rds"))
 
-#MODEL INCLUDING ALL YEARS--------------------------------------------------------------
+#Model including nitrates--------------------------------------------------------------
 #OBSERVED DATA - calculate average values
 obs_data_all <- obs_river_wide_viz %>% 
   group_by(field_date, year, Species) %>% 
@@ -47,7 +47,7 @@ obs_data_all <- obs_river_wide_viz %>%
 #Manually calculate median posteriors for species $ cover, as well as confidence interval
 
 #MODEL M.4 - ALL VARIABLES
-params1_all <- as.data.frame(fit.m4) %>%
+params1_all <- as.data.frame(fit.m5) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -64,7 +64,7 @@ yearweek <- alltaxatime %>%
                                     Species == "other_nfixers" ~ "Other N Fixers"))
  
   
-params2_all <- as.data.frame(params1_all) %>% 
+params2_all_nitrate <- as.data.frame(params1_all) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -179,9 +179,9 @@ ggplot(obs_data_all, aes(x = model_date, y = obs_mean, fill = Species)) +
 
 #-------------------------------------------------------------------
   
-#Latent states for biotic-only model
+#Latent states for phos model
 #Manually calculate median posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(fit.m5) %>%
+params1_all <- as.data.frame(fit.m6) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -198,7 +198,7 @@ yearweek <- alltaxatime %>%
                                     Species == "other_nfixers" ~ "Other N Fixers"))
 
 
-params2_all <- as.data.frame(params1_all) %>% 
+params2_all_phos <- as.data.frame(params1_all) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -289,9 +289,9 @@ p4 <- ggplot(params2_all, aes(x = model_date, y = median)) +
 
 #-------------------------------------------------------------------
   
-#Latent states for abiotic-only model
+#Latent states for ammonium model
 #Manually calculate median posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(fit.m6) %>%
+params1_all <- as.data.frame(fit.m7) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -308,7 +308,7 @@ yearweek <- alltaxatime %>%
                                     Species == "other_nfixers" ~ "Other N Fixers"))
 
 
-params2_all <- as.data.frame(params1_all) %>% 
+params2_all_ammonium <- as.data.frame(params1_all) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 
@@ -398,7 +398,7 @@ p6 <- ggplot(params2_all, aes(x = model_date, y = median)) +
 
 #Latent states for abiotic-only model minus nutrients
 #Manually calculate median posteriors for species $ cover, as well as confidence interval
-params1_all <- as.data.frame(fit.m7) %>%
+params1_all <- as.data.frame(fit.m8) %>%
   dplyr::select(matches("n\\[")) %>%
   dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
   t
@@ -415,7 +415,7 @@ yearweek <- alltaxatime %>%
                                     Species == "other_nfixers" ~ "Other N Fixers"))
 
 
-params2_all <- as.data.frame(params1_all) %>% 
+params2_all_DIN <- as.data.frame(params1_all) %>% 
   rownames_to_column(var="ID") %>% 
   tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
   dplyr::select(-chain) %>% 

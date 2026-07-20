@@ -352,7 +352,7 @@ saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'DINtheta',
                                           'Dtheta', 'Ttheta', 'Ctheta', 
                                           'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
 
 
 ######################
