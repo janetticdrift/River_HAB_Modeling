@@ -111,19 +111,19 @@ names(myshap) <- c("Anabaena", "Green Algae", "Microcoleus",
 shapScale <- scale_shape_manual(values = myshap)
 
 # Plot 1: Only show Green Algae + Other N Fixers
-p1 <- ggplot(params2_all, aes(x = model_date, y = median)) +
+p1 <- ggplot(params2_all_nitrate, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(params2_all,
+              data = transform(params2_all_nitrate,
                                median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Latent points/lines
   geom_point(aes(colour = Species), size = 3,
-             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+             data = transform(params2_all_nitrate, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
-            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+            data = transform(params2_all_nitrate, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   # Observed points/lines
   geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
@@ -138,18 +138,18 @@ p1 <- ggplot(params2_all, aes(x = model_date, y = median)) +
   colScale + filScale + shapScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p2 <- ggplot(params2_all, aes(x = model_date, y = median)) +
+p2 <- ggplot(params2_all_nitrate, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(params2_all,
+              data = transform(params2_all_nitrate,
                                median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   geom_point(aes(colour = Species), size = 3,
-             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+             data = transform(params2_all_nitrate, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_line(aes(colour = Species), size = 2, alpha = 0.7,
-            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+            data = transform(params2_all_nitrate, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
              data = transform(obs_data_all,
                               obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
