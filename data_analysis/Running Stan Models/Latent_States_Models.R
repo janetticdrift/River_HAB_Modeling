@@ -320,6 +320,9 @@ saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 
 ####Nutrient Isolation Models####
 
+#For building the observation vs latent state plots
+saveRDS(rstan::extract(fit.m1.5, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Nitrate.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'Ntheta',
@@ -327,23 +330,29 @@ saveRDS(rstan::extract(fit.m1.5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
 
+saveRDS(rstan::extract(fit.m1.6, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Phos.rds"))
 saveRDS(rstan::extract(fit.m1.6, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'Ptheta',
                                           'Dtheta', 'Ttheta', 'Ctheta', 
                                           'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Phos_predictions.rds"))
 
+saveRDS(rstan::extract(fit.m1.7, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_Ammonium.rds"))
 saveRDS(rstan::extract(fit.m1.7, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'Atheta',
                                           'Dtheta', 'Ttheta', 'Ctheta', 
                                           'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Ammonium_predictions.rds"))
 
+saveRDS(rstan::extract(fit.m1.8, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_DIN.rds"))
 saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                           'DINtheta',
                                           'Dtheta', 'Ttheta', 'Ctheta', 
                                           'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
 
 
 ######################
