@@ -20,29 +20,23 @@ ammoniumlatent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Laten
 DINlatent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
 
 #----------------------------------------------------------------------------
-#River-wide: All Variables
+#River-wide: Nitrate only
 
 #Pull out community abundances and demographics 
-x <- allfit 
+x <- nitratelatent
 abundances <- x[["n"]][,,1] #iterations, species #, time
 alphas <- x[["Alpha"]][,]
-betas <- as.array(x[["Beta"]])[,,]
+betas <- x[["Beta"]][,]
 sigmas <- x[["sigma_p"]][,]
 
 #inputs
 runs <- nrow(abundances)
 time <- 13 #number of weeks in 2022
-n <- array(NA, dim = c(runs, 4, time)) # "4" is number of species
+n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]][,]
 nitrate <- stand_nut$nitrate_mg_N_L[1:time]
-
-Ptheta <- x[["Ptheta"]][,]
-phos <- stand_nut$oPhos_ug_P_L[1:time]
-
-Atheta <- x[["Atheta"]][,]
-amon <- stand_nut$ammonium_mg_N_L[1:time]
 
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
@@ -60,14 +54,12 @@ rad <- swradiation$stand_rad[1:time]
 for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
-  Beta <- betas[z,,]
-  n[z,,1] <- abundances[z,] #iterations, species, time
-  sigma <- diag(sigmas[z,])
+  Beta <- betas[z,]
+  n[z,,1] <- abundances[z,]
+  sigma <- sigmas[z,]
   
   #Pull env covariates
   nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -75,54 +67,46 @@ for(z in 1:runs){
   
   
   for(t in 2:time){
+    for(s in 1:4){
       
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
-                               dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
+      #Remove nutrients
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          nTheta[s]*nitrate[t-1] +
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
+    }
   }
 }
 
-#Create dataframe for model fit check
+#Create datafram for model checking
 modelcheck_2022 <- n
 
-#Create dataframe for plotting
+#Create dataframe
 sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
-                "Other N Fixers" = V4) %>% 
-  dplyr::mutate(time = 1:time) %>%
+                "Other N Fixers" = V4) %>%  
+  mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  dplyr::mutate(time = 1:time) %>% 
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
-                "Other N Fixers" = V4) %>% 
-  dplyr::mutate(time = 1:time) %>% 
+                "Other N Fixers" = V4) %>%  
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
-                        left_join(., sims2022uquant, by=c("Species", "time")) %>% 
-  dplyr::mutate(real_week = time + 25, year = 2022) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  group_by(Species) %>% 
-  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
-                                        to = min(model_date), 
-                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
-  tidyr::complete(model_date = seq.Date(from = min(model_date), 
-                                        to = as.Date("2022-10-15"), 
-                                        by = "1 week")) %>%
-  dplyr::mutate(year = 2022) %>% 
-  dplyr::arrange(model_date) %>% 
-  ungroup()
+  left_join(., sims2022uquant, by=c("Species", "time")) %>% 
+  mutate(real_week = time + 25, year = 2022) %>% 
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
 #
@@ -130,19 +114,15 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
 #
 
 #Pull out community abundances and demographics 
-abundances <- x[["n"]][,,14] #iterations, species #, time
+abundances <- x[["n"]][,,14] #iterations, time, species #
 
 #inputs
 runs <- nrow(abundances)
 time <- 15 #number of weeks in 2023
-n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
+n <- array(NA, dim = c(runs, 4, time))
 
 #Pull out environmental effects
 nitrate <- stand_nut$nitrate_mg_N_L[14:(13+time)]
-
-phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
-
-amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
 dis <- discharge$stand_discharge[14:(13+time)]
 
@@ -156,67 +136,61 @@ rad <- swradiation$stand_rad[14:(13+time)]
 for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
-  Beta <- betas[z,,]
+  Beta <- betas[z,]
   n[z,,1] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
+  sigma <- sigmas[z,]
   
   #Pull env covariates
   nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
   rTheta <- Rtheta[z,]
   
+  
+  
   for(t in 2:time){
-    
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
-                               dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
-    
+    for(s in 1:4){
+      
+      #Remove nutrients
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          nTheta[s]*nitrate[t-1] +
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
+      
+    }
   }
 }
 
 #Create datafram for model checking
 modelcheck_2023 <- n
 
+#Create dataframe
 sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>%
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+  mutate(time = 1:time) %>%
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  dplyr::mutate(time = 1:time) %>% 
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
-                "Other N Fixers" = V4) %>% 
-  dplyr::mutate(time = 1:time) %>% 
+                "Other N Fixers" = V4) %>%  
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
-  dplyr::mutate(real_week = time + 24, year = 2023) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  group_by(Species) %>% 
-  tidyr::complete(model_date = seq.Date(from = min(model_date), 
-                                        to = as.Date("2023-10-15"), 
-                                        by = "1 week")) %>%  #Expand the date range, so that all years match
-  dplyr::arrange(model_date) %>% 
-  dplyr::mutate(year = 2023) %>% 
-  ungroup()
+  mutate(real_week = time + 24, year = 2023) %>% 
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
 #
@@ -229,14 +203,10 @@ abundances <- x[["n"]][,,29] #iterations, species #, time
 #inputs
 runs <- nrow(abundances)
 time <- 17 #number of weeks in 2023
-n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
+n <- array(NA, dim = c(runs, 4, time))
 
 #Pull out environmental effects
 nitrate <- stand_nut$nitrate_mg_N_L[29:(28+time)]
-
-phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
-
-amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
 dis <- discharge$stand_discharge[29:(28+time)]
 
@@ -250,86 +220,80 @@ rad <- swradiation$stand_rad[29:(28+time)]
 for(z in 1:runs){
   #Set parameters
   Alpha <- alphas[z,]
-  Beta <- betas[z,,]
+  Beta <- betas[z,]
   n[z,,1] <- abundances[z,]
-  sigma <- diag(sigmas[z,])
+  sigma <- sigmas[z,]
   
   #Pull env covariates
   nTheta <- Ntheta[z,]
-  pTheta <- Ptheta[z,]
-  aTheta <- Atheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
   rTheta <- Rtheta[z,]
   
   
+  
   for(t in 2:time){
-    
-    #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
-                               dTheta*dis[t-1] +
-                               tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
-                             Sigma = sigma)
-    
+    for(s in 1:4){
+      
+      #Remove nutrients too
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] +  
+                          nTheta[s]*nitrate[t-1] +
+                          dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
+                          cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
+                        sd = sigma[s])
+    }
   }
 }
 
 #Create datafram for model checking
 modelcheck_2024 <- n
 
+#Create dataframe
 sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
-                "Other N Fixers" = V4) %>% 
-  dplyr::mutate(time = 1:time) %>%
+                "Other N Fixers" = V4) %>%  
+  mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  dplyr::mutate(time = 1:time) %>% 
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
-                "Other N Fixers" = V4) %>% 
-  dplyr::mutate(time = 1:time) %>% 
+                "Other N Fixers" = V4) %>%  
+  mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
-  dplyr::mutate(real_week = time + 24, year = 2024) %>% 
-  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  group_by(Species) %>% 
-  tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-19"), 
-                                        to = min(model_date), 
-                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
-  dplyr::mutate(year = 2024) %>% 
-  dplyr::arrange(model_date) %>% 
-  ungroup()
+  mutate(real_week = time + 24, year = 2024) %>% 
+  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
 
 #Join together simulation data
-simsall <- rbind(sims2022, sims2023, sims2024) %>% 
+simsnitrate <- rbind(sims2022, sims2023, sims2024) %>% 
   dplyr::rename(median = Abundance)
 
 #Plot simulated predictions against latent states
 # Plot 1: Only show Green Algae + Other N Fixers
-p1 <- ggplot(simsall, aes(x = model_date, y = median)) +
+p1 <- ggplot(simsnitrate, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsall,
+              data = transform(simsnitrate,
                                median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
                                CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-             data = transform(simsall,
+             data = transform(simsnitrate,
                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), 
                                             median, NA))) +
   # Latent points/lines
@@ -337,21 +301,21 @@ p1 <- ggplot(simsall, aes(x = model_date, y = median)) +
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,72)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "Date", y = "Percent Cover (%)", title = "Nitrate Isolation") +
+  colScale + filScale + theme_bw()
 
 # Plot 2: Only show Anabaena + Microcoleus
-p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
+p2 <- ggplot(simsnitrate, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsall,
+              data = transform(simsnitrate,
                                median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsall,
+            data = transform(simsnitrate,
                              median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
                                            median, NA))) +
   # Latent points/lines
@@ -360,7 +324,7 @@ p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  colScale + filScale + theme_bw()
   
 
 # Combine plots and collect legends
@@ -376,12 +340,12 @@ p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
 
 
 #Compile model check dataframes into a single full timeseries matrix
-predictives.river.all <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
+predictives.river.nitrate <- abind(exp(modelcheck_2022), exp(modelcheck_2023), 
                         exp(modelcheck_2024), along = 3)
 
 #Save predictive output of All Variables model
-saveRDS(predictives.river.all, 
-        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
+saveRDS(predictives.river.nitrate, 
+        file = here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Nitrate.rds"))
 
 
 
