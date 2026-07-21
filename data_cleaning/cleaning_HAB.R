@@ -526,35 +526,36 @@ ggplot(swradiation, aes(x = fake_date, y = radiation, group = year, color = year
 #############################################################################################
                         #Plot Nitrate and Discharge Together for Figure 2
 
-# #Merge together nitrate and discharge data
-# nitrate.discharge <- rowr::cbind.fill(nutrients_raw_clean[, c("year", "nitrate_mg_N_L")], 
-#                            discharge[, c("discharge", "fake_date"), drop = TRUE],
-#                            fill = NA) %>% 
-#   dplyr::rename(nitrate = nitrate_mg_N_L) %>% 
-#   #To make the "fake" dates within the same year match perfectly with field dates, replace the last date 
-#     #(10-09-2022) with the real field date (10-13-2022)
-#   dplyr::mutate(fake_date = replace(fake_date, 45, "2022-10-13")) #45 means at index position 45
-# 
-# scale_factor <- 5000 #Rough estimate to scale up nitrate by 
-# 
-# envplot <- ggplot(nitrate.discharge, aes(x = fake_date)) +
-#   facet_wrap(~year) +
-#   geom_line(aes(y = discharge, color = "Discharge"), size = 1) +
-#   geom_point(aes(y = discharge, color = "Discharge")) +
-#   geom_line(aes(y = nitrate*scale_factor, color = "Nitrate"), size = 1) +
-#   geom_point(aes(y = nitrate*scale_factor, color = "Nitrate")) +
-#   scale_y_continuous(
-#     name = "Discharge (cfs)",
-#     sec.axis = sec_axis(
-#       ~ . / scale_factor,
-#       name = "Nitrate (mg N/L)"
-#     )
-#   ) +
-#   scale_color_manual(name = "Env. Variable", 
-#                      values = c("Discharge" = "#813B9A",
-#                                 "Nitrate" = "#1a7531")) +
-#   labs(x = "Date") +
-#   theme_bw()
+#Merge together nitrate and discharge data
+nitrate.ammonium <- nutrients_raw_clean %>%
+  dplyr::mutate(fake_date = make_date(year = 2022, day = day(field_date), month = month(field_date)),
+                fake_date = if_else(month(field_date) >= 11, fake_date - years(1), fake_date)) %>% 
+  dplyr::rename(nitrate = nitrate_mg_N_L) %>%
+  dplyr::rename(ammonium = ammonium_mg_N_L) 
+  #To make the "fake" dates within the same year match perfectly with field dates, replace the last date
+    #(10-09-2022) with the real field date (10-13-2022)
+  #dplyr::mutate(field_date = replace(field_date, 31, "2024-10-13")) #45 means at index position 45
+
+scale_factor <- 1 #Rough estimate to scale up nitrate by
+
+envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
+  facet_wrap(~year) +
+  geom_line(aes(y = DIN, color = "DIN"), size = 1) +
+  geom_point(aes(y = DIN, color = "DIN")) +
+  geom_line(aes(y = ammonium*scale_factor, color = "Ammonium"), size = 1) +
+  geom_point(aes(y = ammonium*scale_factor, color = "Ammonium")) +
+  scale_y_continuous(
+    name = "Ammonium",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "DIN (mg N/L)"
+    )
+  ) +
+  scale_color_manual(name = "Env. Variable",
+                     values = c("Ammonium" = "#813B9A",
+                                "DIN" = "#1a7531")) +
+  labs(x = "Date") +
+  theme_bw()
 
 #############################################################################################
                                 #Tidy Anatxoin Concentration data.

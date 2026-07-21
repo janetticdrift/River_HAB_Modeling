@@ -195,17 +195,15 @@ for(z in 1:runs){
   }
 }
 
-#Create datafram for model checking
+#Create dataframe for model checking
 modelcheck_2023 <- n
 
 sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), median)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
-  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance") %>%
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+  dplyr::mutate(time = 1:time) %>% 
+  pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
@@ -383,7 +381,7 @@ p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 
-# Combine Microcoleus/Anabaena plot with environmental variables plot
+#Combine Microcoleus/Anabaena plot with environmental variables plot
 (p2 / envplot) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
@@ -721,25 +719,25 @@ sims2022median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>%
+  dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2022lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2022uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2022), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %>%
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
-  mutate(real_week = time + 25, year = 2022) %>% 
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(real_week = time + 25, year = 2022) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
@@ -816,25 +814,25 @@ sims2023median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>%
+  dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2023lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIlower")
 sims2023uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2023), c(2,3), quantile, probs = 0.975)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %>%
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
-  mutate(real_week = time + 24, year = 2023) %>% 
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(real_week = time + 24, year = 2023) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 
@@ -911,7 +909,7 @@ sims2024median <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>%
+  dplyr::mutate(time = 1:time) %>%
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "Abundance")
 sims2024lquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,3), quantile, probs = 0.025)))) %>% 
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
@@ -923,13 +921,13 @@ sims2024uquant <- as.data.frame(t(as.data.frame(apply(exp(modelcheck_2024), c(2,
   dplyr::rename("Green Algae" = V1, "Microcoleus" = V2,
                 "Anabaena" = V3,
                 "Other N Fixers" = V4) %>%  
-  mutate(time = 1:time) %>% 
+  dplyr::mutate(time = 1:time) %>% 
   pivot_longer(cols = 1:4, names_to = "Species", values_to = "CIupper")
 
 sims2024 <- left_join(sims2024median, sims2024lquant, by=c("Species", "time")) %>%
   left_join(., sims2024uquant, by=c("Species", "time")) %>% 
-  mutate(real_week = time + 24, year = 2024) %>% 
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+  dplyr::mutate(real_week = time + 24, year = 2024) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                      (real_week - 1) * 7 - 1, "week", week_start = 7))
 
 

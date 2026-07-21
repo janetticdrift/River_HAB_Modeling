@@ -21,81 +21,54 @@ y_nfix <- obs_river_data$other_nfixers
 y_obs_river <- rbind(y_green, y_micro, y_ana, y_nfix) #Dimensions: Species, time
 
 #Read in LATENT states of River-Wide
-allfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
-bioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
-abioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
-abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
+nitratefit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
+phosfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Phos_predictions.rds"))
+ammoniumfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Ammonium_predictions.rds"))
+DINfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
 
 #Read in SIMULATED states of River-Wide
-pred.allfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
-pred.bioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Biotic.rds"))
-pred.abioticfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Abiotic.rds"))
-pred.abioticnonutfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AbioticNoNut.rds"))
-
-
-                               #Within-Mat
-
-#Read in OBSERVED states of Within-Mat: TM
-obs_mat_data <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_TM_data.rds"))
-#Extract log-transformed observed data vectors from obs_mat_data, raw data object
-y_ana <- obs_mat_data$Anabaena                  #1
-y_epi <- obs_mat_data$`Epithemia Diatoms`       #2
-y_geit <- obs_mat_data$Geitlerinema             #3
-#Put them into a single matrix
-y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
-
-#Read in LATENT states of Within-Mat: TM
-TMfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
-
-#Read in SIMULATED states of Within-Mat
-TM.pred <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
+pred.nitratefit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Nitrate.rds"))
+pred.phosfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Phosphate.rds"))
+pred.ammoniumfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Ammonium.rds"))
+pred.DINfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_DIN.rds"))
 
 ###############------------------------------------------------------------------
 #Create lists of the models to iterate through in for loop
 river_species <- c("green", "micro", "ana", "nfix")
-mat_species <- c("ana", "epi", "geit")
 
 #Create list of all models       <- Later add in output for Toxin models
 model_list <- list(
   list(
-    model = "allfit",         #The model's name
+    model = "nitratefit",         #The model's name
     category = "River-Wide",  #Whether it used percent cover or microscopy data
     y_obs = y_obs_river,      #Reading in observed values
-    post = allfit[["n"]],     #Reading in latent states
-    pred = pred.allfit,       #Reading in simulated/predicted values
+    post = nitratefit[["n"]],     #Reading in latent states
+    pred = pred.nitratefit,       #Reading in simulated/predicted values
     species = river_species   #List of species names used in this model
   ),
   list(
-    model = "bioticfit",
+    model = "phosfit",
     category = "River-Wide",
     y_obs = y_obs_river,
-    post = bioticfit[["n"]],
-    pred = pred.bioticfit,
+    post = phosfit[["n"]],
+    pred = pred.phosfit,
     species = river_species
   ),
   list(
-    model = "abioticfit",
+    model = "ammoniumfit",
     category = "River-Wide",
     y_obs = y_obs_river,
-    post = abioticfit[["n"]],
-    pred = pred.abioticfit,
+    post = ammoniumfit[["n"]],
+    pred = pred.ammoniumfit,
     species = river_species
   ),
   list(
-    model = "abioticnonutfit",
+    model = "DINfit",
     category = "River-Wide",
     y_obs = y_obs_river,
-    post = abioticnonutfit[["n"]],
-    pred = pred.abioticnonutfit,
+    post = DINfit[["n"]],
+    pred = pred.DINfit,
     species = river_species
-  ),
-  list(
-    model = "TMfit",
-    category = "Within-Mat",
-    y_obs = y_obs_mat,
-    post = TMfit[["n"]],
-    pred = TM.pred,
-    species = mat_species
   )
 )
 
@@ -205,20 +178,17 @@ str(model.indices)
 
 clean.model.indices <- model.indices %>% 
   dplyr::mutate(species = case_when(species == "ana" ~ "Anabaena",
-                                    species == "epi" ~ "Epithemia Diatoms",
-                                    species == "geit" ~ "Geitlerinema",
                                     species == "green" ~ "Green Algae",
                                     species == "micro" ~ "Microcoleus",
                                     species == "nfix" ~ "Other N Fixers")) %>% 
-  dplyr::mutate(model = case_when(model == "allfit" ~ "All Variables",
-                                    model == "bioticfit" ~ "Biotic Only",
-                                    model == "abioticfit" ~ "Abiotic Only",
-                                    model == "abioticnonutfit" ~ "Abiotic Minus Nutrients",
-                                    model == "TMfit" ~ "Target Microcoleus"))
+  dplyr::mutate(model = case_when(model == "nitratefit" ~ "Nitrate",
+                                    model == "phosfit" ~ "Phosphate",
+                                    model == "ammoniumfit" ~ "Ammonium",
+                                    model == "DINfit" ~ "DIN"))
 
 clean.model.indices$model <- factor(  #Manually order model name 
   clean.model.indices$model,
-  levels = c("All Variables", "Biotic Only", "Abiotic Only", "Abiotic Minus Nutrients", "Target Microcoleus")
+  levels = c("Nitrate", "Phosphate", "Ammonium", "DIN")
 )
 
 #Create a color palette
@@ -234,18 +204,17 @@ names(myshap) <- c("Anabaena", "Green Algae",
 shapScale <- scale_shape_manual(values = myshap)
 
 #Plot River-Wide Metrics
-ggplot(subset(clean.model.indices, metric %in% c("r2", "RMSE") & category %in% "River-Wide"), aes(x = value, y = model, shape = species, color = species)) +
+ggplot(subset(clean.model.indices, metric %in% c("r2", "RMSE")), aes(x = value, y = model, shape = species, color = species)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = 0.6)) +
   scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) + #Reverses order of yaxis
-  colScale + shapScale +
   theme_bw() +
   labs(x = "Metric Value",
        y = "Model Name",
-       title = "River-Wide with DIN Goodness-of-Fit",
+       title = "River-Wide Nutrient Isolation Goodness-of-Fit",
        shape = "Species",
        color = "Species")
 
