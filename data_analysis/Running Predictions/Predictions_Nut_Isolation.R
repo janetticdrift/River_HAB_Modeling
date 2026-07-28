@@ -11,7 +11,7 @@ library(tidyverse)
 library(abind)
 
 #Read in cleaned latent states, params2_all. This file also reads in the cleaning_HAB.R file
-source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/River_Wide_isolation_model_vs_real.R"))
+source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/River_Wide_isolation_model_vs_real .R"))
 
 #Read in latent states and effect coefficients
 nitratelatent <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
@@ -824,17 +824,17 @@ simsammonium <- rbind(sims2022, sims2023, sims2024) %>%
   dplyr::rename(median = Abundance)
 
 # Plot 2: Only show Anabaena + Microcoleus
-ggplot(simsDIN, aes(x = model_date, y = median)) +
+ggplot(simsnitrate, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
               alpha = 0.3,
-              data = transform(simsDIN,
+              data = transform(simsnitrate,
                                median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
                                CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
                                CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
   # Predicted points/lines
   geom_line(aes(linetype = "Predicted", colour = Species), size = 1.5,
-            data = transform(simsDIN,
+            data = transform(simsnitrate,
                              median = ifelse(Species %in% c("Anabaena", "Microcoleus"), 
                                              median, NA))) +
   # Latent points/lines

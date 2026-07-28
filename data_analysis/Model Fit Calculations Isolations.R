@@ -125,8 +125,8 @@ for (m in 1:length(model_list)) {
       BayesR2_vals[i, s] <- var_fit / (var_fit + var_res)
       
                                         #RMSE
-      y <- posteriors[i, s, ]
-      y_pred <- predictives[i, s, ]
+      y <- posteriors[i, s, obs_index]
+      y_pred <- predictives[i, s, obs_index]
       
       RMSE_vals[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
  
@@ -212,6 +212,7 @@ ggplot(subset(clean.model.indices, metric %in% c("r2", "RMSE")), aes(x = value, 
                  position = position_dodge(width = 0.6)) +
   scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) + #Reverses order of yaxis
   theme_bw() +
+  colScale + shapScale +
   labs(x = "Metric Value",
        y = "Model Name",
        title = "River-Wide Nutrient Isolation Goodness-of-Fit",
@@ -226,7 +227,7 @@ ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric ==
                  position = position_dodge(width = 0.6)) +
   scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) +
   colScale + shapScale +
-  coord_cartesian(xlim = c(0, 10)) +
+  coord_cartesian(xlim = c(0, 5)) +
   theme_bw() +
   labs(title = "RMSE",
        x = "Metric value",
