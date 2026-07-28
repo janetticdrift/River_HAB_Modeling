@@ -9,9 +9,9 @@ data {
   
   vector [Nspecies] id; //Vector of 1s for ID matrix
   
-  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  //vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   vector [uniqueID] phos; //Vector of o phos levels, standardized
-  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
+  //vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
   vector [uniqueID] DIN; //Vector of DIN levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
   vector [uniqueID] temp; //Vector of temperatures, Celsius
@@ -33,9 +33,9 @@ parameters {
   
   matrix<upper=99>[Nspecies, uniqueID] n; //percent cover each week at each reach
   
-  vector[Nspecies] Ntheta; //parameter for nitrate each species
+  //vector[Nspecies] Ntheta; //parameter for nitrate each species
   vector[Nspecies] Ptheta; //parameter for o phos each species
-  vector[Nspecies] Atheta; //parameter for ammonium each species
+  //vector[Nspecies] Atheta; //parameter for ammonium each species
   vector[Nspecies] DINtheta; //parameter for ammonium each species
   vector[Nspecies] Dtheta; //parameter for discharge each species
   vector[Nspecies] Ttheta; //parameter for temps each species
@@ -73,9 +73,9 @@ model {
   Beta_diag ~ normal(.5, .1) T[0,]; //T means Truncate, so bounded at zero
   to_vector(Beta_off) ~ normal(0, .1);
   
-  Ntheta ~ normal(0,1);
+  //Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
-  Atheta ~ normal(0,1);
+  //Atheta ~ normal(0,1);
   DINtheta ~ normal(0,1);
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);
@@ -88,8 +88,9 @@ model {
     //for(s in 1:Nspecies){
       
       if(firstdays[t]==1) continue; //continue ends current operation and returns to top of loop
-       n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
-                            Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
+       n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + //Ntheta*nitrate[t-1] +
+                            Ptheta*phos[t-1] + 
+                            //Atheta*ammonium[t-1] +
                             DINtheta*DIN[t-1] +
                             Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
                             Ctheta*cond[t-1] + Rtheta*rad[t-1], ID);

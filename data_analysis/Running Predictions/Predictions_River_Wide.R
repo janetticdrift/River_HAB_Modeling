@@ -58,6 +58,9 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
+DINtheta <- x[["DINtheta"]][,]
+DIN <- stand_nut$DIN[1:time]
+
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
 
@@ -82,6 +85,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -91,8 +95,11 @@ for(z in 1:runs){
   for(t in 2:time){
       
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
+                               #nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + 
+                               #aTheta*amon[t-1] + 
+                               DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -158,6 +165,8 @@ phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
+DIN <- stand_nut$DIN[14:(13+time)]
+
 dis <- discharge$stand_discharge[14:(13+time)]
 
 temp <- stand_nut$temp_C[14:(13+time)]
@@ -178,6 +187,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -186,8 +196,11 @@ for(z in 1:runs){
   for(t in 2:time){
     
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
+                               #nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + 
+                               #aTheta*amon[t-1] +
+                               DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -250,6 +263,8 @@ phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
+DIN <- stand_nut$DIN[29:(28+time)]
+
 dis <- discharge$stand_discharge[29:(28+time)]
 
 temp <- stand_nut$temp_C[29:(28+time)]
@@ -270,6 +285,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -279,8 +295,11 @@ for(z in 1:runs){
   for(t in 2:time){
     
     #Everything included
-    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + nTheta*nitrate[t-1]+
-                               pTheta*phos[t-1] + aTheta*amon[t-1] + 
+    n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
+                               #nTheta*nitrate[t-1]+
+                               pTheta*phos[t-1] + 
+                               #aTheta*amon[t-1] + 
+                               DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -667,6 +686,9 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
+DINtheta <- x[["DINtheta"]][,]
+DIN <- stand_nut$DIN[1:time]
+
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
 
@@ -691,6 +713,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -701,8 +724,11 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-        n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
-                            pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+        n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + 
+                            #nTheta[s]*nitrate[t-1] +
+                            pTheta[s]*phos[t-1] + 
+                            #aTheta[s]*amon[t-1] + 
+                            DINTheta[s]*DIN[t-1] +
                             dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                             cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                           sd = sigma[s])
@@ -754,25 +780,20 @@ time <- 15 #number of weeks in 2023
 n <- array(NA, dim = c(runs, 4, time))
 
 #Pull out environmental effects
-Ntheta <- x[["Ntheta"]][,]
 nitrate <- stand_nut$nitrate_mg_N_L[14:(13+time)]
 
-Ptheta <- x[["Ptheta"]][,]
 phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
-Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
-Dtheta <- x[["Dtheta"]][,]
+DIN <- stand_nut$DIN[14:(13+time)]
+
 dis <- discharge$stand_discharge[14:(13+time)]
 
-Ttheta <- x[["Ttheta"]][,]
 temp <- stand_nut$temp_C[14:(13+time)]
 
-Ctheta <- x[["Ctheta"]][,]
 cond <- stand_nut$cond_uS_cm[14:(13+time)]
 
-Rtheta <- x[["Rtheta"]][,]
 rad <- swradiation$stand_rad[14:(13+time)]
 
 
@@ -787,6 +808,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -797,8 +819,10 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
-                          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + #nTheta[s]*nitrate[t-1] +
+                          pTheta[s]*phos[t-1] + 
+                          #aTheta[s]*amon[t-1] + 
+                          DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])
@@ -849,25 +873,20 @@ time <- 17 #number of weeks in 2023
 n <- array(NA, dim = c(runs, 4, time))
 
 #Pull out environmental effects
-Ntheta <- x[["Ntheta"]][,]
 nitrate <- stand_nut$nitrate_mg_N_L[29:(28+time)]
 
-Ptheta <- x[["Ptheta"]][,]
 phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
-Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
-Dtheta <- x[["Dtheta"]][,]
+DIN <- stand_nut$DIN[29:(28+time)]
+
 dis <- discharge$stand_discharge[29:(28+time)]
 
-Ttheta <- x[["Ttheta"]][,]
 temp <- stand_nut$temp_C[29:(28+time)]
 
-Ctheta <- x[["Ctheta"]][,]
 cond <- stand_nut$cond_uS_cm[29:(28+time)]
 
-Rtheta <- x[["Rtheta"]][,]
 rad <- swradiation$stand_rad[29:(28+time)]
 
 
@@ -882,6 +901,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
+  DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -892,8 +912,10 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + nTheta[s]*nitrate[t-1] +
-                          pTheta[s]*phos[t-1] + aTheta[s]*amon[t-1] + 
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + #nTheta[s]*nitrate[t-1] +
+                          pTheta[s]*phos[t-1] + 
+                          #aTheta[s]*amon[t-1] + 
+                          DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])

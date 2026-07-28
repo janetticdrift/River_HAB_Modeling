@@ -286,7 +286,10 @@ saveRDS(rstan::extract(fit.m1.1, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
+                                        #'Ntheta', 
+                                        'Ptheta', 
+                                        #'Atheta', 
+                                        'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
@@ -304,7 +307,10 @@ saveRDS(rstan::extract(fit.m1.3, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
+                                        #'Ntheta',
+                                        'Ptheta', 
+                                        #'Atheta',
+                                        'DINtheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
