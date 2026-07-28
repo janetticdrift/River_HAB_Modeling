@@ -540,8 +540,8 @@ scale_factor <- 1 #Rough estimate to scale up nitrate by
 
 envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
   facet_wrap(~year) +
-  geom_line(aes(y = DIN, color = "DIN"), size = 1) +
-  geom_point(aes(y = DIN, color = "DIN")) +
+  geom_line(aes(y = nitrate, color = "Nitrate"), size = 1) +
+  geom_point(aes(y = nitrate, color = "Nitrate")) +
   geom_line(aes(y = ammonium*scale_factor, color = "Ammonium"), size = 1) +
   geom_point(aes(y = ammonium*scale_factor, color = "Ammonium")) +
   scale_y_continuous(
@@ -553,7 +553,7 @@ envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
   ) +
   scale_color_manual(name = "Env. Variable",
                      values = c("Ammonium" = "#813B9A",
-                                "DIN" = "#1a7531")) +
+                                "Nitrate" = "#1a7531")) +
   labs(x = "Date") +
   theme_bw()
 

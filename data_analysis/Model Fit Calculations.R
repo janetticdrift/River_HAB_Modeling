@@ -133,6 +133,7 @@ for (m in 1:length(model_list)) {
   #Create metric storage vectors
   BayesR2_vals <- matrix(NA, iter, species) 
   RMSE_vals <- matrix(NA, iter, species) 
+  NRMSE_vals <- matrix(NA, iter, species)
   R2_vals <- matrix(NA, iter, species) 
   
   for(s in 1:species) {
@@ -142,7 +143,7 @@ for (m in 1:length(model_list)) {
     obs_index <- which(y_obs_s != -99) #Remove weeks where we did not collect field data
     
     for (i in 1:iter) {
-                                       #Bayesian R2      
+      #Bayesian R2      
       yhat <- posteriors[i, s, obs_index] #In the time index position, take out weeks with no field observations
       yobs <- y_obs_s[obs_index]
       
@@ -151,46 +152,51 @@ for (m in 1:length(model_list)) {
       
       BayesR2_vals[i, s] <- var_fit / (var_fit + var_res)
       
-                                        #RMSE
-      y <- posteriors[i, s, ]
-      y_pred <- predictives[i, s, ]
+      #RMSE
+      y <- posteriors[i, s, obs_index]
+      y_pred <- predictives[i, s, obs_index]
       
       RMSE_vals[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
- 
-                                         #R2      
+      
+      range_y <- max(y) - min(y)
+      
+      NRMSE_vals[i, s] <- RMSE_vals[i, s] / range_y
+      
+      #R2      
       R2_vals[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
       
-                                        #WAIC
+      #WAIC
       
       
     }
   } 
-                                   #Calculate metrics
-    #Consolidate metrics per iter
-    metrics <- list(
-      "Bayesian R2" = BayesR2_vals,
-      "RMSE" = RMSE_vals, 
-      "r2" = R2_vals
-    )
+  #Calculate metrics
+  #Consolidate metrics per iter
+  metrics <- list(
+    "Bayesian R2" = BayesR2_vals,
+    "RMSE" = RMSE_vals, 
+    "NRMSE" = NRMSE_vals,
+    "r2" = R2_vals
+  )
+  
+  #Calculate median and CIs for each metric
+  for(j in names(metrics)){
     
-    #Calculate median and CIs for each metric
-    for(j in names(metrics)){
-
-      vals <- metrics[[j]]
-
-      med <- apply(vals, 2, median)
-      ci <- apply(vals, 2, quantile, c(0.025, 0.975))
-
-        for(s in 1:species){
-          model.indices[counter, ] <- data.frame(
-            model = model$model,
-            category = model$category,
-            species = species_names[s],
-            metric = j,
-            value = med[s],
-            lwr = ci[1,s],
-            upr = ci[2,s],
-            stringsAsFactors = FALSE
+    vals <- metrics[[j]]
+    
+    med <- apply(vals, 2, median)
+    ci <- apply(vals, 2, quantile, c(0.025, 0.975))
+    
+    for(s in 1:species){
+      model.indices[counter, ] <- data.frame(
+        model = model$model,
+        category = model$category,
+        species = species_names[s],
+        metric = j,
+        value = med[s],
+        lwr = ci[1,s],
+        upr = ci[2,s],
+        stringsAsFactors = FALSE
       )
       
       counter <- counter + 1
@@ -220,6 +226,10 @@ clean.model.indices$model <- factor(  #Manually order model name
   clean.model.indices$model,
   levels = c("All Variables", "Biotic Only", "Abiotic Only", "Abiotic Minus Nutrients", "Target Microcoleus")
 )
+clean.model.indices$species <- factor(  #Manually order model name 
+  clean.model.indices$species,
+  levels = c("Microcoleus", "Anabaena", "Green Algae", "Other N Fixers")
+)
 
 #Create a color palette
 mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange", "#00538A", "#F6926A")
@@ -234,20 +244,20 @@ names(myshap) <- c("Anabaena", "Green Algae",
 shapScale <- scale_shape_manual(values = myshap)
 
 #Plot River-Wide Metrics
-ggplot(subset(clean.model.indices, metric %in% c("r2", "RMSE") & category %in% "River-Wide"), aes(x = value, y = model, shape = species, color = species)) +
+ggplot(subset(clean.model.indices, metric %in% c("NRMSE", "RMSE") & category %in% "River-Wide"), aes(x = value, y = species, shape = model, color = model)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) + #Reverses order of yaxis
-  colScale + shapScale +
+  scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) + #Reverses order of yaxis
+  #colScale + shapScale +
   theme_bw() +
   labs(x = "Metric Value",
        y = "Model Name",
        title = "River-Wide with DIN Goodness-of-Fit",
-       shape = "Species",
-       color = "Species")
+       shape = "Model",
+       color = "Model")
 
 
 ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "RMSE"), aes(x = value, y = model, shape = species, color = species)) +
