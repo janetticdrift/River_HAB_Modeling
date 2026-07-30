@@ -101,7 +101,7 @@ model.1 <- list("uniqueID" = nrow(alltaxatime),
                 "nitrate" = stand_nut$nitrate_mg_N_L,
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
-                "DIN" = stand_nut$DIN,
+                #"DIN" = stand_nut$DIN,
                 "discharge" = discharge$stand_discharge,
                 "temp" = stand_nut$temp_C,
                 "cond" = stand_nut$cond_uS_cm,
@@ -273,7 +273,7 @@ library(ggplot2)
 library(rstantools)
 
 #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.m1.1)
+shinystan::launch_shinystan(fit.m1.3)
 print(fit.m1.1, par = "Ntheta")
 
 
@@ -286,10 +286,10 @@ saveRDS(rstan::extract(fit.m1.1, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        #'Ntheta', 
+                                        'Ntheta', 
                                         'Ptheta', 
-                                        #'Atheta', 
-                                        'DINtheta',
+                                        'Atheta', 
+                                        #'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
@@ -307,10 +307,10 @@ saveRDS(rstan::extract(fit.m1.3, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
 saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        #'Ntheta',
+                                        'Ntheta',
                                         'Ptheta', 
-                                        #'Atheta',
-                                        'DINtheta', 
+                                        'Atheta',
+                                        #'DINtheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
