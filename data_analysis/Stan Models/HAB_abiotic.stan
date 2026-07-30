@@ -9,10 +9,10 @@ data {
   
   vector [Nspecies] id; //Vector of 1s for ID matrix
   
-  //vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
+  vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   vector [uniqueID] phos; //Vector of o phos levels, standardized
-  //vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
-  vector [uniqueID] DIN; //Vector of ammonium levels, standardized
+  vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
+  //vector [uniqueID] DIN; //Vector of ammonium levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
   vector [uniqueID] temp; //Vector of temperatures, Celsius
   vector [uniqueID] cond; //Vector of conductivity, standardized
@@ -32,10 +32,10 @@ parameters {
   
   matrix<upper=99>[Nspecies, uniqueID] n; //percent cover each week at each reach
   
-  //vector[Nspecies] Ntheta; //parameter for nitrate each week
+  vector[Nspecies] Ntheta; //parameter for nitrate each week
   vector[Nspecies] Ptheta; //parameter for o phos each week
-  //vector[Nspecies] Atheta; //parameter for ammonium each week
-  vector[Nspecies] DINtheta; //parameter for DIN each week
+  vector[Nspecies] Atheta; //parameter for ammonium each week
+  //vector[Nspecies] DINtheta; //parameter for DIN each week
   vector[Nspecies] Dtheta; //parameter for discharge each week
   vector[Nspecies] Ttheta; //parameter for temps each week
   vector[Nspecies] Ctheta; //parameter for conductivity each week
@@ -59,10 +59,10 @@ model {
   
   Beta ~ normal(.5, .1) T[0,]; //T means Truncate, so bounded at zero 
   
-  //Ntheta ~ normal(0,1);
+  Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
- // Atheta ~ normal(0,1);
-  DINtheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  //DINtheta ~ normal(0,1);
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);
   Ctheta ~ normal(0,1);
@@ -74,10 +74,10 @@ model {
     for(s in 1:Nspecies){
       
       if(firstdays[t]==1) continue;
-       n[s,t] ~ normal(Alpha[s] + Beta[s]*n[s, t-1] + //Ntheta[s]*nitrate[t-1] +
+       n[s,t] ~ normal(Alpha[s] + Beta[s]*n[s, t-1] + Ntheta[s]*nitrate[t-1] +
                             Ptheta[s]*phos[t-1] + 
-                            //Atheta[s]*ammonium[t-1] +
-                            DINtheta[s]*DIN[t-1] +
+                            Atheta[s]*ammonium[t-1] +
+                            //DINtheta[s]*DIN[t-1] +
                             Dtheta[s]*discharge[t-1] + Ttheta[s]*temp[t-1] +
                             Ctheta[s]*cond[t-1] + Rtheta[s]*rad[t-1], sigma_p[s]);
   }
