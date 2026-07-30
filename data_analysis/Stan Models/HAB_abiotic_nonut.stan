@@ -49,7 +49,7 @@ model {
 
   Alpha ~ normal(0,1);
   
-  Beta ~ normal(.5, .1) T[0,]; //T means Truncate, so bounded at zero
+  Beta ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero
 
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);

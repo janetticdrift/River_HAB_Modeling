@@ -55,8 +55,8 @@ model {
 
   Alpha ~ normal(0,1);
   
-  Beta_diag ~ normal(.5, .1) T[0,]; //T means Truncate, so bounded at zero now
-  to_vector(Beta_off) ~ normal(0, .1);
+  Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
+  to_vector(Beta_off) ~ normal(0, .2);
 
   
   //Population models
