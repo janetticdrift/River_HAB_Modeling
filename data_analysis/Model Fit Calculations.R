@@ -284,7 +284,7 @@ clean.model.indices$model <- factor(  #Manually order model name
              "Percent Cover: Abiotic Only", 
              "Percent Cover: Abiotic Minus Nutrients", "Microscopy: All Variables",
              "Microcoleus Mat Toxins",
-             "Anabaena Mat Toxins", "Microcoleus Mat Toxins")
+             "Anabaena Mat Toxins")
 )
 clean.model.indices$species <- factor(  #Manually order species name 
   clean.model.indices$species,
@@ -297,10 +297,11 @@ mycols <- c(
   "Percent Cover: Biotic Only" = "#00899a",
   "Percent Cover: Abiotic Only" = "#11AB7C",
   "Percent Cover: Abiotic Minus Nutrients" = "#37Ca61",
-  "Microscopy: All Variables" = "#8CCA37",
-  "Microcoleus Mat Toxins" = "#9c3e04",
-  "Anabaena Mat Toxins" = "#ca6b01",
-  "Microcoleus Mat Toxins" = "#edc4b2")
+  "Microscopy: All Variables" = "#93C451",
+  "Microcoleus Mat Toxins" = "#BE5103",
+  "Anabaena Mat Toxins" = "#ff9913"
+  # "Microcoleus Mat Toxins" = "#ffd5b6")
+)
 colScale <- scale_color_manual(
   name = "Model",
   values = mycols)
@@ -321,7 +322,7 @@ ggplot(subset(clean.model.indices, metric %in% c("r2", "NRMSE")),
   colScale + shapScale +
   theme_bw() +
   labs(x = "Metric Value",
-       y = "Taxa Name",
+       y = "",
        title = "Goodness-of-Fit",
        shape = "Model",
        color = "Model")

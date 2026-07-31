@@ -58,8 +58,8 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-DINtheta <- x[["DINtheta"]][,]
-DIN <- stand_nut$DIN[1:time]
+# DINtheta <- x[["DINtheta"]][,]
+# DIN <- stand_nut$DIN[1:time]
 
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
@@ -85,7 +85,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -165,7 +165,7 @@ phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
-DIN <- stand_nut$DIN[14:(13+time)]
+#DIN <- stand_nut$DIN[14:(13+time)]
 
 dis <- discharge$stand_discharge[14:(13+time)]
 
@@ -187,7 +187,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -263,7 +263,7 @@ phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
-DIN <- stand_nut$DIN[29:(28+time)]
+#DIN <- stand_nut$DIN[29:(28+time)]
 
 dis <- discharge$stand_discharge[29:(28+time)]
 
@@ -285,7 +285,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -686,8 +686,8 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-DINtheta <- x[["DINtheta"]][,]
-DIN <- stand_nut$DIN[1:time]
+# DINtheta <- x[["DINtheta"]][,]
+# DIN <- stand_nut$DIN[1:time]
 
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
@@ -713,7 +713,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -786,7 +786,7 @@ phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
-DIN <- stand_nut$DIN[14:(13+time)]
+#DIN <- stand_nut$DIN[14:(13+time)]
 
 dis <- discharge$stand_discharge[14:(13+time)]
 
@@ -808,7 +808,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -880,7 +880,7 @@ phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
-DIN <- stand_nut$DIN[29:(28+time)]
+#DIN <- stand_nut$DIN[29:(28+time)]
 
 dis <- discharge$stand_discharge[29:(28+time)]
 
@@ -902,7 +902,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  DINTheta <- DINtheta[z,]
+  #DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
