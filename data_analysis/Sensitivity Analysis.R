@@ -86,11 +86,11 @@ eq_abund_include <- as.data.frame.table(w_star_include, responseName = "w_star")
     iteration = as.integer(iteration),
     species = factor(species), # Green algae, Microcoleus, Anabaena, Other N-fixers
     env = factor(env)
-  ) %>% 
+    ) %>% 
   dplyr::select(!iteration) %>% 
   dplyr::mutate(Interactions = "include") %>% #Add a category column for including/excluding species interactions
   dplyr::mutate(w_star = exp(w_star)) %>%  # Back transform w_star from logged values
-  # Values over 710 result in -Inf values when exp'ed for being too large
+                               # Values over 710 result in -Inf values when exp'ed for being too large
   dplyr::filter(is.finite(w_star)) #Remove those Inf values
 
 #Read in model output-------------------------------------------------------------
@@ -199,7 +199,7 @@ env_labels <- c(
 #########  
 #Boxplots
 ######### 
-#Species2: Microcoleus
+  #Species2: Microcoleus
 ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), 
        aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
   facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
@@ -230,7 +230,7 @@ eq_abund_medians <- eq_abund %>%
   group_by(env, env_peturb, species, Interactions) %>%
   dplyr::summarise(med_star = median(w_star, na.rm = TRUE))
 
-#Species2: Microcoleus
+  #Species2: Microcoleus
 ggplot(subset(eq_abund_medians, species %in% "2"), aes(x = env_peturb, y = med_star, color = Interactions)) +
   facet_wrap(~env, labeller = labeller(env = env_labels)) +
   geom_line() +

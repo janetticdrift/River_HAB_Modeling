@@ -10,7 +10,7 @@ library(ggpubr)
 library(tidyverse)
 library(abind)
 
-#Read in cleaned latent states, params2_all. This file also reads in the cleaning_HAB.R file
+#Read in cleaned latent states, params2_[model name]. This file also reads in the cleaning_HAB.R file
 source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/River_Wide_model_vs_real.R"))
 
 #Create plot palettes for graphing
@@ -96,10 +96,10 @@ for(z in 1:runs){
       
     #Everything included
     n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
-                               #nTheta*nitrate[t-1]+
+                               nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
-                               #aTheta*amon[t-1] + 
-                               DINTheta*DIN[t-1] +
+                               aTheta*amon[t-1] + 
+                               #DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -197,10 +197,10 @@ for(z in 1:runs){
     
     #Everything included
     n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
-                               #nTheta*nitrate[t-1]+
+                               nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
-                               #aTheta*amon[t-1] +
-                               DINTheta*DIN[t-1] +
+                               aTheta*amon[t-1] +
+                               #DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -296,10 +296,10 @@ for(z in 1:runs){
     
     #Everything included
     n[z,,t] <- MASS::mvrnorm(n = 1, mu = Alpha + Beta%*%n[z,,t-1] + 
-                               #nTheta*nitrate[t-1]+
+                               nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
-                               #aTheta*amon[t-1] + 
-                               DINTheta*DIN[t-1] +
+                               aTheta*amon[t-1] + 
+                               #DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -618,7 +618,7 @@ p3 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+            data = transform(params2_biotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,59)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Biotic Interactions") +
@@ -640,7 +640,7 @@ p4 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+            data = transform(params2_biotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
@@ -725,10 +725,10 @@ for(z in 1:runs){
       
       # Remove biotic interactions
         n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + 
-                            #nTheta[s]*nitrate[t-1] +
+                            nTheta[s]*nitrate[t-1] +
                             pTheta[s]*phos[t-1] + 
-                            #aTheta[s]*amon[t-1] + 
-                            DINTheta[s]*DIN[t-1] +
+                            aTheta[s]*amon[t-1] + 
+                            #DINTheta[s]*DIN[t-1] +
                             dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                             cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                           sd = sigma[s])
@@ -819,10 +819,11 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + #nTheta[s]*nitrate[t-1] +
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + 
+                          nTheta[s]*nitrate[t-1] +
                           pTheta[s]*phos[t-1] + 
-                          #aTheta[s]*amon[t-1] + 
-                          DINTheta[s]*DIN[t-1] +
+                          aTheta[s]*amon[t-1] + 
+                          #DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])
@@ -912,10 +913,11 @@ for(z in 1:runs){
     for(s in 1:4){
       
       # Remove biotic interactions
-      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + #nTheta[s]*nitrate[t-1] +
+      n[z,s,t] <- rnorm(1, Alpha[s] + Beta[s]*n[z,s,t-1] + 
+                          nTheta[s]*nitrate[t-1] +
                           pTheta[s]*phos[t-1] + 
-                          #aTheta[s]*amon[t-1] + 
-                          DINTheta[s]*DIN[t-1] +
+                          aTheta[s]*amon[t-1] + 
+                          #DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])
@@ -975,7 +977,7 @@ p5 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+            data = transform(params2_abiotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,75)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions") +
@@ -997,7 +999,7 @@ p6 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+            data = transform(params2_abiotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +
@@ -1283,7 +1285,7 @@ p7 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+            data = transform(params2_abioticnonut, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 10)) +
   coord_cartesian(ylim = c(0,69)) +
   labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions Minus Nutrients") +
@@ -1305,7 +1307,7 @@ p8 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
                                            median, NA))) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
-            data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+            data = transform(params2_abioticnonut, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
   labs(x = "Date", y = "Percent Cover (%)") +

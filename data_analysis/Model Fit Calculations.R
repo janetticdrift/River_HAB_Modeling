@@ -50,10 +50,27 @@ TMfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/
 #Read in SIMULATED states of Within-Mat
 TM.pred <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
 
+                                #Toxins
+#Read in OBSERVED states of Target Microcoleus toxin concentrations
+y_obs_tox_TM <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TM.rds"))
+y_obs_tox_TAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TAC.rds"))
+
+#Read in LATENT states of Toxin Models
+toxriverfitTM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
+toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
+toxmatfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
+
+#Read in SIMULATED states of Toxin Models
+pred.toxriverfitTM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide.rds"))
+pred.toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TAC_Pred_RiverWide.rds"))
+pred.toxmatfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_Pred_Withinmat.rds"))
+
+
 ###############------------------------------------------------------------------
 #Create lists of the models to iterate through in for loop
 river_species <- c("green", "micro", "ana", "nfix")
 mat_species <- c("ana", "epi", "geit")
+tox_congener <- "Anatoxin"
 
 #Create list of all models       <- Later add in output for Toxin models
 model_list <- list(
@@ -96,6 +113,30 @@ model_list <- list(
     post = TMfit[["n"]],
     pred = TM.pred,
     species = mat_species
+  ),
+  list(
+    model = "toxriverfitTM",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_g,
+    post = toxriverfitTM[["tox_raw"]],
+    pred = pred.toxriverfitTM,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTAC",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TAC$ATX_all_ug_g,
+    post = toxriverfitTAC[["tox_raw"]],
+    pred = pred.toxriverfitTAC,
+    species = tox_congener
+  ),
+  list(
+    model = "toxmatfit",
+    category = "Within-Mat",
+    y_obs = y_obs_tox_TM$ATX_all_ug_g,
+    post = toxmatfit[["tox_raw"]],
+    pred = pred.toxmatfit,
+    species = tox_congener
   )
 )
 
@@ -122,9 +163,21 @@ for (m in 1:length(model_list)) {
   model <- model_list[[m]]          #Start with the first model of the list
   
   y_obs <- model$y_obs              #Observed data
-  posteriors <- exp(model$post)     #For comparing latent values on the same (non-logged) scale as observed and predicted data
-  predictives <- model$pred
-  species_names <- model$species
+  posteriors <- model$post          #Posterior values
+  predictives <- model$pred         #Predicted values
+  species_names <- model$species    #Names of species in this model
+  
+  #For toxins with a 2D posterior (iterations x time), convert to iterations x 1 x time
+  if(length(dim(posteriors)) == 2){
+    posteriors <- array(posteriors,
+      dim = c(dim(posteriors)[1], 1, dim(posteriors)[2]) #Add in a third dimension in the "species" middle spot
+    )
+    predictives <- array(predictives,
+      dim = c(dim(predictives)[1], 1, dim(predictives)[2])
+    )
+    
+    y_obs <- matrix(y_obs, nrow = 1)  #Convert the y_obs vector into a matrix
+  }
   
   iter <- dim(posteriors)[1]     #Number of iterations
   species <- dim(posteriors)[2]  #Number of species/taxa
@@ -132,20 +185,20 @@ for (m in 1:length(model_list)) {
   
   #Create metric storage vectors
   BayesR2_vals <- matrix(NA, iter, species) 
-  RMSE_vals <- matrix(NA, iter, species) 
+  RMSE_vals <- matrix(NA, iter, species)
   NRMSE_vals <- matrix(NA, iter, species)
-  R2_vals <- matrix(NA, iter, species) 
+  R2_vals <- matrix(NA, iter, species)
   
   for(s in 1:species) {
     
     #Pull current observation point
     y_obs_s <- y_obs[s, ]
-    obs_index <- which(y_obs_s != -99) #Remove weeks where we did not collect field data
+    obs_index <- which(y_obs_s != -99) #Do not include weeks where we did not observe field data
     
     for (i in 1:iter) {
       #Bayesian R2      
       yhat <- posteriors[i, s, obs_index] #In the time index position, take out weeks with no field observations
-      yobs <- y_obs_s[obs_index]
+      yobs <- y_obs_s[obs_index]          #Take out weeks where we did not have field observations
       
       var_fit <- var(yhat)
       var_res <- var(yobs - yhat)
@@ -153,28 +206,26 @@ for (m in 1:length(model_list)) {
       BayesR2_vals[i, s] <- var_fit / (var_fit + var_res)
       
       #RMSE
-      y <- posteriors[i, s, obs_index]
-      y_pred <- predictives[i, s, obs_index]
-      
+      y <- posteriors[i, s, ]
+      y_pred <- predictives[i, s, ]
+
       RMSE_vals[i, s] <- sqrt(mean((y - y_pred)^2)) #Calculate RMSE per species iteration
-      
-      range_y <- max(y) - min(y)
-      
-      NRMSE_vals[i, s] <- RMSE_vals[i, s] / range_y
-      
-      #R2      
-      R2_vals[i, s] <- cor(y, y_pred)^2 #Calculate R2 per species iteration
-      
-      #WAIC
+
+      range_y <- max(y) - min(y)                    #Calculate the range of values
+
+      NRMSE_vals[i, s] <- RMSE_vals[i, s] / range_y #Use range to normalize RMSE
+
+      #R2
+      R2_vals[i, s] <- cor(y, y_pred)^2             #Calculate R2 per species iteration
       
       
     }
   } 
-  #Calculate metrics
-  #Consolidate metrics per iter
+  
+  #Summarize metrics across all iterations
   metrics <- list(
     "Bayesian R2" = BayesR2_vals,
-    "RMSE" = RMSE_vals, 
+    "RMSE" = RMSE_vals,
     "NRMSE" = NRMSE_vals,
     "r2" = R2_vals
   )
@@ -182,12 +233,12 @@ for (m in 1:length(model_list)) {
   #Calculate median and CIs for each metric
   for(j in names(metrics)){
     
-    vals <- metrics[[j]]
+    vals <- metrics[[j]]                            #Subset out values for the named metric
     
-    med <- apply(vals, 2, median)
-    ci <- apply(vals, 2, quantile, c(0.025, 0.975))
+    med <- apply(vals, 2, median)                   #Calculate median of that metric
+    ci <- apply(vals, 2, quantile, c(0.025, 0.975)) #Calculate CI of that metric
     
-    for(s in 1:species){
+    for(s in 1:species){                            #Place median and CI into the 'model.indices' dataframe
       model.indices[counter, ] <- data.frame(
         model = model$model,
         category = model$category,
@@ -199,7 +250,7 @@ for (m in 1:length(model_list)) {
         stringsAsFactors = FALSE
       )
       
-      counter <- counter + 1
+      counter <- counter + 1                      #Add to counter to run through the next model
       
     }
   }
@@ -215,78 +266,77 @@ clean.model.indices <- model.indices %>%
                                     species == "geit" ~ "Geitlerinema",
                                     species == "green" ~ "Green Algae",
                                     species == "micro" ~ "Microcoleus",
-                                    species == "nfix" ~ "Other N Fixers")) %>% 
-  dplyr::mutate(model = case_when(model == "allfit" ~ "All Variables",
-                                    model == "bioticfit" ~ "Biotic Only",
-                                    model == "abioticfit" ~ "Abiotic Only",
-                                    model == "abioticnonutfit" ~ "Abiotic Minus Nutrients",
-                                    model == "TMfit" ~ "Target Microcoleus"))
+                                    species == "nfix" ~ "Other N Fixers",
+                                    species == "Anatoxin" ~ "Anatoxin")) %>% 
+  dplyr::mutate(model = case_when(model == "allfit" ~ "Percent Cover: All Variables",
+                                    model == "bioticfit" ~ "Percent Cover: Biotic Only",
+                                    model == "abioticfit" ~ "Percent Cover: Abiotic Only",
+                                    model == "abioticnonutfit" ~ "Percent Cover: Abiotic Minus Nutrients",
+                                    model == "TMfit" ~ "Microscopy: All Variables",
+                                  model == "toxriverfitTM" ~ "Microcoleus Mat Toxins",
+                                  model == "toxriverfitTAC" ~ "Anabaena Mat Toxins",
+                                  model == "toxmatfit" ~ "Microcoleus Mat Toxins")) %>% 
+   dplyr::filter(species %in% c("Anabaena", "Microcoleus", "Anatoxin"))
 
 clean.model.indices$model <- factor(  #Manually order model name 
   clean.model.indices$model,
-  levels = c("All Variables", "Biotic Only", "Abiotic Only", "Abiotic Minus Nutrients", "Target Microcoleus")
+  levels = c("Percent Cover: All Variables", "Percent Cover: Biotic Only", 
+             "Percent Cover: Abiotic Only", 
+             "Percent Cover: Abiotic Minus Nutrients", "Microscopy: All Variables",
+             "Microcoleus Mat Toxins",
+             "Anabaena Mat Toxins", "Microcoleus Mat Toxins")
 )
-clean.model.indices$species <- factor(  #Manually order model name 
+clean.model.indices$species <- factor(  #Manually order species name 
   clean.model.indices$species,
-  levels = c("Microcoleus", "Anabaena", "Green Algae", "Other N Fixers")
+  levels = c("Anatoxin", "Anabaena", "Microcoleus")
 )
 
 #Create a color palette
-mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange", "#00538A", "#F6926A")
-mypal <- palette(mycols)
-names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
-                  "Other N Fixers", "Epithemia Diatoms", "Geitlerinema")
-colScale <- scale_color_manual(values = mypal)
-myshap <- c(16, 17, 15, 6, 8, 9)
-names(myshap) <- c("Anabaena", "Green Algae", 
-                   "Microcoleus", "Other N Fixers", "Epithemia Diatoms", 
-                   "Geitlerinema")
-shapScale <- scale_shape_manual(values = myshap)
+mycols <- c(
+  "Percent Cover: All Variables" = "#095dbb",
+  "Percent Cover: Biotic Only" = "#00899a",
+  "Percent Cover: Abiotic Only" = "#11AB7C",
+  "Percent Cover: Abiotic Minus Nutrients" = "#37Ca61",
+  "Microscopy: All Variables" = "#8CCA37",
+  "Microcoleus Mat Toxins" = "#9c3e04",
+  "Anabaena Mat Toxins" = "#ca6b01",
+  "Microcoleus Mat Toxins" = "#edc4b2")
+colScale <- scale_color_manual(
+  name = "Model",
+  values = mycols)
 
-#Plot River-Wide Metrics
-ggplot(subset(clean.model.indices, metric %in% c("NRMSE", "RMSE") & category %in% "River-Wide"), aes(x = value, y = species, shape = model, color = model)) +
+myshap <- c("River-Wide" = 16, "Within-Mat" = 17)
+shapScale <- scale_shape_manual(
+  name = "Data Source",
+  values = myshap)
+
+#Plot River-Wide Algae Metrics
+ggplot(subset(clean.model.indices, metric %in% c("r2", "NRMSE")), 
+       aes(x = value, y = species, shape = category, color = model)) +
   facet_wrap(~ metric, scales = "free_x") +
-  geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
+  geom_point(position = position_dodge(width = -0.6), #position_dodge separates species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
-                 position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) + #Reverses order of yaxis
-  #colScale + shapScale +
+                 position = position_dodge(width = -0.6)) +
+  colScale + shapScale +
   theme_bw() +
   labs(x = "Metric Value",
-       y = "Model Name",
-       title = "River-Wide with DIN Goodness-of-Fit",
+       y = "Taxa Name",
+       title = "Goodness-of-Fit",
        shape = "Model",
        color = "Model")
 
 
-ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "RMSE"), aes(x = value, y = model, shape = species, color = species)) +
+ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "Bayesian R2"), aes(x = value, y = species, shape = model, color = model)) +
   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[1:4])) +
+  scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) +
   colScale + shapScale +
-  coord_cartesian(xlim = c(0, 10)) +
   theme_bw() +
-  labs(title = "RMSE",
+  labs(title = "Bayesian R2",
        x = "Metric value",
        y = "Model",
-       shape = "Species",
-       color = "Species")
-
-#Plot Within-Mat Metrics
-ggplot(subset(clean.model.indices, category %in% "Within-Mat"), aes(x = value, y = model, shape = species, color = species)) +
-  facet_wrap(~ metric, scales = "free_x") +
-  geom_point(position = position_dodge(width = 0.4), #position_dodge seps species apart
-             size = 3) +
-  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
-                 position = position_dodge(width = 0.)) +
-  scale_y_discrete(limits = rev(levels(clean.model.indices$model)[5])) + #Reverses order of yaxis
-  colScale + shapScale +
-  theme_bw() +
-  labs(x = "Metric Value",
-       y = "Model Name",
-       title = "Within-Mat Goodness-of-Fit",
        shape = "Species",
        color = "Species")

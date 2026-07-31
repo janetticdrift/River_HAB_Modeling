@@ -18,8 +18,9 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 
 #Clean dataframes to feed into the toxin model
 
-#Isolate Microcoleus mats
-toxins <- toxindf %>% 
+                                 ######Isolate Microcoleus mats#####
+
+toxinsTM <- toxindf %>% 
   dplyr::filter(sample_type == "Microcoleus") %>% 
   dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2023-07-11"), 
                                      as.Date("2023-07-10"))) %>%  #Replace 2023-07-11 with 07/10 so they are on the same week
@@ -29,11 +30,11 @@ toxins <- toxindf %>%
   dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) 
 
 #Save cleaned output for visualizing observational vs latent states
-saveRDS(toxins, 
-        file = here::here("data/Outputs for Obs vs Real/obs_toxins.rds"))
+saveRDS(toxinsTM, 
+        file = here::here("data/Outputs for Obs vs Real/obs_toxins_TM.rds"))
 
 
-anaCsplit <- toxins %>% 
+anaCsplit <- toxinsTM %>% 
   ungroup() %>% 
   group_split(year)
 year1 <- anaCsplit[[1]]
@@ -69,7 +70,7 @@ year3_index <- year3 %>%
                                  timestep == 8 ~ 15,
                                  timestep == 9 ~ 17))
 
-atx <- rbind(year1_index, year2_index, year3_index) %>% 
+atx_TM <- rbind(year1_index, year2_index, year3_index) %>% 
   dplyr::select(-c(field_date, sample_type, timestep)) %>% 
   group_by(year) %>% 
   complete(nesting(reach), week = seq(min(week), max(week), 1L)) %>% 
@@ -77,7 +78,7 @@ atx <- rbind(year1_index, year2_index, year3_index) %>%
   dplyr::mutate(reach = as.numeric(factor(reach))) 
 
 #Gather data into stan list format
-anatoxin_data <- atx %>% 
+anatoxin_data_TM1 <- atx_TM %>% 
   group_by(year, week) %>% 
   dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
   dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson distribution
@@ -85,16 +86,91 @@ anatoxin_data <- atx %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
-  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) 
+
+#Save cleaned output for visualizing observational vs latent states
+saveRDS(anatoxin_data_TM1, 
+        file = here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TM.rds"))
+
+#Replace -99s with zeros and add an "Is Observed?" column, because Poisson cannot take negatives
+anatoxin_data_TM <- anatoxin_data_TM1 %>%  
+dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
+                ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
+
+
+                                 ######Isolate Anabaena mats#####
+
+toxinsTAC <- toxindf %>% 
+  dplyr::filter(sample_type == "Anabaena") %>% 
+  dplyr::mutate(field_date = replace(field_date, field_date == as.Date("2022-09-06"),
+                                     as.Date("2022-09-08"))) %>%  #Replace 2022/09/06 to 09/08 so they are on the same week 
+  dplyr::mutate(field_date = as.Date(field_date, format="%m/%d/%y")) 
+
+#Save cleaned output for visualizing observational vs latent states
+saveRDS(toxinsTAC, 
+        file = here::here("data/Outputs for Obs vs Real/obs_toxins_TAC.rds"))
+
+
+anaCsplit <- toxinsTAC %>% 
+  ungroup() %>% 
+  group_split(year)
+year1 <- anaCsplit[[1]]
+year2 <- anaCsplit[[2]]
+year3 <- anaCsplit[[3]]
+
+#year 2022
+year1_index <- year1 %>% 
+  dplyr::mutate(timestep = dense_rank(field_date)) %>% 
+  dplyr::mutate(week = case_when(timestep == 1 ~ 1,
+                                 timestep == 2 ~ 3,
+                                 timestep == 3 ~ 5,
+                                 timestep == 4 ~ 7,
+                                 timestep == 5 ~ 9,
+                                 timestep == 6 ~ 11))
+
+#year 2023 - Note that they did not sample anatoxins the first week of %covers
+year2_index <- year2 %>% 
+  dplyr::mutate(timestep = dense_rank(field_date)) %>% 
+  dplyr::mutate(week = timestep)
+
+#year 2024
+year3_index <- year3 %>% 
+  dplyr::mutate(timestep = dense_rank(field_date)) %>%
+  dplyr::mutate(week = case_when(timestep == 1 ~ 1,
+                                 timestep == 2 ~ 3,
+                                 timestep == 3 ~ 5,
+                                 timestep == 4 ~ 7))
+
+atx_TAC <- rbind(year1_index, year2_index, year3_index) %>% 
+  dplyr::select(-c(field_date, sample_type, timestep)) %>% 
+  group_by(year) %>% 
+  complete(nesting(reach), week = seq(min(week), max(week), 1L)) %>% 
+  ungroup() %>%
+  dplyr::mutate(reach = as.numeric(factor(reach))) 
+
+#Gather data into stan list format
+anatoxin_data_TAC1 <- atx_TAC %>% 
+  group_by(year, week) %>% 
+  dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
+  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson distribution
+                ATX_all_ug_g = ATX_all_ug_g*1000) %>%
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
+  relocate(firstday) %>% 
+  unite("uniqueID", c(year, week), sep = "_", remove=T) 
+
+#Save cleaned output for visualizing observational vs latent states
+saveRDS(anatoxin_data_TAC1, 
+        file = here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TAC.rds"))
+
+#Replace -99s with zeros and add an "Is Observed?" column, because Poisson cannot take negatives
+anatoxin_data_TAC <- anatoxin_data_TAC1 %>%  
   dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
                 ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
 
-#Save cleaned output for visualizing observational vs latent states
-saveRDS(anatoxin_data, 
-        file = here::here("data/Outputs for Obs vs Real/stanformat_toxins.rds"))
 
 #---------------------------------------------------------------------------------------
-#CREATE MODEL FOR MICROCOLEUS WITHIN-MAT DATA
+#CREATE MODEL FOR MICROCOLEUS WITHIN-MAT MICROSCOPY DATA
 
 #Gather latent states of microscopy abundances from Within-Mat model
 matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
@@ -121,13 +197,14 @@ TM_latent <- as.data.frame(TM_latent1) %>%
 saveRDS(TM_latent, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_LatentStates.rds"))
 
-#Create design matrix
-X1 <- cbind(
+#Create design matrix for toxins from Microcoleus mats
+X1TM <- cbind(
   intercept = 1,
   TM_latent[, -1],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  #DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -135,17 +212,18 @@ X1 <- cbind(
 )
 
 #Combine with other information into model list
-model.atx.mat <- list("uniqueID" = nrow(anatoxin_data),
-                  "is_obs" = anatoxin_data$is_obs, #poisson edit
-                  "firstdays" = anatoxin_data$firstday,
-                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
+model.atx.matTM <- list("uniqueID" = nrow(anatoxin_data_TM),
+                  "is_obs" = anatoxin_data_TM$is_obs, #poisson edit
+                  "firstdays" = anatoxin_data_TM$firstday,
+                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(TM_latent)-1),
-                  "X1" = X1,
-                  "Npredictors" = ncol(X1)
+                  "X1" = X1TM,
+                  "Npredictors" = ncol(X1TM)
 )
 
 #---------------------------------------------------------------------------------------
-#River-Wide 
+#CREATE MODEL FOR RIVER-WIDE DATA
+
 #Gather latent states of percent cover abundances
 rivermodel <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 
@@ -172,28 +250,53 @@ River_latent <- as.data.frame(River_latent1) %>%
 saveRDS(River_latent, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_LatentStates.rds"))
 
-#Create design matrix
-  #For Microcoleus Mats
-X2 <- cbind(
+#Create design matrix for toxins from Microcoleus mats
+X2TM <- cbind(
   intercept = 1,
   River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  #DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)]
 )
 
+#Create design matrix for toxins from Anabaena mats
+X2TAC <- cbind(
+  intercept = 1,
+  River_latent[-c(1:2, 14:16, 29:33, 41:45), -1],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+  phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
+  ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+  #DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)],
+  discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
+  temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
+  cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
+  rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
+)
+
 #Combine with other model variables into model list
-model.atx.river <- list("uniqueID" = nrow(anatoxin_data),
-                  "is_obs" = anatoxin_data$is_obs, #poisson edit, was this an observed day?
-                  "firstdays" = anatoxin_data$firstday,
-                  "Toxins" = as.integer(anatoxin_data$ATX_all_ug_g), #poisson edit needs as.integer
+  #Use toxins samples from Microcoleus mats
+model.atx.riverTM <- list("uniqueID" = nrow(anatoxin_data_TM),
+                  "is_obs" = anatoxin_data_TM$is_obs, #poisson edit, was this an observed day?
+                  "firstdays" = anatoxin_data_TM$firstday,
+                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(River_latent)-1),
-                  "X2" = X2,
-                  "Npredictors" = ncol(X2)
+                  "X2" = X2TM,
+                  "Npredictors" = ncol(X2TM)
+)
+
+#Use toxins samples from Anabaena mats
+model.atx.riverTAC <- list("uniqueID" = nrow(anatoxin_data_TAC),
+                        "is_obs" = anatoxin_data_TAC$is_obs, #poisson edit, was this an observed day?
+                        "firstdays" = anatoxin_data_TAC$firstday,
+                        "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_g), #poisson edit needs as.integer
+                        "Nspecies" = as.integer(ncol(River_latent)-1),
+                        "X2" = X2TAC,
+                        "Npredictors" = ncol(X2TAC)
 )
 
 #-------------------------------------------------------------------------------------------------
@@ -209,17 +312,22 @@ init_fun_atx <- function() list(
   Beta0 = 0,
   Beta1 = 0,     # small start for species abundances
   Beta2 = 0,
-  Beta3 = 0,
-  tox_nc = rep(0, nrow(anatoxin_data)) #nrow is the time length
- )
+  Beta3 = 0)
+#tox_nc = rep(0, nrow(anatoxin_data_TM)) #nrow is the time length
+ 
 
-#Estimate anatoxins in river-wide assemblages
-fit.atx.river <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.river, chains = 3, iter = 6000,
+#Estimate anatoxins using river-wide assemblages
+    #Toxins from Microcoleus mats
+fit.atx.riverTM <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTM, chains = 3, iter = 6000,
+                       warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                       max_treedepth = 15))
+    #Toxins from Anabaena mats
+fit.atx.riverTAC <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTAC, chains = 3, iter = 6000,
                        warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                        max_treedepth = 15))
 
-#Estimate anatoxins in TM mats
-fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.mat, chains = 3, iter = 6000,
+#Estimate anatoxins using TM microscopy assemblages
+fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.matTM, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
@@ -268,24 +376,38 @@ mcmc_intervals(
 
 
 #For building the observation vs latent state plots
-saveRDS(rstan::extract(fit.atx.river, permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/Anatoxin_Riverwide.rds"))
+saveRDS(rstan::extract(fit.atx.riverTM, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide.rds"))
+saveRDS(rstan::extract(fit.atx.riverTAC, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
 saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
 
 #For building the latent state vs predictions plots
-saveRDS(rstan::extract(fit.atx.river, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                               'BetaGreen','BetaMicro', 'BetaAna', 
-                                              'BetaNFix', 
-                                              'Ntheta','Ptheta',
+                                              'BetaNFix', 'Ntheta',
+                                              'Ptheta',
                                               'Atheta',
                                               'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_River_predictions.rds"))
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                 'BetaGreen','BetaMicro', 'BetaAna', 
+                                                 'BetaNFix', 'Ntheta',
+                                                 'Ptheta',
+                                                 'Atheta',
+                                                 'Dtheta', 'Ttheta', 
+                                                 'Ctheta', 'Rtheta', 'sigma_p',
+                                                 'tox_raw')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
-                                             'Ntheta','Ptheta', 'Atheta', 'Dtheta',
-                                             'Ttheta', 'Ctheta', 'Rtheta', 'sigma_p',
+                                             'Ntheta',
+                                             'Ptheta',
+                                             'Atheta',
+                                             'Dtheta', 'Ttheta', 
+                                             'Ctheta', 'Rtheta', 'sigma_p',
                                              'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 

@@ -56,7 +56,7 @@ atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 percoverMiranda <- percover %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!(10:14)) %>%
-  dplyr::mutate(field_date = as.Date(field_date)) %>% 
+  dplyr::mutate(field_date = as.Date(field_date, format = "%m/%d/%y")) %>% 
   dplyr::mutate(year = year(field_date)) 
 
 percoverpivot <- percoverMiranda %>% 
@@ -236,10 +236,10 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 nut_dat <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
 #If there is a replacement entry for nitrate or ammonia (usually the minimum 
-#detection level), use it instead
+#detection level), use that replacement entry, divided by two, instead
 nut_data <- nut_dat %>% 
-  dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_mg_N_L, !is.na(nitrate_replace) ~ nitrate_replace),
-                ammonia = replace_when(ammonia, !is.na(ammonia_replace) ~ ammonia_replace)) 
+  dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_mg_N_L, !is.na(nitrate_replace) ~ nitrate_replace/2),
+                ammonia = replace_when(ammonia, !is.na(ammonia_replace) ~ ammonia_replace/2)) 
                 #For any instance where the replacement value is not an NA, replace it with replacement value in the real column
 
 #Subset 2024 measurements and calculate NH4 (ammonium) using ammonia, pH, and temperature 
@@ -292,18 +292,6 @@ nutrients <- nutrients_raw %>%
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                       (real_week - 1) * 7 - 1, "week", week_start = 7))
 
-#Average environmental variables by reach 
-nutrients_avg <- nutrients %>% 
-  group_by(date, year) %>% 
-  dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
-                   cond_uS_cm = mean(cond_uS_cm))
-
-#Calculate the averae water temperature per year
-peryeartempavg <- nutrients_avg %>% 
-  group_by(year) %>% 
-  dplyr::summarise(mean = mean(temp_C), SE = calcSE(temp_C))  
-
 #Test for normality, and transform data as needed. Parameters that tested normal were not transformed
 #Nitrate
 shapiro.test(nutrients$nitrate_mg_N_L) #Test for Normality
@@ -329,6 +317,18 @@ stand_nut <- nutrients %>%
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
                    ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
+
+#Average environmental variables by reach 
+nutrients_avg <- nutrients %>% 
+  group_by(date, year) %>% 
+  dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
+                   cond_uS_cm = mean(cond_uS_cm))
+
+#Then calculate the averae water temperature per year
+peryeartempavg <- nutrients_avg %>% 
+  group_by(year) %>% 
+  dplyr::summarise(mean = mean(temp_C), SE = calcSE(temp_C))  
 
 #Visualizing Patterns in Raw Env Data:
 
@@ -473,7 +473,8 @@ ggplot(discharge, aes(x = fake_date, y = discharge, group = year, color = year))
 
 #The commented out code is no longer UTD as of November 17th 2025, as the data source is 
   #housed in a new repository now
-#The PAR data within relevant dates from last load were downloaded, and it is now archived on GitHub
+#The PAR data within relevant dates from last load were downloaded, and it is now archived 
+  #on GitHub
 
 # source("/Users/jld/Documents/Github/River_HAB_Modeling/data_cleaning/Functions.R")
 # 
@@ -545,15 +546,15 @@ envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
   geom_line(aes(y = ammonium*scale_factor, color = "Ammonium"), size = 1) +
   geom_point(aes(y = ammonium*scale_factor, color = "Ammonium")) +
   scale_y_continuous(
-    name = "Ammonium",
+    name = "Nitrate",
     sec.axis = sec_axis(
       ~ . / scale_factor,
-      name = "DIN (mg N/L)"
+      name = "Ammonium (mg N/L)"
     )
   ) +
   scale_color_manual(name = "Env. Variable",
-                     values = c("Ammonium" = "#813B9A",
-                                "Nitrate" = "#1a7531")) +
+                     values = c("Nitrate" = "#813B9A",
+                                "Ammonium" = "#1a7531")) +
   labs(x = "Date") +
   theme_bw()
 
@@ -571,8 +572,8 @@ atx2223clean <- atx2223 %>%
 atx24clean <- atx2024 %>% 
   dplyr::filter(grepl("SFE", site)) %>%  #Keep sites that include string "SFE" in site col
   dplyr::mutate(is_dup = grepl("Duplicate", Sample)) %>% #create empty col that stores duplicate info
-  dplyr::mutate(across(.cols = where(is.numeric), #only target numeric columns
-                .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #.row + preceding .row / 2. else, keep row same
+  dplyr::mutate(across(.cols = where(is.numeric), #apply only to numeric columns
+                .fns = ~ if_else(is_dup, (. + lag(.)) / 2, .))) %>%  #if this row is marked as duplicate, average current and preceding value. Otherwise, keep value
   dplyr:: mutate(across(where(is.numeric),
                 ~ if_else(replace_na(lead(is_dup), FALSE), lead(.), .))) %>% #if next row has is_dup=T, replace current row with next row's values. 
                                                                              #replace_NA says to NOT replace rows with NA, since the last row does not have a next row for lead() to work on it returns NAs
@@ -593,3 +594,4 @@ toxindf <- rbind(atx2223clean, atx24clean) %>%
   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
   dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
                                         sample_type=="TAC" ~ "Anabaena"))
+

@@ -43,8 +43,6 @@ transformed parameters{
 model {
 	
   //priors
-  //tauP ~ inv_gamma(1,1); site random var
-  //tauT ~ inv_gamma(1,1); time random var
   
   sigma_p ~ inv_gamma(3,1); #process model var
   sigma_o ~ inv_gamma(3,1); //T[0,]; #observation model var
@@ -55,8 +53,8 @@ model {
 
   Alpha ~ normal(0,1);
   
-  Beta_diag ~ normal(.5, .2) T[0,]; //T means Truncate, so bounded at zero now
-  to_vector(Beta_off) ~ normal(0, .2);
+  Beta_diag ~ normal(.5, .1) T[0,]; //T means Truncate, so bounded at zero now
+  to_vector(Beta_off) ~ normal(0, .1);
 
   
   //Population models
