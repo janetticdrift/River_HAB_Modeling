@@ -21,7 +21,7 @@ source(here::here("data_cleaning/cleaning_HAB.R"))
 #Read in data
 obs_TM_data <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_TM_data.rds"))
 matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
-matmodel_TA <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
+# matmodel_TA <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
 
 
 #Clean dataframe of observed REAL data - This one is for TM only

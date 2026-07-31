@@ -99,7 +99,8 @@ model {
       continue;
     }
     
-    tox[t] ~ normal(X2[t-1,]*beta + X2[t-2, 2:5]*beta_lag, sigma_p);
+    tox[t] ~ normal(X2[t-1,]*beta + X2[t-2, 2:5]*beta_lag, 
+    sigma_p);
     //+ X2[t-2, 2:5]*beta_lag
   }
   

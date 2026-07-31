@@ -285,7 +285,7 @@ ggplot(matsimsallyears, aes(x = model_date, y = median)) +
             linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,15)) +
-  labs(x = "Date", y = "Relative Abundance (%)", title = "Latent vs. Predicted Abundances") +
+  labs(x = "Date", y = "Relative Abundance (%)", title = "Within-Mat Latent vs. Predicted Abundances") +
   colScale + filScale + linScale + theme_bw()
 
 

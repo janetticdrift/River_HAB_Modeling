@@ -200,9 +200,10 @@ env_labels <- c(
 #Boxplots
 ######### 
   #Species2: Microcoleus
-ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), 
+micro_eq <- ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include" 
+                          & env %in% c("N", "P", "A")), 
        aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
-  facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels)) + #scales = "free_y", gives each facet its own y axis
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
   scale_x_discrete(breaks = c(-2, 0, 2)) +
@@ -212,8 +213,10 @@ ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"),
   theme(legend.position = "none")
 
 #Species2: Anabaena
-ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
-  facet_wrap(~env, scales = "free_y", labeller = labeller(env = env_labels)) +
+ana_eq <- ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"
+              & env %in% c("N", "P", "A")), 
+       aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels)) + #scales = "free_y",
   geom_boxplot(outliers = F) + 
   labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
   scale_x_discrete(breaks = c(-2, 0, 2)) +
@@ -221,6 +224,8 @@ ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), aes(x =
   theme_classic() +
   scale_fill_viridis_c(option="viridis", begin = 0.5, end = .90)+
   theme(legend.position = "none")
+
+(micro_eq /ana_eq)
 
 ######### 
 #Median plot 

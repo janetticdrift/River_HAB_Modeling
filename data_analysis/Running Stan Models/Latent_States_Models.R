@@ -149,35 +149,35 @@ model.2 <- list("uniqueID" = nrow(matalltaxaM),
 
 
 #-------------------------------------------------------------------------------------------------
-#Within-Mat: Anabaena - Gather percent cover data into STAN list format
-
-#Target Anabaena, averaged reaches
-matalltaxaA <- yearmatdata %>% 
-  dplyr::filter(sample_type == "TAC") %>% 
-  group_by(year, week) %>%
-  dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
-  mutate(firstday = if_else(week == 2 & year == 2023 | week == 3 & year == 2024, 1, 0)) %>% 
-  relocate(firstday) %>% 
-  unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
-  dplyr::mutate(across(c(Anabaena:Rare),
-                       ~ . + pseudocount)) %>%  #Cannot have zeros for log transforming
-  dplyr::mutate(across(Anabaena:Rare, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
-
-
-model.3 <- list("uniqueID" = nrow(matalltaxaA),
-                "Nspecies" = as.integer(ncol(matalltaxaA)-2),#take out first 2 col: firstday and uniqueID
-                "firstdays" = matalltaxaA$firstday,
-                "N" = matalltaxaA[,-(1:2)],
-                "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)], #Remove first weeks where TAC was not sampled
-                "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 39:45)], 
-                "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)],
-                #"DIN" = stand_nut$DIN[-c(1:2, 14:16, 29:31, 39:45)],
-                "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 39:45)],
-                "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 39:45)],
-                "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 39:45)],
-                "rad" = swradiation$stand_rad[-c(1:2, 14:16, 29:31, 39:45)]
-)
+# #Within-Mat: Anabaena - Gather percent cover data into STAN list format
+# 
+# #Target Anabaena, averaged reaches
+# matalltaxaA <- yearmatdata %>% 
+#   dplyr::filter(sample_type == "TAC") %>% 
+#   group_by(year, week) %>%
+#   dplyr::summarise(across(c(Anabaena:Rare), mean, na.rm = TRUE)) %>% 
+#   mutate(firstday = if_else(week == 2 & year == 2023 | week == 3 & year == 2024, 1, 0)) %>% 
+#   relocate(firstday) %>% 
+#   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
+#   dplyr::mutate(across(c(Anabaena:Rare),
+#                        ~ . + pseudocount)) %>%  #Cannot have zeros for log transforming
+#   dplyr::mutate(across(Anabaena:Rare, log)) %>%
+#   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+# 
+# 
+# model.3 <- list("uniqueID" = nrow(matalltaxaA),
+#                 "Nspecies" = as.integer(ncol(matalltaxaA)-2),#take out first 2 col: firstday and uniqueID
+#                 "firstdays" = matalltaxaA$firstday,
+#                 "N" = matalltaxaA[,-(1:2)],
+#                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)], #Remove first weeks where TAC was not sampled
+#                 "phos" = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:31, 39:45)], 
+#                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:31, 39:45)],
+#                 #"DIN" = stand_nut$DIN[-c(1:2, 14:16, 29:31, 39:45)],
+#                 "discharge" = discharge$stand_discharge[-c(1:2, 14:16, 29:31, 39:45)],
+#                 "temp" = stand_nut$temp_C[-c(1:2, 14:16, 29:31, 39:45)],
+#                 "cond" = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:31, 39:45)],
+#                 "rad" = swradiation$stand_rad[-c(1:2, 14:16, 29:31, 39:45)]
+# )
 
 #-------------------------------------------------------------------------------------------------
 #Run models
@@ -260,10 +260,10 @@ init_fun_A <- function() list(
 fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                                               max_treedepth = 15))
- #Averaged, TAC
-fit.m3 <-  stan(file = "HAB_mat_community.stan", data = model.3, chains = 3, iter = 6000,
-                warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
-                                                                              max_treedepth = 15))
+#  #Averaged, TAC
+# fit.m3 <-  stan(file = "HAB_mat_community.stan", data = model.3, chains = 3, iter = 6000,
+#                 warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
+#                                                                               max_treedepth = 15))
 
 #-------------------------------------------------------------------------------------------------
 #Model checks and evaluation
@@ -377,17 +377,17 @@ saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
 
-#TAC output
-saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta'), permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
-saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta', 
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
+# #TAC output
+# saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+#                                         'Ntheta','Ptheta', 'Atheta', 
+#                                         'Dtheta', 'Ttheta', 'Ctheta', 
+#                                         'Rtheta'), permuted=FALSE), 
+#         file = here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
+# saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
+#                                         'Ntheta','Ptheta', 'Atheta', 
+#                                         'Dtheta', 'Ttheta', 'Ctheta', 
+#                                         'Rtheta')), 
+#         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
 
 
 #Code to read saved RDS files: object <- readRDS(here::here("data/file_name.rds"))

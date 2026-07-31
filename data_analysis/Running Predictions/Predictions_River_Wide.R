@@ -253,7 +253,7 @@ abundances <- x[["n"]][,,29] #iterations, species #, time
 
 #inputs
 runs <- nrow(abundances)
-time <- 17 #number of weeks in 2023
+time <- 17 #number of weeks in 2024
 n <- array(NA, dim = c(runs, 4, time)) #iterations, species, time
 
 #Pull out environmental effects

@@ -549,7 +549,7 @@ ggplot(riverTMsimsallyears, aes(x = model_date, y = toxins)) +
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin") +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin from Microcoleus") +
   rivercolScale + filScale + linScale + theme_bw()
 
 
@@ -811,7 +811,7 @@ ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins)) +
             aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin") +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin from Anabaena") +
   rivercolScale + filScale + linScale + theme_bw()
 
 

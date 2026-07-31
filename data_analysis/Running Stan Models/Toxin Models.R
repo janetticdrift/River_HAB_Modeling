@@ -385,8 +385,8 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                              'BetaGreen','BetaMicro', 'BetaAna', 
-                                              'BetaNFix', 'Ntheta',
+                                              'BetaGreen','BetaMicro', 'BetaAna', 'BetaNFix', 
+                                              'Ntheta',
                                               'Ptheta',
                                               'Atheta',
                                               'Dtheta', 'Ttheta', 

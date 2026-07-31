@@ -328,16 +328,16 @@ ggplot(subset(clean.model.indices, metric %in% c("r2", "NRMSE")),
        color = "Model")
 
 
-ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "Bayesian R2"), aes(x = value, y = species, shape = model, color = model)) +
-  geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
-             size = 3) +
-  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
-                 position = position_dodge(width = 0.6)) +
-  scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) +
-  colScale + shapScale +
-  theme_bw() +
-  labs(title = "Bayesian R2",
-       x = "Metric value",
-       y = "Model",
-       shape = "Species",
-       color = "Species")
+# ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "Bayesian R2"), aes(x = value, y = species, shape = model, color = model)) +
+#   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
+#              size = 3) +
+#   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
+#                  position = position_dodge(width = 0.6)) +
+#   scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) +
+#   colScale + shapScale +
+#   theme_bw() +
+#   labs(title = "Bayesian R2",
+#        x = "Metric value",
+#        y = "Model",
+#        shape = "Species",
+#        color = "Species")

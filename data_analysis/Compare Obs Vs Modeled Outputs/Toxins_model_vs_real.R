@@ -249,10 +249,10 @@ ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
   geom_point(aes(colour = Congener), size = 3) +
   geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
   # Observed points/lines
-  geom_point(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
+  geom_point(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
              aes(x = model_date, y = obs_mean, shape = Congener),
              size = 2.5) +
-  geom_line(data = subset(obs_data_toxins, Congener %in% c("Total Anatoxins")), 
+  geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
