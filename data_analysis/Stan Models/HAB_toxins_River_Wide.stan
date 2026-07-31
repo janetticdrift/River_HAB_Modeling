@@ -22,10 +22,10 @@ parameters {
   real Beta3;            
   real Beta4;            
   
-  real BetaGreen;        
-  real BetaMicro;        
+  // real BetaGreen;        
+  // real BetaMicro;        
   real BetaAna;          
-  real BetaNFix;         
+  // real BetaNFix;         
   
   real Ntheta;
   real Ptheta; 
@@ -54,12 +54,12 @@ transformed parameters {
   beta[11] = Ctheta;
   beta[12] = Rtheta;
   
-  vector[4] beta_lag;
+  vector[1] beta_lag; //vector [4] before
   
-  beta_lag[1] = BetaGreen;
-  beta_lag[2] = BetaMicro;
-  beta_lag[3] = BetaAna;
-  beta_lag[4] = BetaNFix;
+  // beta_lag[1] = BetaGreen;
+  // beta_lag[2] = BetaMicro;
+  beta_lag[1] = BetaAna;
+  // beta_lag[4] = BetaNFix;
 }
 
 model {
@@ -74,10 +74,10 @@ model {
   Beta3 ~ normal(0,0.3);
   Beta4 ~ normal(0,0.3);
 
-  BetaGreen ~ normal(0,0.3);
-  BetaMicro ~ normal(0,0.3);
+  // BetaGreen ~ normal(0,0.3);
+  // BetaMicro ~ normal(0,0.3);
   BetaAna ~ normal(0,0.3);
-  BetaNFix ~ normal(0,0.3);  
+  // BetaNFix ~ normal(0,0.3);  
   
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);
@@ -99,9 +99,8 @@ model {
       continue;
     }
     
-    tox[t] ~ normal(X2[t-1,]*beta + X2[t-2, 2:5]*beta_lag, 
+    tox[t] ~ normal(X2[t-1,]*beta + X2[t-2, 4]*beta_lag, //used to be 2:5 for X2[t-2, 2:5] 
     sigma_p);
-    //+ X2[t-2, 2:5]*beta_lag
   }
   
   //Observation model

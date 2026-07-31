@@ -385,7 +385,9 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                              'BetaGreen','BetaMicro', 'BetaAna', 'BetaNFix', 
+                                              #'BetaGreen','BetaMicro', 
+                                              'BetaAna', 
+                                              #'BetaNFix', 
                                               'Ntheta',
                                               'Ptheta',
                                               'Atheta',
@@ -394,8 +396,10 @@ saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Bet
                                               'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                                 'BetaGreen','BetaMicro', 'BetaAna', 
-                                                 'BetaNFix', 'Ntheta',
+                                                 #'BetaGreen','BetaMicro', 
+                                                 'BetaAna', 
+                                                 #'BetaNFix', 
+                                                 'Ntheta',
                                                  'Ptheta',
                                                  'Atheta',
                                                  'Dtheta', 'Ttheta', 

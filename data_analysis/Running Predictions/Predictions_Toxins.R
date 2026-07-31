@@ -313,10 +313,7 @@ Beta1 <- x[["Beta1"]]
 Beta2 <- x[["Beta2"]]
 Beta3 <- x[["Beta3"]]
 Beta4 <- x[["Beta4"]]
-BetaGreen <- x[["BetaGreen"]]
-BetaMicro <- x[["BetaMicro"]]
 BetaAna <- x[["BetaAna"]]
-BetaNFix <- x[["BetaNFix"]]
 
 sigma_p <- x[["sigma_p"]]
 
@@ -351,7 +348,7 @@ tox <- matrix(NA, runs, time)
 # Build parameter matrixes
 beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
               Ctheta, Rtheta)
-beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
+beta_lag_matrix <- as.matrix(BetaAna)
 
 for (z in 1:runs) {
   
@@ -366,7 +363,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                          sigma_p[z])
   }
 }
@@ -430,7 +427,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                          sigma_p[z])
   }
 }
@@ -495,7 +492,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                          sigma_p[z])
   }
 }
@@ -575,10 +572,7 @@ Beta1 <- x[["Beta1"]]
 Beta2 <- x[["Beta2"]]
 Beta3 <- x[["Beta3"]]
 Beta4 <- x[["Beta4"]]
-BetaGreen <- x[["BetaGreen"]]
-BetaMicro <- x[["BetaMicro"]]
 BetaAna <- x[["BetaAna"]]
-BetaNFix <- x[["BetaNFix"]]
 
 sigma_p <- x[["sigma_p"]]
 
@@ -613,7 +607,7 @@ tox <- matrix(NA, runs, time)
 # Build parameter matrixes
 beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
                      Ctheta, Rtheta)
-beta_lag_matrix <- cbind(BetaGreen, BetaMicro, BetaAna, BetaNFix)
+beta_lag_matrix <- as.matrix(BetaAna)
 
 for (z in 1:runs) {
   
@@ -628,7 +622,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                       sigma_p[z])
   }
 }
@@ -692,7 +686,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                       sigma_p[z])
   }
 }
@@ -757,7 +751,7 @@ for (z in 1:runs) {
   #Simulation
   for (t in 3:time) {
     
-    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 2:5],
+    tox[z,t] <- rnorm(1, beta%*%X1[t-1, ] + beta_lag%*%X1[t-2, 4],
                       sigma_p[z])
   }
 }

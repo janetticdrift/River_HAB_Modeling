@@ -235,7 +235,7 @@ for (m in 1:length(model_list)) {
     
     vals <- metrics[[j]]                            #Subset out values for the named metric
     
-    med <- apply(vals, 2, median)                   #Calculate median of that metric
+    med <- apply(vals, 2, mean)                   #Calculate median of that metric
     ci <- apply(vals, 2, quantile, c(0.025, 0.975)) #Calculate CI of that metric
     
     for(s in 1:species){                            #Place median and CI into the 'model.indices' dataframe
