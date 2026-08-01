@@ -32,7 +32,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
-#DINtheta <- x[["DINtheta"]]
+DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -45,7 +45,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
-  #DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -69,7 +69,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    #DINtheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -126,7 +126,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  #DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -145,7 +145,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    #DINtheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -203,7 +203,7 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  #DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -221,7 +221,7 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    #DINtheta[z],
+    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
@@ -321,6 +321,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
+DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -337,6 +338,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
@@ -346,7 +348,8 @@ X1 <- as.matrix(cbind(
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, 
+                     DINtheta, Dtheta, Ttheta,
               Ctheta, Rtheta)
 beta_lag_matrix <- as.matrix(BetaAna)
 
@@ -407,6 +410,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
@@ -473,6 +477,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
@@ -580,6 +585,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
+DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -596,6 +602,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][1:time],
@@ -605,7 +612,8 @@ X1 <- as.matrix(cbind(
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, Dtheta, Ttheta,
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, 
+                     DINtheta, Dtheta, Ttheta,
                      Ctheta, Rtheta)
 beta_lag_matrix <- as.matrix(BetaAna)
 
@@ -666,6 +674,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
@@ -732,6 +741,7 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],

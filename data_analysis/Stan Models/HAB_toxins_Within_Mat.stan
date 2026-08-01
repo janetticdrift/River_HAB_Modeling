@@ -24,6 +24,7 @@ parameters {
   real Ntheta; 
   real Ptheta; 
   real Atheta; 
+  real DINtheta;
   real Dtheta; 
   real Ttheta; 
   real Ctheta; 
@@ -42,10 +43,11 @@ transformed parameters {
   beta[5] = Ntheta;
   beta[6] = Ptheta;
   beta[7] = Atheta;
-  beta[8] = Dtheta;
-  beta[9] = Ttheta;
-  beta[10] = Ctheta;
-  beta[11] = Rtheta;
+  beta[8] = Atheta;
+  beta[9] = Dtheta;
+  beta[10] = Ttheta;
+  beta[11] = Ctheta;
+  beta[12] = Rtheta;
 }
 
 model {
@@ -62,6 +64,7 @@ model {
   Ntheta ~ normal(0,0.3);
   Ptheta ~ normal(0,0.3);
   Atheta ~ normal(0,0.3);
+  DINtheta ~ normal(0,0.3);
   Dtheta ~ normal(0,0.3);
   Ttheta ~ normal(0,0.3);
   Ctheta ~ normal(0,0.3);
