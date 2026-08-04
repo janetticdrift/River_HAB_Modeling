@@ -349,7 +349,8 @@ tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
 beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, 
-                     DINtheta, Dtheta, Ttheta,
+                     DINtheta, 
+                     Dtheta, Ttheta,
               Ctheta, Rtheta)
 beta_lag_matrix <- as.matrix(BetaAna)
 

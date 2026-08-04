@@ -204,7 +204,7 @@ X1TM <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  #DIN = stand_nut$DIN[-c(14:15, 29:30)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -257,7 +257,7 @@ X2TM <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  #DIN = stand_nut$DIN[-c(14:15, 29:30)],
+  DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -271,7 +271,7 @@ X2TAC <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-  #DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)],
+  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
@@ -331,47 +331,47 @@ fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.matTM
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
 
- #Model checks and evaluation
-library(shinystan)
-library(bayesplot)
-library(ggplot2)
-library(rstantools)
-
-#Can check posterior graphs in shinystan
-shinystan::launch_shinystan(as.shinystan(fit.atx.mat))
-
-#Model Checks: Within-Mat
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Ntheta", "Ptheta", "Atheta")) 
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Beta1", "Beta2", "Beta3") )
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("BetaAna", "BetaEpi", "BetaGeit") )
-#Extract log-likelihood
-log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
-#Calculate WAIC
-loo(log_lik_mat)
-#When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
-
-#Model Checks: River-Wide
-mcmc_intervals(
-  as.array(fit.atx.river),
-  pars = c("Ntheta", "Ptheta", "Atheta")) 
-mcmc_intervals(
-  as.array(fit.atx.river),
-  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
-mcmc_intervals(
-  as.array(fit.atx.river),
-  pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
-mcmc_intervals(
-  as.array(fit.atx.river),
-  pars = c("BetaGreen", "BetaMicro", "BetaAna", "BetaNFix") )
+#  #Model checks and evaluation
+# library(shinystan)
+# library(bayesplot)
+# library(ggplot2)
+# library(rstantools)
+# 
+# #Can check posterior graphs in shinystan
+# shinystan::launch_shinystan(as.shinystan(fit.atx.mat))
+# 
+# #Model Checks: Within-Mat
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Ntheta", "Ptheta", "Atheta")) 
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Beta1", "Beta2", "Beta3") )
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
+# #Extract log-likelihood
+# log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
+# #Calculate WAIC
+# loo(log_lik_mat)
+# #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
+# 
+# #Model Checks: River-Wide
+# mcmc_intervals(
+#   as.array(fit.atx.riverTM),
+#   pars = c("Ntheta", "Ptheta", "Atheta")) 
+# mcmc_intervals(
+#   as.array(fit.atx.riverTM),
+#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
+# mcmc_intervals(
+#   as.array(fit.atx.riverTM),
+#   pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
+# mcmc_intervals(
+#   as.array(fit.atx.riverTM),
+#   pars = c("BetaAna") )
 
 
 
@@ -391,6 +391,7 @@ saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Bet
                                               'Ntheta',
                                               'Ptheta',
                                               'Atheta',
+                                              'DINtheta',
                                               'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
@@ -402,6 +403,7 @@ saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Be
                                                  'Ntheta',
                                                  'Ptheta',
                                                  'Atheta',
+                                                 'DINtheta',
                                                  'Dtheta', 'Ttheta', 
                                                  'Ctheta', 'Rtheta', 'sigma_p',
                                                  'tox_raw')), 
@@ -410,6 +412,7 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
                                              'Ntheta',
                                              'Ptheta',
                                              'Atheta',
+                                             'DINtheta',
                                              'Dtheta', 'Ttheta', 
                                              'Ctheta', 'Rtheta', 'sigma_p',
                                              'tox_raw')), 
@@ -420,7 +423,7 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
 ##### Exploratory business: Significant lag between toxins and abundances?#####
 #Create new dataframe of variables that we want to check the lagged relationship between
 lag_df <- data.frame(time = TM_latent$time,
-                     ATX = anatoxin_data$ATX_all_ug_g/1000, 
+                     ATX = anatoxin_data_TM$ATX_all_ug_g/1000, 
                      Anabaena_mat = exp(TM_latent$Anabaena),
                      Microcoleus_river = exp(alltaxatime$microcoleus)[-c(14:15, 29:30)],
                      Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum[-c(14:15, 29:30)]))
