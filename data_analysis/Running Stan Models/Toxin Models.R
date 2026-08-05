@@ -478,7 +478,7 @@ microlag <- ggplot(subset(lag_dfpivot, taxa %in% "Microcoleus"), aes(x = Abundan
 analag <- ggplot(subset(lag_dfpivot, taxa %in% "Anabaena"), aes(x = Abundance, y = ATX, color = lag)) +
   geom_point(alpha = 0.7) +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("black", "#B7E5E5", "#5CBFBF", "#0B7E7D"),
+  scale_color_manual(values = c("black", "#B7E5E5", "#66a4a2", "#006664"),
                      breaks = c("Anabaena (t)",
                                 "Anabaena (t-1)",
                                 "Anabaena (t-2)",
