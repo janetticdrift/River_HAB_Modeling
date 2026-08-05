@@ -101,7 +101,7 @@ model.1 <- list("uniqueID" = nrow(alltaxatime),
                 "nitrate" = stand_nut$nitrate_mg_N_L,
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
-                "DIN" = stand_nut$DIN,
+                # "DIN" = stand_nut$DIN,
                 "discharge" = discharge$stand_discharge,
                 "temp" = stand_nut$temp_C,
                 "cond" = stand_nut$cond_uS_cm,
@@ -140,7 +140,7 @@ model.2 <- list("uniqueID" = nrow(matalltaxaM),
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Must subset 2024 out with additional 29:45
                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
-                "DIN" = stand_nut$DIN[-c(14:15, 29:30)],
+                # "DIN" = stand_nut$DIN[-c(14:15, 29:30)],
                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -266,15 +266,29 @@ fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, ite
 #                                                                               max_treedepth = 15))
 
 #-------------------------------------------------------------------------------------------------
-#Model checks and evaluation
-library(shinystan)
-library(bayesplot)
-library(ggplot2)
-library(rstantools)
+# #Model checks and evaluation
+# library(shinystan)
+# library(bayesplot)
+# library(ggplot2)
+# library(rstantools)
+# 
+# #Can check posterior graphs in shinystan
+ shinystan::launch_shinystan(fit.m1.1)
+# print(fit.m1.1, par = "Ntheta")
 
-#Can check posterior graphs in shinystan
-shinystan::launch_shinystan(fit.m1.1)
-print(fit.m1.1, par = "Ntheta")
+#Model Checks: Within-Mat
+mcmc_intervals(
+  as.array(fit.m1.1),
+  pars = c("Ntheta[3]", "Ptheta[3]", "Atheta[3]"))
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("Beta1", "Beta2", "Beta3") )
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("BetaAna", "BetaEpi", "BetaGeit") )
 
 
 ######################
@@ -289,7 +303,7 @@ saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta', 
                                         'Ptheta', 
                                         'Atheta', 
-                                        'DINtheta',
+                                        # 'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
@@ -310,7 +324,7 @@ saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta',
                                         'Ptheta', 
                                         'Atheta',
-                                        'DINtheta', 
+                                        # 'DINtheta', 
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
@@ -368,13 +382,13 @@ saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 #TM output
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta',
-                                        'DINtheta',
+                                        # 'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta'), permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta',
-                                        'DINtheta',
+                                        # 'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))

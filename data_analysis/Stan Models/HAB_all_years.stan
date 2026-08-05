@@ -12,7 +12,7 @@ data {
   vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   vector [uniqueID] phos; //Vector of o phos levels, standardized
   vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
-  //vector [uniqueID] DIN; //Vector of DIN levels, standardized
+  // vector [uniqueID] DIN; //Vector of DIN levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
   vector [uniqueID] temp; //Vector of temperatures, Celsius
   vector [uniqueID] cond; //Vector of conductivity, standardized
@@ -36,7 +36,7 @@ parameters {
   vector[Nspecies] Ntheta; //parameter for nitrate each species
   vector[Nspecies] Ptheta; //parameter for o phos each species
   vector[Nspecies] Atheta; //parameter for ammonium each species
-  //vector[Nspecies] DINtheta; //parameter for ammonium each species
+  // vector[Nspecies] DINtheta; //parameter for ammonium each species
   vector[Nspecies] Dtheta; //parameter for discharge each species
   vector[Nspecies] Ttheta; //parameter for temps each species
   vector[Nspecies] Ctheta; //parameter for conductivity each species
@@ -76,7 +76,7 @@ model {
   Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
   Atheta ~ normal(0,1);
-  //DINtheta ~ normal(0,1);
+  // DINtheta ~ normal(0,1);
   Dtheta ~ normal(0,1);
   Ttheta ~ normal(0,1);
   Ctheta ~ normal(0,1);
@@ -91,7 +91,7 @@ model {
        n[,t] ~ multi_normal(Alpha + Beta*n[,t-1] + Ntheta*nitrate[t-1] +
                             Ptheta*phos[t-1] + 
                             Atheta*ammonium[t-1] +
-                            //DINtheta*DIN[t-1] +
+                            // DINtheta*DIN[t-1] +
                             Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
                             Ctheta*cond[t-1] + Rtheta*rad[t-1], ID);
                            

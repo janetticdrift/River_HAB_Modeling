@@ -43,6 +43,9 @@ alphas <- x[["Alpha"]][,]
 betas <- as.array(x[["Beta"]])[,,]
 sigmas <- x[["sigma_p"]][,]
 
+#Find average beta values
+apply(betas, 2:3, mean)
+
 #inputs
 runs <- nrow(abundances)
 time <- 13 #number of weeks in 2022
@@ -85,7 +88,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -99,7 +102,7 @@ for(z in 1:runs){
                                nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
                                aTheta*amon[t-1] + 
-                               #DINTheta*DIN[t-1] +
+                               # DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -165,7 +168,7 @@ phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
-#DIN <- stand_nut$DIN[14:(13+time)]
+# DIN <- stand_nut$DIN[14:(13+time)]
 
 dis <- discharge$stand_discharge[14:(13+time)]
 
@@ -187,7 +190,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -200,7 +203,7 @@ for(z in 1:runs){
                                nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
                                aTheta*amon[t-1] +
-                               #DINTheta*DIN[t-1] +
+                               # DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -263,7 +266,7 @@ phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
-#DIN <- stand_nut$DIN[29:(28+time)]
+# DIN <- stand_nut$DIN[29:(28+time)]
 
 dis <- discharge$stand_discharge[29:(28+time)]
 
@@ -285,7 +288,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -299,7 +302,7 @@ for(z in 1:runs){
                                nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
                                aTheta*amon[t-1] + 
-                               #DINTheta*DIN[t-1] +
+                               # DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -713,7 +716,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -728,7 +731,7 @@ for(z in 1:runs){
                             nTheta[s]*nitrate[t-1] +
                             pTheta[s]*phos[t-1] + 
                             aTheta[s]*amon[t-1] + 
-                            #DINTheta[s]*DIN[t-1] +
+                            # DINTheta[s]*DIN[t-1] +
                             dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                             cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                           sd = sigma[s])
@@ -786,7 +789,7 @@ phos <- stand_nut$oPhos_ug_P_L[14:(13+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[14:(13+time)]
 
-#DIN <- stand_nut$DIN[14:(13+time)]
+# DIN <- stand_nut$DIN[14:(13+time)]
 
 dis <- discharge$stand_discharge[14:(13+time)]
 
@@ -808,7 +811,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -823,7 +826,7 @@ for(z in 1:runs){
                           nTheta[s]*nitrate[t-1] +
                           pTheta[s]*phos[t-1] + 
                           aTheta[s]*amon[t-1] + 
-                          #DINTheta[s]*DIN[t-1] +
+                          # DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])
@@ -880,7 +883,7 @@ phos <- stand_nut$oPhos_ug_P_L[29:(28+time)]
 
 amon <- stand_nut$ammonium_mg_N_L[29:(28+time)]
 
-#DIN <- stand_nut$DIN[29:(28+time)]
+# DIN <- stand_nut$DIN[29:(28+time)]
 
 dis <- discharge$stand_discharge[29:(28+time)]
 
@@ -902,7 +905,7 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  #DINTheta <- DINtheta[z,]
+  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -917,7 +920,7 @@ for(z in 1:runs){
                           nTheta[s]*nitrate[t-1] +
                           pTheta[s]*phos[t-1] + 
                           aTheta[s]*amon[t-1] + 
-                          #DINTheta[s]*DIN[t-1] +
+                          # DINTheta[s]*DIN[t-1] +
                           dTheta[s]*dis[t-1] + tTheta[s]*temp[t-1] + 
                           cTheta[s]*cond[t-1] + rTheta[s]*rad[t-1], 
                         sd = sigma[s])

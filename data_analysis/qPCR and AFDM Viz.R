@@ -18,15 +18,16 @@ afdm <- ashfreedrymass %>%
   dplyr::filter(River %in% 'South Fork Eel') %>% 
   dplyr::filter(!grepl("Extra|Excess", Notes)) %>%  #Remove data on extra mat material
   dplyr::filter(!grepl("dropped", Ashed.sample...tin..mg.)) %>% #Remove dropped sample
-  rename(percentOM = X.OM) %>% 
-  rename(date = Field.Date) %>% 
-  rename(mat = Cyano) %>% 
-  mutate(across(everything(), str_remove_all, "%"))
+  dplyr::rename(percentOM = X.OM) %>% 
+  dplyr::rename(date = Field.Date) %>% 
+  dplyr::rename(mat = Cyano) %>% 
+  dplyr::mutate(across(everything(), str_remove_all, "%"))
 
 afdm$percentOM <- as.numeric(as.character(afdm$percentOM))
 
 afdm <- afdm %>% 
-  dplyr::mutate(percentOM = ifelse(percentOM>100|percentOM<0, NA, percentOM)) %>%  #Set NA the rows with improper weights
+  dplyr::mutate(percentOM = ifelse(percentOM<0, NA, percentOM)) %>%  #Set NA the rows with improper weights
+  dplyr::mutate(percentOM = ifelse(percentOM>100, 100, percentOM)) %>% #Set 100 the rows greater than 100%
   dplyr::mutate(site = str_split_i(Sample.ID,"-", 2)) %>%  #Extrate site ID to join with genecopy
   mutate(site = case_when(site == "4S" ~ "1S",
                           site == "BUG" ~ "2",

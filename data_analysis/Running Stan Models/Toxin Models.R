@@ -80,9 +80,9 @@ atx_TM <- rbind(year1_index, year2_index, year3_index) %>%
 #Gather data into stan list format
 anatoxin_data_TM1 <- atx_TM %>% 
   group_by(year, week) %>% 
-  dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson distribution
-                ATX_all_ug_g = ATX_all_ug_g*1000) %>%
+  dplyr::summarise(ATX_all_ug_afdm_g = mean(ATX_all_ug_afdm_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
+  dplyr::mutate(ATX_all_ug_afdm_g = round(ATX_all_ug_afdm_g, digits = 3), #Editing data for poisson distribution
+                ATX_all_ug_afdm_g = ATX_all_ug_afdm_g*1000) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
@@ -94,11 +94,11 @@ saveRDS(anatoxin_data_TM1,
 
 #Replace -99s with zeros and add an "Is Observed?" column, because Poisson cannot take negatives
 anatoxin_data_TM <- anatoxin_data_TM1 %>%  
-dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
-                ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
+dplyr::mutate(is_obs  = ifelse(ATX_all_ug_afdm_g == -99, 0, 1), #Editing data for poisson
+              ATX_all_ug_afdm_g = ifelse(ATX_all_ug_afdm_g == -99, 0, ATX_all_ug_afdm_g))
 
 
-                                 ######Isolate Anabaena mats#####
+                         ######Isolate Toxins from Anabaena mats#####
 
 toxinsTAC <- toxindf %>% 
   dplyr::filter(sample_type == "Anabaena") %>% 
@@ -151,9 +151,9 @@ atx_TAC <- rbind(year1_index, year2_index, year3_index) %>%
 #Gather data into stan list format
 anatoxin_data_TAC1 <- atx_TAC %>% 
   group_by(year, week) %>% 
-  dplyr::summarise(ATX_all_ug_g = mean(ATX_all_ug_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
-  dplyr::mutate(ATX_all_ug_g = round(ATX_all_ug_g, digits = 3), #Editing data for poisson distribution
-                ATX_all_ug_g = ATX_all_ug_g*1000) %>%
+  dplyr::summarise(ATX_all_ug_afdm_g = mean(ATX_all_ug_afdm_g, na.rm = TRUE)) %>% #Average across reaches, removing reaches where no ATX was collected
+  dplyr::mutate(ATX_all_ug_afdm_g = round(ATX_all_ug_afdm_g, digits = 3), #Editing data for poisson distribution
+                ATX_all_ug_afdm_g = ATX_all_ug_afdm_g*1000) %>%
   dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
   mutate(firstday = if_else(week == 1 & (year == 2023 | year == 2024), 1, 0)) %>% 
   relocate(firstday) %>% 
@@ -165,8 +165,8 @@ saveRDS(anatoxin_data_TAC1,
 
 #Replace -99s with zeros and add an "Is Observed?" column, because Poisson cannot take negatives
 anatoxin_data_TAC <- anatoxin_data_TAC1 %>%  
-  dplyr::mutate(is_obs  = ifelse(ATX_all_ug_g == -99, 0, 1), #Editing data for poisson
-                ATX_all_ug_g = ifelse(ATX_all_ug_g == -99, 0, ATX_all_ug_g))
+  dplyr::mutate(is_obs  = ifelse(ATX_all_ug_afdm_g == -99, 0, 1), #Editing data for poisson
+                ATX_all_ug_afdm_g = ifelse(ATX_all_ug_afdm_g == -99, 0, ATX_all_ug_afdm_g))
 
 
 #---------------------------------------------------------------------------------------
@@ -204,18 +204,18 @@ X1TM <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)]
 )
 
 #Combine with other information into model list
 model.atx.matTM <- list("uniqueID" = nrow(anatoxin_data_TM),
                   "is_obs" = anatoxin_data_TM$is_obs, #poisson edit
                   "firstdays" = anatoxin_data_TM$firstday,
-                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_g), #poisson edit needs as.integer
+                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_afdm_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(TM_latent)-1),
                   "X1" = X1TM,
                   "Npredictors" = ncol(X1TM)
@@ -257,11 +257,11 @@ X2TM <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)]
 )
 
 #Create design matrix for toxins from Anabaena mats
@@ -271,11 +271,11 @@ X2TAC <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
   ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
   rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)]
 )
 
 #Combine with other model variables into model list
@@ -283,7 +283,7 @@ X2TAC <- cbind(
 model.atx.riverTM <- list("uniqueID" = nrow(anatoxin_data_TM),
                   "is_obs" = anatoxin_data_TM$is_obs, #poisson edit, was this an observed day?
                   "firstdays" = anatoxin_data_TM$firstday,
-                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_g), #poisson edit needs as.integer
+                  "Toxins" = as.integer(anatoxin_data_TM$ATX_all_ug_afdm_g), #poisson edit needs as.integer
                   "Nspecies" = as.integer(ncol(River_latent)-1),
                   "X2" = X2TM,
                   "Npredictors" = ncol(X2TM)
@@ -293,7 +293,7 @@ model.atx.riverTM <- list("uniqueID" = nrow(anatoxin_data_TM),
 model.atx.riverTAC <- list("uniqueID" = nrow(anatoxin_data_TAC),
                         "is_obs" = anatoxin_data_TAC$is_obs, #poisson edit, was this an observed day?
                         "firstdays" = anatoxin_data_TAC$firstday,
-                        "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_g), #poisson edit needs as.integer
+                        "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_afdm_g), #poisson edit needs as.integer
                         "Nspecies" = as.integer(ncol(River_latent)-1),
                         "X2" = X2TAC,
                         "Npredictors" = ncol(X2TAC)
@@ -385,25 +385,21 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 
 #For building the latent state vs predictions plots
 saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                              #'BetaGreen','BetaMicro', 
                                               'BetaAna', 
-                                              #'BetaNFix', 
                                               'Ntheta',
                                               'Ptheta',
                                               'Atheta',
-                                              'DINtheta',
+                                              # 'DINtheta',
                                               'Dtheta', 'Ttheta', 
                                               'Ctheta', 'Rtheta', 'sigma_p',
                                               'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
-                                                 #'BetaGreen','BetaMicro', 
                                                  'BetaAna', 
-                                                 #'BetaNFix', 
                                                  'Ntheta',
                                                  'Ptheta',
                                                  'Atheta',
-                                                 'DINtheta',
+                                                 # 'DINtheta',
                                                  'Dtheta', 'Ttheta', 
                                                  'Ctheta', 'Rtheta', 'sigma_p',
                                                  'tox_raw')), 
@@ -412,7 +408,7 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
                                              'Ntheta',
                                              'Ptheta',
                                              'Atheta',
-                                             'DINtheta',
+                                             # 'DINtheta',
                                              'Dtheta', 'Ttheta', 
                                              'Ctheta', 'Rtheta', 'sigma_p',
                                              'tox_raw')), 
@@ -420,18 +416,27 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
 
 
 
-##### Exploratory business: Significant lag between toxins and abundances?#####
+##### Exploratory business: Significant lag between toxins and abundances? Or Env drivers?#####
 #Create new dataframe of variables that we want to check the lagged relationship between
 lag_df <- data.frame(time = TM_latent$time,
-                     ATX = anatoxin_data_TM$ATX_all_ug_g/1000, 
+                     ATX = anatoxin_data_TM$ATX_all_ug_afdm_g/1000, 
                      Anabaena_mat = exp(TM_latent$Anabaena),
                      Microcoleus_river = exp(alltaxatime$microcoleus)[-c(14:15, 29:30)],
-                     Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum[-c(14:15, 29:30)]))
+                     Anabaena_river = exp(alltaxatime$anabaena_cylindrospermum)[-c(14:15, 29:30)],
+                     nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+                     phosphate = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+                     ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+                     discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+                     conduc = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+                     temp = stand_nut$temp_C[-c(14:15, 29:30)],
+                     radiaion = swradiation$stand_rad[-c(14:15, 29:30)]
+                     )
 
 #Cross-Correlation
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
+ ccf(lag_df$nitrate, lag_df$ATX, lag.max = 5)
 
 #Instead of CCF plots, stack regression relationship 
 #Create dataframe of different time lags

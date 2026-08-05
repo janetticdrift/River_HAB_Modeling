@@ -117,7 +117,7 @@ model_list <- list(
   list(
     model = "toxriverfitTM",
     category = "River-Wide",
-    y_obs = y_obs_tox_TM$ATX_all_ug_g,
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
     post = toxriverfitTM[["tox_raw"]],
     pred = pred.toxriverfitTM,
     species = tox_congener
@@ -125,7 +125,7 @@ model_list <- list(
   list(
     model = "toxriverfitTAC",
     category = "River-Wide",
-    y_obs = y_obs_tox_TAC$ATX_all_ug_g,
+    y_obs = y_obs_tox_TAC$ATX_all_ug_afdm_g,
     post = toxriverfitTAC[["tox_raw"]],
     pred = pred.toxriverfitTAC,
     species = tox_congener
@@ -133,7 +133,7 @@ model_list <- list(
   list(
     model = "toxmatfit",
     category = "Within-Mat",
-    y_obs = y_obs_tox_TM$ATX_all_ug_g,
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
     post = toxmatfit[["tox_raw"]],
     pred = pred.toxmatfit,
     species = tox_congener
@@ -235,10 +235,10 @@ for (m in 1:length(model_list)) {
     
     vals <- metrics[[j]]                            #Subset out values for the named metric
     
-    med <- apply(vals, 2, mean)                   #Calculate median of that metric
+    med <- apply(vals, 2, mean)                   #Calculate mean of that metric
     ci <- apply(vals, 2, quantile, c(0.025, 0.975)) #Calculate CI of that metric
     
-    for(s in 1:species){                            #Place median and CI into the 'model.indices' dataframe
+    for(s in 1:species){                            #Place mean and CI into the 'model.indices' dataframe
       model.indices[counter, ] <- data.frame(
         model = model$model,
         category = model$category,

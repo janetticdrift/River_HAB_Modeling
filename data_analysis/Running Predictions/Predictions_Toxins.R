@@ -32,7 +32,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
-DINtheta <- x[["DINtheta"]]
+# DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -45,11 +45,11 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time]
 )
 
 #Inputs
@@ -69,11 +69,11 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
     Rtheta[z]
+    # DINtheta[z]
   )
   
   #Set initial tox concentrations for the first two skipped days
@@ -126,11 +126,11 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)]
 )
 
 
@@ -145,11 +145,11 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
     Rtheta[z]
+    # DINtheta[z]
   )
   
   #Set initial tox concentrations for the first two skipped days
@@ -203,11 +203,11 @@ X1 <- cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)]
 )
 
 for (z in 1:runs) {
@@ -221,11 +221,11 @@ for (z in 1:runs) {
     Ntheta[z],
     Ptheta[z],
     Atheta[z],
-    DINtheta[z],
     Dtheta[z],
     Ttheta[z],
     Ctheta[z],
     Rtheta[z]
+    # DINtheta[z]
   )
   
   #Set initial tox concentrations for the first two skipped days
@@ -260,7 +260,12 @@ matsims2024 <- dplyr::left_join(sims2024median, sims2024lquant, by=c("time")) %>
   ))
 
 #Join together simulation data
-matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024)
+matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>% 
+  left_join(tox_params2_mat %>% dplyr::select(model_date, median),
+            by = "model_date") %>% 
+  dplyr::rename(Predicted = toxins, Latent = median) %>% 
+  pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",
+               values_to = "toxins")
 
 ###Create plot of TM microscopy predictions vs latent states
 
@@ -276,19 +281,20 @@ linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-ggplot(matsimsallyears, aes(x = model_date, y = toxins)) +
+ggplot(matsimsallyears, aes(x = model_date, y = toxins, color = StateType,
+                                fill = StateType, linetype = StateType)) +
   facet_wrap(~year, scales = "free_x") +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
+  geom_ribbon(data = filter(matsimsallyears, StateType == "Predicted"), 
+              aes(ymin = `CIlower`, ymax = `CIupper`), color = NA,
               alpha = 0.3) +
-  # Latent points/lines
-  geom_line(data = tox_params2_mat,
-            aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
   # Predicted points/lines
-  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
+  geom_line(data = filter(matsimsallyears, StateType == "Predicted"), size = 1.5) +
+  # Latent points/lines
+  geom_line(data = filter(matsimsallyears, StateType == "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations") +
-  matcolScale + linScale + filScale + theme_bw()
+  coord_cartesian(ylim = c(0,80)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations from Microcoleus Mats") +
+  matcolScale + filScale + linScale + theme_bw()
 
 
 
@@ -321,7 +327,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
-DINtheta <- x[["DINtheta"]]
+# DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -338,20 +344,21 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
+  #DIN = stand_nut$DIN[-c(14:15, 29:30)][1:time]
 ))
 
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
 beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, 
-                     DINtheta, 
-                     Dtheta, Ttheta,
-              Ctheta, Rtheta)
+                     Dtheta, Ttheta, 
+                     Ctheta, Rtheta
+                     # DINtheta
+                     )
 beta_lag_matrix <- as.matrix(BetaAna)
 
 for (z in 1:runs) {
@@ -411,11 +418,11 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)][14:(13+time)]
 ))
 
 
@@ -478,11 +485,11 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)],
   discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
   temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
   cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
   rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
+  # DIN = stand_nut$DIN[-c(14:15, 29:30)][27:(26+time)]
 ))
 
 for (z in 1:runs) {
@@ -525,7 +532,12 @@ riversims2024 <- dplyr::left_join(sims2024median, sims2024lquant, by=c("time")) 
   ))
 
 #Join together simulation data
-riverTMsimsallyears <- rbind(riversims2022, riversims2023, riversims2024)
+riverTMsimsallyears <- rbind(riversims2022, riversims2023, riversims2024) %>% 
+  left_join(tox_params2_riverTM %>% dplyr::select(model_date, median),
+            by = "model_date") %>% 
+  dplyr::rename(Predicted = toxins, Latent = median) %>% 
+  pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",
+               values_to = "toxins")
 
 ###Create plot of River-wide predictions vs latent states
 
@@ -535,25 +547,28 @@ mycols <- c("#791C55", "#41789A")
 mypal <- palette(mycols)
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
-rivercolScale <- scale_color_manual(name = "State Type", values = mypal)
+riverTMcolScale <- scale_color_manual(name = "State Type", values = mypal)
 filScale <- scale_fill_manual(name = "State Type", values = mypal)
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-ggplot(riverTMsimsallyears, aes(x = model_date, y = toxins)) +
+ggplot(riverTMsimsallyears, aes(x = model_date, y = toxins, color = StateType,
+                                 fill = StateType, linetype = StateType)) +
   facet_wrap(~year, scales = "free_x") +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
+  geom_ribbon(data = filter(riverTMsimsallyears, StateType == "Predicted"), 
+              aes(ymin = `CIlower`, ymax = `CIupper`), color = NA,
               alpha = 0.3) +
   # Predicted points/lines
-  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
+  geom_line(data = filter(riverTMsimsallyears, StateType == "Predicted"), size = 1.5) +
   # Latent points/lines
-  geom_line(data = tox_params2_riverTM,
-            aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
+  geom_line(data = filter(riverTMsimsallyears, StateType == "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin from Microcoleus") +
-  rivercolScale + filScale + linScale + theme_bw()
+  coord_cartesian(ylim = c(0,80)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations from Microcoleus Mats") +
+  riverTMcolScale + filScale + linScale + theme_bw()
+
+
 
 
 
@@ -586,7 +601,7 @@ sigma_p <- x[["sigma_p"]]
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
 Atheta <- x[["Atheta"]]
-DINtheta <- x[["DINtheta"]]
+# DINtheta <- x[["DINtheta"]]
 Dtheta <- x[["Dtheta"]]
 Ttheta <- x[["Ttheta"]]
 Ctheta <- x[["Ctheta"]]
@@ -603,19 +618,21 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][1:time]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][1:time]
 ))
 
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta, 
-                     DINtheta, Dtheta, Ttheta,
-                     Ctheta, Rtheta)
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta,
+                     Dtheta, Ttheta,
+                     Ctheta, Rtheta
+                     # DINtheta
+                     )
 beta_lag_matrix <- as.matrix(BetaAna)
 
 for (z in 1:runs) {
@@ -675,11 +692,11 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)]
 ))
 
 
@@ -742,11 +759,11 @@ X1 <- as.matrix(cbind(
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)]
 ))
 
 for (z in 1:runs) {
@@ -789,7 +806,12 @@ riversims2024 <- dplyr::left_join(sims2024median, sims2024lquant, by=c("time")) 
   ))
 
 #Join together simulation data
-riverTACsimsallyears <- rbind(riversims2022, riversims2023, riversims2024)
+riverTACsimsallyears <- rbind(riversims2022, riversims2023, riversims2024) %>% 
+  left_join(tox_params2_riverTAC %>% dplyr::select(model_date, median),
+            by = "model_date") %>% 
+  dplyr::rename(Predicted = toxins, Latent = median) %>% 
+  pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",
+               values_to = "toxins")
 
 ###Create plot of River-wide predictions vs latent states
 
@@ -799,25 +821,26 @@ mycols <- c("#791C55", "darkgreen")
 mypal <- palette(mycols)
 mypal <- palette(mycols)
 names(mypal) = c("Latent", "Predicted")
-rivercolScale <- scale_color_manual(name = "State Type", values = mypal)
+riverTACcolScale <- scale_color_manual(name = "State Type", values = mypal)
 filScale <- scale_fill_manual(name = "State Type", values = mypal)
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins)) +
+ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins, color = StateType,
+                                 fill = StateType, linetype = StateType)) +
   facet_wrap(~year, scales = "free_x") +
-  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = "Predicted"), 
+  geom_ribbon(data = filter(riverTACsimsallyears, StateType == "Predicted"), 
+              aes(ymin = `CIlower`, ymax = `CIupper`), color = NA,
               alpha = 0.3) +
   # Predicted points/lines
-  geom_line(aes(linetype = "Predicted", color = "Predicted"), size = 1.5) +
+  geom_line(data = filter(riverTACsimsallyears, StateType == "Predicted"), size = 1.5) +
   # Latent points/lines
-  geom_line(data = tox_params2_riverTAC,
-            aes(y = median, linetype = "Latent", color = "Latent"), linewidth = 2) +
+  geom_line(data = filter(riverTACsimsallyears, StateType == "Latent"), linewidth = 2) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(ylim = c(0,40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide Toxin from Anabaena") +
-  rivercolScale + filScale + linScale + theme_bw()
+  coord_cartesian(ylim = c(0,80)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations from Anabaena Mats") +
+  riverTACcolScale + filScale + linScale + theme_bw()
 
 
 

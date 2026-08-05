@@ -24,14 +24,14 @@ toxinsTAC <- readRDS(here::here("data/Outputs for Obs vs Real/obs_toxins_TAC.rds
 uniqueID_toxinsTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TAC.rds"))
 
 #Read in model data (from Toxin_Models)
-fit.atx.riverTM <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide.rds"))
-fit.atx.riverTAC <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
-fit.atx.mat <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
+latent.atx.riverTM <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide.rds"))
+latent.atx.riverTAC <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
+latent.atx.mat <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
 
 #Toxins from Microcoleus mats--------------------------------------------------------------
 #OBSERVED DATA
 obs_data_toxinsTM <- toxinsTM %>% 
-  pivot_longer(cols = c("ATX_all_ug_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
+  pivot_longer(cols = c("ATX_all_ug_afdm_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
   group_by(field_date, year, sample_type, Congener) %>% 
   dplyr::summarise(obs_mean = mean(Concentration), obs_SE = calcSE(Concentration)) %>% 
   ungroup() %>% 
@@ -39,7 +39,7 @@ obs_data_toxinsTM <- toxinsTM %>%
   dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
                 model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_g" ~ "Total Anatoxins",
+  dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_afdm_g" ~ "Total Anatoxins",
                                     Congener == "ATXa_ug_g" ~ "Anatoxin-a",
                                     Congener == "HTXa_ug_g" ~ "Homoanatoxin-a",
                                     Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
@@ -48,14 +48,14 @@ obs_data_toxinsTM <- toxinsTM %>%
 
                                   #MODELED DATA - River-Wide
 
-tox_params_riverTM <- as.data.frame(fit.atx.riverTM) %>% 
+tox_params_riverTM <- as.data.frame(latent.atx.riverTM) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
   t 
 
 #Set up dataframe to extract week/year info from
 yearweek_atxTM <- uniqueID_toxinsTM %>% 
-  dplyr::rename('Total Anatoxins' = ATX_all_ug_g) %>% #Anatoxin-a = ATXa_ug_g,
+  dplyr::rename('Total Anatoxins' = ATX_all_ug_afdm_g) %>% #Anatoxin-a = ATXa_ug_g,
                                                       #Homoanatoxin-a = HTXa_ug_g,
                                                       #Dihydroanatoxin-a = dhATXa_ug_g
   pivot_longer(cols = 3,
@@ -94,7 +94,7 @@ saveRDS(tox_params2_riverTM,
 #Toxins from Anabaena mats--------------------------------------------------------------
 #OBSERVED DATA
 obs_data_toxinsTAC <- toxinsTAC %>% 
-  pivot_longer(cols = c("ATX_all_ug_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
+  pivot_longer(cols = c("ATX_all_ug_afdm_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
   group_by(field_date, year, sample_type, Congener) %>% 
   dplyr::summarise(obs_mean = mean(Concentration), obs_SE = calcSE(Concentration)) %>% 
   ungroup() %>% 
@@ -102,7 +102,7 @@ obs_data_toxinsTAC <- toxinsTAC %>%
   dplyr::mutate(real_week = week(field_date), week = real_week - first(real_week) + 1,
                 model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
-  dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_g" ~ "Total Anatoxins",
+  dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_afdm_g" ~ "Total Anatoxins",
                                      Congener == "ATXa_ug_g" ~ "Anatoxin-a",
                                      Congener == "HTXa_ug_g" ~ "Homoanatoxin-a",
                                      Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
@@ -111,14 +111,14 @@ obs_data_toxinsTAC <- toxinsTAC %>%
 
 #MODELED DATA - River-Wide
 
-tox_params_riverTAC <- as.data.frame(fit.atx.riverTAC) %>% 
+tox_params_riverTAC <- as.data.frame(latent.atx.riverTAC) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[30]`, ~ . / 1000)) %>% #backtransform for poisson
   t 
 
 #Set up dataframe to extract week/year info from
 yearweek_atxTAC <- uniqueID_toxinsTAC %>% 
-  dplyr::rename('Total Anatoxins' = ATX_all_ug_g) %>% #Anatoxin-a = ATXa_ug_g,
+  dplyr::rename('Total Anatoxins' = ATX_all_ug_afdm_g) %>% #Anatoxin-a = ATXa_ug_g,
   #Homoanatoxin-a = HTXa_ug_g,
   #Dihydroanatoxin-a = dhATXa_ug_g
   pivot_longer(cols = 3,
@@ -155,7 +155,7 @@ saveRDS(tox_params2_riverTAC,
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_TAC_Tox_LatentStates.rds"))
 
                                   #MODELED DATA - Within-Mat
-tox_params_mat <- as.data.frame(fit.atx.mat) %>% 
+tox_params_mat <- as.data.frame(latent.atx.mat) %>% 
   dplyr::select(matches("tox_raw")) %>% 
   dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
   t 
@@ -210,7 +210,7 @@ ggplot(tox_params2_riverTM, aes(x = model_date, y = median)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 40)) +
+  coord_cartesian(y = c(0, 80)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Micro Mat Tox Concentrations: River-Wide") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
@@ -233,7 +233,7 @@ ggplot(tox_params2_riverTAC, aes(x = model_date, y = median)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 50)) +
+  coord_cartesian(y = c(0, 90)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Ana Mat Tox Concentrations: River-Wide") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
@@ -256,8 +256,8 @@ ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 40)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations: Within-Mat") +
+  coord_cartesian(y = c(0, 80)) +
+  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations using Within-Mat") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +

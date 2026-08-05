@@ -52,6 +52,9 @@ microdata <- read.csv(here::here("data/Target Microscopy.csv"))
 atx2223 <- read.csv(here::here("data/cyano_atx.csv"))
 atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 
+#Read in Ash Free Dry Mass (AFDM) data for 2024, to normalize anatoxin data
+ashfreedrymass <- read.csv(here::here("data/Ashfree Dry Mass 2024.csv"))
+
 #Clean new percent cover data to match previous years' formatting
 percoverMiranda <- percover %>% 
   dplyr::filter(site == "SFE-M") %>% 
@@ -532,29 +535,30 @@ nitrate.ammonium <- nutrients_raw_clean %>%
   dplyr::mutate(fake_date = make_date(year = 2022, day = day(field_date), month = month(field_date)),
                 fake_date = if_else(month(field_date) >= 11, fake_date - years(1), fake_date)) %>% 
   dplyr::rename(nitrate = nitrate_mg_N_L) %>%
-  dplyr::rename(ammonium = ammonium_mg_N_L) 
+  dplyr::rename(ammonium = ammonium_mg_N_L) %>% 
+  dplyr::rename(phosphate = oPhos_ug_P_L)
   #To make the "fake" dates within the same year match perfectly with field dates, replace the last date
     #(10-09-2022) with the real field date (10-13-2022)
   #dplyr::mutate(field_date = replace(field_date, 31, "2024-10-13")) #45 means at index position 45
 
-scale_factor <- 1 #Rough estimate to scale up nitrate by
+scale_factor <- .005 #Rough estimate to scale up nitrate by
 
 envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
   facet_wrap(~year) +
   geom_line(aes(y = nitrate, color = "Nitrate"), size = 1) +
   geom_point(aes(y = nitrate, color = "Nitrate")) +
-  geom_line(aes(y = ammonium*scale_factor, color = "Ammonium"), size = 1) +
-  geom_point(aes(y = ammonium*scale_factor, color = "Ammonium")) +
+  geom_line(aes(y = phosphate*scale_factor, color = "Phosphate"), size = 1) +
+  geom_point(aes(y = phosphate*scale_factor, color = "Phosphate")) +
   scale_y_continuous(
-    name = "Nitrate",
+    name = "Nitrate (mg N/L)",
     sec.axis = sec_axis(
       ~ . / scale_factor,
-      name = "Ammonium (mg N/L)"
+      name = "Phosphate (ug P/L)"
     )
   ) +
   scale_color_manual(name = "Env. Variable",
                      values = c("Nitrate" = "#813B9A",
-                                "Ammonium" = "#1a7531")) +
+                                "Phosphate" = "#1a7531")) +
   labs(x = "Date") +
   theme_bw()
 
@@ -565,8 +569,29 @@ envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
 atx2223clean <- atx2223 %>% 
   dplyr::filter(grepl("SFE", site_reach)) %>%  #Keep sites that include string "SFE" in site col
   dplyr::select(!c(site, site_reach)) %>% 
-  dplyr::select(!c(Chla_ug_g:12)) %>%  #Remove toxins that weren't analyzed in 2024
+  dplyr::select(!c(Chla_ug_g:Pheo_ug_g, ATX_all_ug_chla_ug)) %>%  #Remove toxins that weren't analyzed in 2024
   dplyr::mutate(field_date = as.Date(field_date))
+
+#Prepare AFDM data from 2024 to join with anatoxin data from 2024
+  #I set the %OM of the only dropped sample to be 100%, because toxin concentrations 
+  #from that sample were all 0 anyways. I set the %OM of the only sample over 100% to 
+  #just be 100%.
+afdm <- ashfreedrymass %>% 
+  dplyr::filter(River %in% 'South Fork Eel') %>%  #Keep only South Fork Eel river data
+  dplyr::filter(!grepl("Extra|Excess", Notes)) %>%  #Remove data on extra mat material
+  dplyr::rename(per_org_matter = X.OM) %>%  #Rename columns for easier readability
+  dplyr::mutate(Field.Date = as.Date(Field.Date, format = "%m/%d/%y")) %>%   #Use format to write out how the date is currently written, with slashes
+  dplyr::rename(field_date = Field.Date) %>% 
+  dplyr::rename(sample_type = Cyano) %>% 
+  dplyr::mutate(per_org_matter = ifelse(per_org_matter<0|is.na(per_org_matter), 1, per_org_matter)) %>%  #Set 0 the rows with improper weights
+  dplyr::mutate(per_org_matter = ifelse(per_org_matter>1, 1, per_org_matter)) %>% #Set 100 the rows greater than 100%
+  dplyr::mutate(reach = str_split_i(Sample.ID,"-", 2)) %>%  #Extrate site ID to join with 2024 ATX data
+  dplyr::mutate(reach = case_when(reach == "4S" ~ "1S",
+                           reach == "BUG" ~ "2",
+                           reach == "3UP" ~ "3",
+                           reach == "2UP" ~ "4")) %>% 
+  dplyr::mutate(sample_type = case_when(sample_type == "Microcoleus" ~ "TM",
+                                        sample_type == "Anabaena" ~ "TAC"))
 
 #Clean and subset anatoxin data from 2024
 atx24clean <- atx2024 %>% 
@@ -582,16 +607,21 @@ atx24clean <- atx2024 %>%
   dplyr::select(!c(is_dup, Sample, site, ESF)) %>%  #remove duplicate ID col and Sample col, and unnecessary ESF sample ID column
   dplyr::select(!c(Total_ATXs:Det_Limits_MCs, dhHTXa_ug_g)) %>%   #remove toxins that weren't analyzed in '22 or '23
   dplyr::mutate(field_date = as.Date(format(mdy(field_date), '%Y-%m-%d'))) %>% 
-  arrange(field_date)
+  arrange(field_date) %>% 
+  left_join(afdm %>% dplyr::select(per_org_matter, reach, field_date, sample_type), 
+            by = c("reach", "field_date", "sample_type")) %>% 
+  dplyr::mutate(ATX_all_ug_afdm_g = ATX_all_ug_g / per_org_matter) #Calculate normalized toxin concentrations by %OM
   
 #combine 2024 data with 2022,2023
 
 toxindf <- rbind(atx2223clean, atx24clean) %>% 
-  pivot_longer(4:7, names_to = "anatoxins", values_to = "concentration") %>% 
+  pivot_longer(4:9, names_to = "anatoxins", values_to = "concentration") %>% 
   group_by(field_date, reach, sample_type, anatoxins) %>% 
   dplyr::summarise(concentration = mean(concentration)) %>%  #For reaches with multiple samples, take the average
   dplyr::mutate(year = year(field_date)) %>% 
   pivot_wider(names_from = "anatoxins", values_from = "concentration") %>% 
   dplyr::mutate(sample_type = case_when(sample_type=="TM" ~ "Microcoleus",
                                         sample_type=="TAC" ~ "Anabaena"))
+
+
 
