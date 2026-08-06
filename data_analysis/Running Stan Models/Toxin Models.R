@@ -340,38 +340,39 @@ fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.matTM
 # #Can check posterior graphs in shinystan
 # shinystan::launch_shinystan(as.shinystan(fit.atx.mat))
 # 
-# #Model Checks: Within-Mat
-# mcmc_intervals(
-#   as.array(fit.atx.mat),
-#   pars = c("Ntheta", "Ptheta", "Atheta")) 
-# mcmc_intervals(
-#   as.array(fit.atx.mat),
-#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
-# mcmc_intervals(
-#   as.array(fit.atx.mat),
-#   pars = c("Beta1", "Beta2", "Beta3") )
-# mcmc_intervals(
-#   as.array(fit.atx.mat),
-#   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
-# #Extract log-likelihood
-# log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
-# #Calculate WAIC
-# loo(log_lik_mat)
-# #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
-# 
+#Model Checks: Within-Mat
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("Ntheta", "Ptheta", "Atheta"))
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("Beta1", "Beta2", "Beta3") )
+mcmc_intervals(
+  as.array(fit.atx.mat),
+  pars = c("phi") )
+#Extract log-likelihood
+log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
+#Calculate WAIC
+loo(log_lik_mat)
+waic(log_lik_mat)
+#When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
+
 # #Model Checks: River-Wide
-# mcmc_intervals(
-#   as.array(fit.atx.riverTM),
-#   pars = c("Ntheta", "Ptheta", "Atheta")) 
-# mcmc_intervals(
-#   as.array(fit.atx.riverTM),
-#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta")) 
-# mcmc_intervals(
-#   as.array(fit.atx.riverTM),
-#   pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
-# mcmc_intervals(
-#   as.array(fit.atx.riverTM),
-#   pars = c("BetaAna") )
+mcmc_intervals(
+  as.array(fit.atx.riverTAC),
+  pars = c("Ntheta", "Ptheta", "Atheta"))
+mcmc_intervals(
+  as.array(fit.atx.riverTM),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+mcmc_intervals(
+  as.array(fit.atx.riverTAC),
+  pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
+mcmc_intervals(
+  as.array(fit.atx.riverTAC),
+  pars = c("BetaAna") )
 
 
 
@@ -391,7 +392,7 @@ saveRDS(rstan::extract(fit.atx.riverTM, pars = c('Beta0', 'Beta1', 'Beta2', 'Bet
                                               'Atheta',
                                               # 'DINtheta',
                                               'Dtheta', 'Ttheta', 
-                                              'Ctheta', 'Rtheta', 'sigma_p',
+                                              'Ctheta', 'Rtheta', 'sigma_p', 'phi',
                                               'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
@@ -401,7 +402,7 @@ saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Be
                                                  'Atheta',
                                                  # 'DINtheta',
                                                  'Dtheta', 'Ttheta', 
-                                                 'Ctheta', 'Rtheta', 'sigma_p',
+                                                 'Ctheta', 'Rtheta', 'sigma_p', 'phi',
                                                  'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
@@ -410,7 +411,7 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
                                              'Atheta',
                                              # 'DINtheta',
                                              'Dtheta', 'Ttheta', 
-                                             'Ctheta', 'Rtheta', 'sigma_p',
+                                             'Ctheta', 'Rtheta', 'sigma_p', 'phi',
                                              'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 

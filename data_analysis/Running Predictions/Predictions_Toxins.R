@@ -21,6 +21,7 @@ source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/Toxins_model_vs_
 
 #Pull out community abundances and demographics 
 x <- Mat.fit 
+time <- 13
 tox_conc <- x[["tox_raw"]][,1:2] #iterations, time
 Beta0 <- x[["Beta0"]]
 Beta1 <- x[["Beta1"]]
