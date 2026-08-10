@@ -17,19 +17,24 @@ library(rstan)
 #Read in functions
 here::here("data/Functions.R")
 
-#Read in cleaned real data 
+#Read in cleaned observed data 
 toxinsTM <- readRDS(here::here("data/Outputs for Obs vs Real/obs_toxins_TM.rds"))
 uniqueID_toxinsTM <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TM.rds"))
 toxinsTAC <- readRDS(here::here("data/Outputs for Obs vs Real/obs_toxins_TAC.rds"))
 uniqueID_toxinsTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TAC.rds"))
 
 #Read in model data (from Toxin_Models)
-latent.atx.riverTM <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide.rds"))
+latent.atx.riverTM.all <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_All.rds"))
+latent.atx.riverTM.biotic <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Biotic.rds"))
+latent.atx.riverTM.abiotic <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Abiotic.rds"))
+latent.atx.riverTM.abioticnonut <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_AbioticNoNut.rds"))
+
 latent.atx.riverTAC <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
 latent.atx.mat <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
 
 #Toxins from Microcoleus mats--------------------------------------------------------------
 #OBSERVED DATA
+  #Clean observed toxin data
 obs_data_toxinsTM <- toxinsTM %>% 
   pivot_longer(cols = c("ATX_all_ug_afdm_g":"dhATXa_ug_g"), names_to = "Congener", values_to = "Concentration") %>% 
   group_by(field_date, year, sample_type, Congener) %>% 
@@ -45,51 +50,73 @@ obs_data_toxinsTM <- toxinsTM %>%
                                     Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
   dplyr::mutate(Congener = as.factor(Congener))
 
-
-                                  #MODELED DATA - River-Wide
-
-tox_params_riverTM <- as.data.frame(latent.atx.riverTM) %>% 
-  dplyr::select(matches("tox_raw")) %>% 
-  dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`, ~ . / 1000)) %>% #backtransform for poisson
-  t 
-
-#Set up dataframe to extract week/year info from
+#Set up dataframe to extract week/year info from observed data
 yearweek_atxTM <- uniqueID_toxinsTM %>% 
-  dplyr::rename('Total Anatoxins' = ATX_all_ug_afdm_g) %>% #Anatoxin-a = ATXa_ug_g,
-                                                      #Homoanatoxin-a = HTXa_ug_g,
-                                                      #Dihydroanatoxin-a = dhATXa_ug_g
+  dplyr::rename('Total Anatoxins' = ATX_all_ug_afdm_g) %>%
   pivot_longer(cols = 3,
                names_to = "Congener", values_to = "mean") %>% 
   dplyr::mutate(time = rep(seq(41), each = length(unique(Congener))))   #41 is mat timeseries length
+              
+                   
+                               #CLEAN MODELED DATA - River-Wide
 
-#Manually calculate median posteriors for microscopy proportions
-tox_params2_riverTM <- as.data.frame(tox_params_riverTM) %>% 
-  rownames_to_column(var="ID") %>% 
-  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
-  dplyr::select(-chain) %>% 
-  group_by(group) %>% 
-  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE),
-                   se_median = calcSE(c_across(starts_with("V"))),
-                   CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
-                   CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
-  dplyr::mutate(Congener = "Total Anatoxins") %>% 
-  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,1])) %>%  #Change [,1] to [,2] if multiple congeners again
-  left_join(yearweek_atxTM[,c("uniqueID", "Congener", "time")], by = c("Congener", "time")) %>% 
-  relocate(uniqueID) %>% 
-  separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
-  mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
-  ungroup() %>% 
-  left_join(obs_data_toxinsTM[,c("year", "week", "Congener", "real_week")], 
-            by = c("year", "week", "Congener")) %>% 
-  arrange(time) %>% 
-  mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
-  mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+#Put toxin latent states from Microcoleus mats into a named list
+models_TM <- list(
+  All = latent.atx.riverTM.all,
+  Biotic = latent.atx.riverTM.biotic,
+  Abiotic = latent.atx.riverTM.abiotic,
+  AbioticNoNut = latent.atx.riverTM.abioticnonut
+)
 
-#Save cleaned and summarized River-Wide toxin model latent states for visualizing 
-  #predictive toxin simulations
-saveRDS(tox_params2_riverTM, 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_TM_Tox_LatentStates.rds"))
+#Create empty list for saving tox_params2
+tox_params2 <- list()
+
+for (model in names(models_TM)) {
+  
+  # Extract the current model
+  latent_model <- models_TM[[model]]
+  
+  #Subset out and backtransform the toxin concentrations
+  tox_params_riverTM <- as.data.frame(latent_model) %>% 
+    dplyr::select(matches("tox_raw")) %>% 
+    dplyr::mutate(across(`chain:1.tox_raw[1]`:`chain:3.tox_raw[41]`,
+                         ~ . / 1000)) %>% 
+    t
+  
+  #Manually calculate median posteriors for microscopy proportions
+  tox_params2_riverTM <- as.data.frame(tox_params_riverTM) %>% 
+    rownames_to_column(var = "ID") %>% 
+    tidyr::separate_wider_delim(ID,".", names = c("chain", "group")) %>% 
+    dplyr::select(-chain) %>% 
+    group_by(group) %>% 
+    dplyr::summarise(median = median(c_across(starts_with("V")),na.rm = TRUE),
+                     se_median = calcSE(c_across(starts_with("V"))),
+                     CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
+                     CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
+    dplyr::mutate(Congener = "Total Anatoxins") %>% 
+    dplyr::mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = TRUE)[, 1])) %>% 
+    left_join(yearweek_atxTM[, c("uniqueID", "Congener", "time")], 
+              by = c("Congener", "time")) %>% 
+    relocate(uniqueID) %>% 
+    separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
+    mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+    ungroup() %>% 
+    left_join(obs_data_toxinsTM[, c("year", "week", "Congener", "real_week")],
+              by = c("year", "week", "Congener")) %>% 
+    arrange(time) %>% 
+    mutate(real_week = ifelse(is.na(real_week),zoo::na.locf(real_week) + 1, real_week)) %>%
+    mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                       (real_week - 1) * 7 - 1, "week", week_start = 7))
+  
+  #Save cleaned and summarized River-Wide toxin model latent states
+  output_file <- here::here(paste0("data/Outputs for Sims and Model Fits/Latent States/", "Tox_LatentStates_Riverwide_TM_", model, ".rds"))
+  
+  saveRDS(tox_params2_riverTM, file = output_file)
+  
+  #Also save each tox_params2 for use in Predictions_Toxins.R for making figures
+  tox_params2[[model]] <- tox_params2_riverTM
+  
+}
 
 #Toxins from Anabaena mats--------------------------------------------------------------
 #OBSERVED DATA
@@ -232,8 +259,8 @@ ggplot(tox_params2_riverTAC, aes(x = model_date, y = median)) +
   geom_line(data = subset(obs_data_toxinsTAC, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 90)) +
+  scale_y_continuous(breaks = seq(0, 230, 10)) +
+  coord_cartesian(y = c(0, 230)) +
   labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Ana Mat Tox Concentrations: River-Wide") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +

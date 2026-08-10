@@ -56,12 +56,20 @@ y_obs_tox_TM <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_tox
 y_obs_tox_TAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/obs_toxins_data_TAC.rds"))
 
 #Read in LATENT states of Toxin Models
-toxriverfitTM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_predictions.rds"))
+toxriverfitTM.all <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_predictions.rds"))
+toxriverfitTM.biotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_predictions.rds"))
+toxriverfitTM.abiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_predictions.rds"))
+toxriverfitTM.abioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
+
 toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
 toxmatfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 
 #Read in SIMULATED states of Toxin Models
-pred.toxriverfitTM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide.rds"))
+pred.toxriverfitTM.all <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_All.rds"))
+pred.toxriverfitTM.biotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_Biotic.rds"))
+pred.toxriverfitTM.abiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_Abiotic.rds"))
+pred.toxriverfitTM.abioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_AbioticNoNut.rds"))
+
 pred.toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TAC_Pred_RiverWide.rds"))
 pred.toxmatfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_Pred_Withinmat.rds"))
 
@@ -74,6 +82,7 @@ tox_congener <- "Anatoxin"
 
 #Create list of all models       <- Later add in output for Toxin models
 model_list <- list(
+  #River-Wide Abundance Models
   list(
     model = "allfit",         #The model's name
     category = "River-Wide",  #Whether it used percent cover or microscopy data
@@ -106,6 +115,8 @@ model_list <- list(
     pred = pred.abioticnonutfit,
     species = river_species
   ),
+  
+  #Within Mat Abundance Model
   list(
     model = "TMfit",
     category = "Within-Mat",
@@ -114,14 +125,42 @@ model_list <- list(
     pred = TM.pred,
     species = mat_species
   ),
+  
+  #River-Wide Microcoleus Toxin Models
   list(
-    model = "toxriverfitTM",
+    model = "toxriverfitTM.all",
     category = "River-Wide",
     y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
-    post = toxriverfitTM[["tox_raw"]],
-    pred = pred.toxriverfitTM,
+    post = toxriverfitTM.all[["tox_raw"]],
+    pred = pred.toxriverfitTM.all,
     species = tox_congener
   ),
+  list(
+    model = "toxriverfitTM.biotic",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.biotic[["tox_raw"]],
+    pred = pred.toxriverfitTM.biotic,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.abiotic",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.abiotic[["tox_raw"]],
+    pred = pred.toxriverfitTM.abiotic,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.abioticnonut",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.abioticnonut[["tox_raw"]],
+    pred = pred.toxriverfitTM.abioticnonut,
+    species = tox_congener
+  ),
+  
+  #River-Wide Anabaena Toxin Models
   list(
     model = "toxriverfitTAC",
     category = "River-Wide",
@@ -130,6 +169,8 @@ model_list <- list(
     pred = pred.toxriverfitTAC,
     species = tox_congener
   ),
+  
+  #Within-Mat Microcoleus Toxin Model
   list(
     model = "toxmatfit",
     category = "Within-Mat",
@@ -257,8 +298,7 @@ for (m in 1:length(model_list)) {
 }
 
 ###############------------------------------------------------------------------
-#Quick visualization of indices so far
-str(model.indices)
+#Clean model fit outputs for visualizing in figures
 
 clean.model.indices <- model.indices %>% 
   dplyr::mutate(species = case_when(species == "ana" ~ "Anabaena",
@@ -268,23 +308,27 @@ clean.model.indices <- model.indices %>%
                                     species == "micro" ~ "Microcoleus",
                                     species == "nfix" ~ "Other N Fixers",
                                     species == "Anatoxin" ~ "Anatoxin")) %>% 
-  dplyr::mutate(model = case_when(model == "allfit" ~ "Percent Cover: All Variables",
-                                    model == "bioticfit" ~ "Percent Cover: Biotic Only",
-                                    model == "abioticfit" ~ "Percent Cover: Abiotic Only",
-                                    model == "abioticnonutfit" ~ "Percent Cover: Abiotic Minus Nutrients",
-                                    model == "TMfit" ~ "Microscopy: All Variables",
-                                  model == "toxriverfitTM" ~ "Microcoleus Mat Toxins",
+  dplyr::mutate(model = case_when(model == "allfit" ~ "Algal Abundance: All Variables",
+                                    model == "bioticfit" ~ "Algal Abundance: Biotic Only",
+                                    model == "abioticfit" ~ "Algal Abundance: Abiotic Only",
+                                    model == "abioticnonutfit" ~ "Algal Abundance: Abiotic Minus Nutrients",
+                                    model == "TMfit" ~ "Algal Abundance: All Variables",
+                                  model == "toxriverfitTM.all" ~ "Toxins: All Variables",
+                                  model == "toxriverfitTM.biotic" ~ "Toxins: Biotic Only",
+                                  model == "toxriverfitTM.abiotic" ~ "Toxins: Abiotic Only",
+                                  model == "toxriverfitTM.abioticnonut" ~ "Toxins: Abiotic Minus Nutrients",
                                   model == "toxriverfitTAC" ~ "Anabaena Mat Toxins",
-                                  model == "toxmatfit" ~ "Microcoleus Mat Toxins")) %>% 
+                                  model == "toxmatfit" ~ "Microcoleus Mat Toxins")) %>%
    dplyr::filter(species %in% c("Anabaena", "Microcoleus", "Anatoxin"))
 
 clean.model.indices$model <- factor(  #Manually order model name 
   clean.model.indices$model,
-  levels = c("Percent Cover: All Variables", "Percent Cover: Biotic Only", 
-             "Percent Cover: Abiotic Only", 
-             "Percent Cover: Abiotic Minus Nutrients", "Microscopy: All Variables",
-             "Microcoleus Mat Toxins",
-             "Anabaena Mat Toxins")
+  levels = c("Algal Abundance: All Variables", "Algal Abundance: Biotic Only", 
+             "Algal Abundance: Abiotic Only", 
+             "Algal Abundance: Abiotic Minus Nutrients",
+             "Toxins: All Variables", "Toxins: Biotic Only", "Toxins: Abiotic Only",
+             "Toxins: Abiotic Minus Nutrients",
+             "Anabaena Mat Toxins", "Microcoleus Mat Toxins")
 )
 clean.model.indices$species <- factor(  #Manually order species name 
   clean.model.indices$species,
@@ -293,13 +337,14 @@ clean.model.indices$species <- factor(  #Manually order species name
 
 #Create a color palette
 mycols <- c(
-  "Percent Cover: All Variables" = "#095dbb",
-  "Percent Cover: Biotic Only" = "#00899a",
-  "Percent Cover: Abiotic Only" = "#11AB7C",
-  "Percent Cover: Abiotic Minus Nutrients" = "#37Ca61",
-  "Microscopy: All Variables" = "#93C451",
-  "Microcoleus Mat Toxins" = "#BE5103",
-  "Anabaena Mat Toxins" = "#ff9913"
+  "Algal Abundance: All Variables" = "#0558b8",
+  "Algal Abundance: Biotic Only" = "#0091ad",
+  "Algal Abundance: Abiotic Only" = "#00c398",
+  "Algal Abundance: Abiotic Minus Nutrients" = "#a2e23c",
+  "Toxins: All Variables" = "#7b3604",
+  "Toxins: Biotic Only" = "#ab640f",
+  "Toxins: Abiotic Only" = "#d79723",
+  "Toxins: Abiotic Minus Nutrients" = "#f5cc51"
   # "Microcoleus Mat Toxins" = "#ffd5b6")
 )
 colScale <- scale_color_manual(
@@ -312,7 +357,8 @@ shapScale <- scale_shape_manual(
   values = myshap)
 
 #Plot River-Wide Algae Metrics
-ggplot(subset(clean.model.indices, metric %in% c("r2", "NRMSE")), 
+ggplot(subset(clean.model.indices, metric %in% "r2" & !model %in% c("Anabaena Mat Toxins",
+                                                                   "Microcoleus Mat Toxins")), 
        aes(x = value, y = species, shape = category, color = model)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = -0.6), #position_dodge separates species apart
