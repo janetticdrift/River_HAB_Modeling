@@ -200,15 +200,14 @@ saveRDS(TM_latent,
 #Create design matrix for toxins from Microcoleus mats
 X1TM <- cbind(
   intercept = 1,
-  TM_latent[, -1],  #Abundances are log-transformed
-  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
-  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
-  ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-  discharge = discharge$stand_discharge[-c(14:15, 29:30)],
-  temp = stand_nut$temp_C[-c(14:15, 29:30)],
-  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-  rad = swradiation$stand_rad[-c(14:15, 29:30)]
-  # DIN = stand_nut$DIN[-c(14:15, 29:30)]
+  TM_latent[, -1]  #Abundances are log-transformed
+  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+  # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+  # discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+  # temp = stand_nut$temp_C[-c(14:15, 29:30)],
+  # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+  # rad = swradiation$stand_rad[-c(14:15, 29:30)]
 )
 
 #Combine with other information into model list
@@ -227,16 +226,6 @@ model.atx.matTM <- list("uniqueID" = nrow(anatoxin_data_TM),
 source(here::here("data_analysis/Running Stan Models/Toxin Models_Cleaning Latent Algal Abundances.R"))
 
   #Objects read in are in the format of "model.atx.river[Target Mat]_[Model Name Here]
-
-#Use toxins samples from Anabaena mats
-model.atx.riverTAC <- list("uniqueID" = nrow(anatoxin_data_TAC),
-                        "is_obs" = anatoxin_data_TAC$is_obs, #poisson edit, was this an observed day?
-                        "firstdays" = anatoxin_data_TAC$firstday,
-                        "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_afdm_g), #poisson edit needs as.integer
-                        "Nspecies" = as.integer(ncol(River_latent)-1),
-                        "X2" = X2TAC,
-                        "Npredictors" = ncol(X2TAC)
-)
 
 #-------------------------------------------------------------------------------------------------
 #Run models
@@ -279,7 +268,7 @@ fit.atx.riverTMabioticnonut <-  stan(file = "HAB_toxins_River_Wide.stan", data =
 
 
      #Toxins from Anabaena mats
-fit.atx.riverTAC <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTAC, chains = 3, iter = 6000,
+fit.atx.riverTAC <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTAC_All, chains = 3, iter = 6000,
                        warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                        max_treedepth = 15))
 
@@ -315,41 +304,45 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 saveRDS(rstan::extract(fit.atx.riverTMall, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                               'Phi0',
                                               'PhiAna', 
-                                              'Ntheta',
-                                              'Ptheta',
-                                              'Atheta',
-                                              'Dtheta', 'Ttheta', 
-                                              'Ctheta', 'Rtheta', 'sigma_p',
+                                              # 'Ntheta',
+                                              # 'Ptheta',
+                                              # 'Atheta',
+                                              # 'Dtheta', 'Ttheta', 
+                                              # 'Ctheta', 'Rtheta', 
+                                              'sigma_p',
                                               'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMbiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                                     'Phi0',
                                                     'PhiAna', 
-                                                    'Ntheta',
-                                                    'Ptheta',
-                                                    'Atheta',
-                                                    'Dtheta', 'Ttheta', 
-                                                    'Ctheta', 'Rtheta', 'sigma_p',
+                                                    # 'Ntheta',
+                                                    # 'Ptheta',
+                                                    # 'Atheta',
+                                                    # 'Dtheta', 'Ttheta', 
+                                                    # 'Ctheta', 'Rtheta', 
+                                                    'sigma_p',
                                                     'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMabiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                                        'Phi0',
                                                        'PhiAna', 
-                                                       'Ntheta',
-                                                       'Ptheta',
-                                                       'Atheta',
-                                                       'Dtheta', 'Ttheta', 
-                                                       'Ctheta', 'Rtheta', 'sigma_p',
+                                                       # 'Ntheta',
+                                                       # 'Ptheta',
+                                                       # 'Atheta',
+                                                       # 'Dtheta', 'Ttheta', 
+                                                       # 'Ctheta', 'Rtheta', 
+                                                       'sigma_p',
                                                        'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                                        'Phi0',
                                                        'PhiAna', 
-                                                       'Ntheta',
-                                                       'Ptheta',
-                                                       'Atheta',
-                                                       'Dtheta', 'Ttheta', 
-                                                       'Ctheta', 'Rtheta', 'sigma_p',
+                                                       # 'Ntheta',
+                                                       # 'Ptheta',
+                                                       # 'Atheta',
+                                                       # 'Dtheta', 'Ttheta', 
+                                                       # 'Ctheta', 'Rtheta', 
+                                                       'sigma_p',
                                                        'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
 
@@ -358,21 +351,25 @@ saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, pars = c('Beta0', 'Beta1', '
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                                  'Phi0',
                                                  'PhiAna', 
-                                                 'Ntheta',
-                                                 'Ptheta',
-                                                 'Atheta',
-                                                 'Dtheta', 'Ttheta', 
-                                                 'Ctheta', 'Rtheta', 'sigma_p',
+                                                 # 'Ntheta',
+                                                 # 'Ptheta',
+                                                 # 'Atheta',
+                                                 # 'Dtheta', 'Ttheta', 
+                                                 # 'Ctheta', 'Rtheta', 
+                                                 'sigma_p',
                                                  'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
 
                                       ###Within-Mat###
 saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
-                                             'Ntheta',
-                                             'Ptheta',
-                                             'Atheta',
-                                             'Dtheta', 'Ttheta', 
-                                             'Ctheta', 'Rtheta', 'sigma_p', 'phi',
+                                             'Phi0',
+                                             'PhiAna',
+                                             # 'Ntheta',
+                                             # 'Ptheta',
+                                             # 'Atheta',
+                                             # 'Dtheta', 'Ttheta', 
+                                             # 'Ctheta', 'Rtheta', 
+                                             'sigma_p',
                                              'tox_raw')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 
@@ -399,11 +396,6 @@ mcmc_intervals(
 mcmc_intervals(
   as.array(fit.atx.mat),
   pars = c("phi") )
-#Extract log-likelihood
-log_lik_mat <- extract_log_lik(fit.atx.riverTMall, parameter_name = "log_lik")
-#Calculate WAIC
-loo(log_lik_mat)
-waic(log_lik_mat)
 #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
 # #Model Checks: River-Wide
@@ -419,6 +411,27 @@ mcmc_intervals(
 mcmc_intervals(
   as.array(fit.atx.riverTMall),
   pars = c("PhiAna") )
+
+# Model Checks: WAIC
+#Extract log-likelihoods
+log_lik_TM_all <- extract_log_lik(fit.atx.riverTMall, parameter_name = "log_lik")
+log_lik_TM_biotic <- extract_log_lik(fit.atx.riverTMbiotic, parameter_name = "log_lik")
+log_lik_TM_abiotic <- extract_log_lik(fit.atx.riverTMabiotic, parameter_name = "log_lik")
+log_lik_TM_abioticnonut <- extract_log_lik(fit.atx.riverTMabioticnonut, parameter_name = "log_lik")
+log_lik_TAC <- extract_log_lik(fit.atx.riverTAC, parameter_name = "log_lik")
+log_lik_mat <- extract_log_lik(fit.atx.mat, parameter_name = "log_lik")
+#Calculate WAIC
+looall <- loo(log_lik_TM_all)
+loobiotic <- loo(log_lik_TM_biotic)
+looabiotic <- loo(log_lik_TM_abiotic)
+looabioticnonut <- loo(log_lik_TM_abioticnonut)
+
+waic_all <- loo_moment_match(x = fit.atx.riverTMall, loo = looall)
+waic_biotic <- loo_moment_match(x = fit.atx.riverTMall, loo = loobiotic)
+waic_abiotic <- loo_moment_match(x = fit.atx.riverTMall, loo = looabiotic)
+waic_abioticnonut <- loo_moment_match(x = fit.atx.riverTMall, loo = looabioticnonut)
+
+waic(log_lik_TM_all)
 
 ##### Exploratory business: Significant lag between toxins and abundances? Or Env drivers?#####
 #Create new dataframe of variables that we want to check the lagged relationship between
@@ -441,6 +454,7 @@ ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
 ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
  ccf(lag_df$nitrate, lag_df$ATX, lag.max = 5)
+
 
 #Instead of CCF plots, stack regression relationship 
 #Create dataframe of different time lags

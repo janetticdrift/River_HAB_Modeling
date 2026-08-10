@@ -308,27 +308,25 @@ clean.model.indices <- model.indices %>%
                                     species == "micro" ~ "Microcoleus",
                                     species == "nfix" ~ "Other N Fixers",
                                     species == "Anatoxin" ~ "Anatoxin")) %>% 
-  dplyr::mutate(model = case_when(model == "allfit" ~ "Algal Abundance: All Variables",
-                                    model == "bioticfit" ~ "Algal Abundance: Biotic Only",
-                                    model == "abioticfit" ~ "Algal Abundance: Abiotic Only",
-                                    model == "abioticnonutfit" ~ "Algal Abundance: Abiotic Minus Nutrients",
-                                    model == "TMfit" ~ "Algal Abundance: All Variables",
-                                  model == "toxriverfitTM.all" ~ "Toxins: All Variables",
-                                  model == "toxriverfitTM.biotic" ~ "Toxins: Biotic Only",
-                                  model == "toxriverfitTM.abiotic" ~ "Toxins: Abiotic Only",
-                                  model == "toxriverfitTM.abioticnonut" ~ "Toxins: Abiotic Minus Nutrients",
-                                  model == "toxriverfitTAC" ~ "Anabaena Mat Toxins",
-                                  model == "toxmatfit" ~ "Microcoleus Mat Toxins")) %>%
+  dplyr::mutate(model = case_when(model == "allfit" ~ "All Variables",
+                                    model == "bioticfit" ~ "Biotic Only",
+                                    model == "abioticfit" ~ "Abiotic Only",
+                                    model == "abioticnonutfit" ~ "Abiotic Minus Nutrients",
+                                    model == "TMfit" ~ "All Variables",
+                                  model == "toxriverfitTM.all" ~ "All Variables",
+                                  model == "toxriverfitTM.biotic" ~ "Biotic Only",
+                                  model == "toxriverfitTM.abiotic" ~ "Abiotic Only",
+                                  model == "toxriverfitTM.abioticnonut" ~ "Abiotic Minus Nutrients",
+                                  model == "toxriverfitTAC" ~ "TAC Toxins: All Variables",
+                                  model == "toxmatfit" ~ "All Variables")) %>%
    dplyr::filter(species %in% c("Anabaena", "Microcoleus", "Anatoxin"))
 
 clean.model.indices$model <- factor(  #Manually order model name 
   clean.model.indices$model,
-  levels = c("Algal Abundance: All Variables", "Algal Abundance: Biotic Only", 
-             "Algal Abundance: Abiotic Only", 
-             "Algal Abundance: Abiotic Minus Nutrients",
-             "Toxins: All Variables", "Toxins: Biotic Only", "Toxins: Abiotic Only",
-             "Toxins: Abiotic Minus Nutrients",
-             "Anabaena Mat Toxins", "Microcoleus Mat Toxins")
+  levels = c("All Variables", "Biotic Only", 
+             "Abiotic Only", 
+             "Abiotic Minus Nutrients",
+             "TAC Toxins: All Variables")
 )
 clean.model.indices$species <- factor(  #Manually order species name 
   clean.model.indices$species,
@@ -337,28 +335,22 @@ clean.model.indices$species <- factor(  #Manually order species name
 
 #Create a color palette
 mycols <- c(
-  "Algal Abundance: All Variables" = "#0558b8",
-  "Algal Abundance: Biotic Only" = "#0091ad",
-  "Algal Abundance: Abiotic Only" = "#00c398",
-  "Algal Abundance: Abiotic Minus Nutrients" = "#a2e23c",
-  "Toxins: All Variables" = "#7b3604",
-  "Toxins: Biotic Only" = "#ab640f",
-  "Toxins: Abiotic Only" = "#d79723",
-  "Toxins: Abiotic Minus Nutrients" = "#f5cc51"
-  # "Microcoleus Mat Toxins" = "#ffd5b6")
+  "All Variables" = "#0558b8",
+  "Biotic Only" = "#0091ad",
+  "Abiotic Only" = "#00c398",
+  "Abiotic Minus Nutrients" = "#a2e23c",
+  "TAC Toxins: All Variables" = "#0558b8"
 )
 colScale <- scale_color_manual(
   name = "Model",
   values = mycols)
-
 myshap <- c("River-Wide" = 16, "Within-Mat" = 17)
 shapScale <- scale_shape_manual(
   name = "Data Source",
   values = myshap)
 
 #Plot River-Wide Algae Metrics
-ggplot(subset(clean.model.indices, metric %in% "r2" & !model %in% c("Anabaena Mat Toxins",
-                                                                   "Microcoleus Mat Toxins")), 
+ggplot(subset(clean.model.indices, metric %in% "r2"), 
        aes(x = value, y = species, shape = category, color = model)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = -0.6), #position_dodge separates species apart
@@ -369,7 +361,7 @@ ggplot(subset(clean.model.indices, metric %in% "r2" & !model %in% c("Anabaena Ma
   theme_bw() +
   labs(x = "Metric Value",
        y = "",
-       title = "Goodness-of-Fit",
+       title = "Goodness-of-Fit: Modeled without Env Drivers",
        shape = "Model",
        color = "Model")
 

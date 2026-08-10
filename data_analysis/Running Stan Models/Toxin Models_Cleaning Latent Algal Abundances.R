@@ -48,33 +48,34 @@ for (name in names(abundances_list)) {
   #Save cleaned percent cover latent dataframe inside each unique design matrix
   X2TM_list[[name]] <- cbind(
     intercept = 1,
-    River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
-    nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
-    phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
-    ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-    discharge = discharge$stand_discharge[-c(14:15, 29:30)],
-    temp = stand_nut$temp_C[-c(14:15, 29:30)],
-    cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-    rad = swradiation$stand_rad[-c(14:15, 29:30)])
+    River_latent[-c(14:15, 29:30), -1]  #Abundances are log-transformed
+    # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+    # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+    # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+    # discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+    # temp = stand_nut$temp_C[-c(14:15, 29:30)],
+    # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+    # rad = swradiation$stand_rad[-c(14:15, 29:30)]
+    )
+  
+  #Create a separate design matrix only for the TAC concentrations using "All" variables
+  if(name == "All"){
+    X2TAC <- cbind(
+      intercept = 1,
+      River_latent[-c(1:2, 14:16, 29:33, 41:45), -1]  #Abundances are log-transformed
+      # nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+      # phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
+      # ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+      # discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
+      # temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
+      # cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
+      # rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
+    )
+  }
   
 }
 
-
-# #Create design matrix for toxins from Anabaena mats
-# X2TAC <- cbind(
-#   intercept = 1,
-#   River_latent[-c(1:2, 14:16, 29:33, 41:45), -1],  #Abundances are log-transformed
-#   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-#   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
-#   ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-#   discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
-#   temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
-#   cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
-#   rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
-#   # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)]
-# )
-
-#Combine with other model variables into model list
+#Combine with other model variables into model lists to use in stan() function
 #Use toxins samples from Microcoleus mats
 #All Variables
 model.atx.riverTM_All <- list("uniqueID" = nrow(anatoxin_data_TM),
@@ -113,12 +114,12 @@ model.atx.riverTM_AbioticNoNut <- list("uniqueID" = nrow(anatoxin_data_TM),
                                   "Npredictors" = ncol(X2TM_list$Abioticnonut)
 )
 
-# #Use toxins samples from Anabaena mats
-# model.atx.riverTAC <- list("uniqueID" = nrow(anatoxin_data_TAC),
-#                            "is_obs" = anatoxin_data_TAC$is_obs, #poisson edit, was this an observed day?
-#                            "firstdays" = anatoxin_data_TAC$firstday,
-#                            "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_afdm_g), #poisson edit needs as.integer
-#                            "Nspecies" = as.integer(ncol(River_latent)-1),
-#                            "X2" = X2TAC,
-#                            "Npredictors" = ncol(X2TAC)
-# )
+#Use toxins samples from Anabaena mats
+model.atx.riverTAC_All <- list("uniqueID" = nrow(anatoxin_data_TAC),
+                           "is_obs" = anatoxin_data_TAC$is_obs, #poisson edit, was this an observed day?
+                           "firstdays" = anatoxin_data_TAC$firstday,
+                           "Toxins" = as.integer(anatoxin_data_TAC$ATX_all_ug_afdm_g), #poisson edit needs as.integer
+                           "Nspecies" = as.integer(ncol(River_latent)-1),
+                           "X2" = X2TAC,
+                           "Npredictors" = ncol(X2TAC)
+)
