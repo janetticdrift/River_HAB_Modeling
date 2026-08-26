@@ -1,5 +1,5 @@
 ###########################
-#Running River-Wide Models: Estimating Latent States of Observed and Skipped Weeks
+#Running River-Wide and Within-Mat Abundance Models: Estimating Latent States of Observed and Skipped Weeks
 ###########################
 #Create dataframes used for running Stan models that estimate the latent states of each
   #algal species' percent cover abundance or microscopy abundance per week. The models 
@@ -26,8 +26,9 @@ library(rstan)
 library(tidyverse)
 library(dataRetrieval)
 
-#Read in needed data
+#Read in needed data and functions
 source(here::here("data_cleaning/cleaning_HAB.R"))
+source(here::here("data_cleaning/Functions.R"))
 #Set pseudocount here for tidying data before log-transforming. 1 is a reasonable
   #number for percents in non-decimal format
 pseudocount <- 1
@@ -86,7 +87,8 @@ alltaxatime <- yearriverdata %>%
   relocate(firstday, bare_biofilm) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(green_algae:other_nfixers, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  dplyr::mutate(is_obs  = ifelse(green_algae == -99, 0, 1)) #Add in an "Is Observed?" column for log-lik
 #Ignore warning because NaNs are replaced with -99
 
 # #Save observed data for model fit comparisons
@@ -94,14 +96,15 @@ saveRDS(alltaxatime,
         file = here::here("data/Outputs for Sims and Model Fits/obs_river_data.rds"))
 
 model.1 <- list("uniqueID" = nrow(alltaxatime), 
-                "Nspecies" = as.integer(ncol(alltaxatime)-3),
+                "Nspecies" = as.integer(ncol(alltaxatime)-4),
                 "firstdays" = alltaxatime$firstday,
+                "is_obs" = alltaxatime$is_obs,
+                "n_obs" = sum(alltaxatime$is_obs),
                 "id" = c(1,1,1,1),
-                "N" = alltaxatime[,-(1:3)], #all species
+                "N" = alltaxatime[,-c(1:3,8)], #all species
                 "nitrate" = stand_nut$nitrate_mg_N_L,
                 "phos" = stand_nut$oPhos_ug_P_L,
                 "ammonium" = stand_nut$ammonium_mg_N_L,
-                # "DIN" = stand_nut$DIN,
                 "discharge" = discharge$stand_discharge,
                 "temp" = stand_nut$temp_C,
                 "cond" = stand_nut$cond_uS_cm,
@@ -126,7 +129,8 @@ matalltaxaM <- yearmatdata %>%
   relocate(firstday) %>% 
   unite("uniqueID", c(year, week), sep = "_", remove=T) %>% 
   dplyr::mutate(across(Anabaena:Geitlerinema, log)) %>%
-  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99)))
+  dplyr::mutate(across(everything(), ~replace(.x, is.nan(.x), -99))) %>% 
+  dplyr::mutate(is_obs  = ifelse(Anabaena == -99, 0, 1)) #Add in an "Is Observed?" column for log-lik
 
 #Save observed data for model fit comparisons
 saveRDS(matalltaxaM, 
@@ -134,13 +138,14 @@ saveRDS(matalltaxaM,
 
 
 model.2 <- list("uniqueID" = nrow(matalltaxaM),
-                "Nspecies" = as.integer(ncol(matalltaxaM)-2),#take out first 2 col: firstday and uniqueID
+                "Nspecies" = as.integer(ncol(matalltaxaM)-3),#take out 3 col: firstday and uniqueID and is_obs
                 "firstdays" = matalltaxaM$firstday,
-                "N" = matalltaxaM[,-(1:2)],
+                "is_obs" = matalltaxaM$is_obs,
+                "n_obs" = sum(matalltaxaM$is_obs),
+                "N" = matalltaxaM[,-c(1:2, 6)],
                 "nitrate" = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)], #Must subset 2024 out with additional 29:45
                 "phos" = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)], #and also first two weeks of 2023 and 2024
                 "ammonium" = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)], #Which is 14:15 and 29:30
-                # "DIN" = stand_nut$DIN[-c(14:15, 29:30)],
                 "discharge" = discharge$stand_discharge[-c(14:15, 29:30)],
                 "temp" = stand_nut$temp_C[-c(14:15, 29:30)],
                 "cond" = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
@@ -212,30 +217,12 @@ fit.m1.4 <-  stan(file = "HAB_abiotic_nonut.stan", data = model.1, chains = 3, i
                                                            stepsize = 0.001,
                                                            max_treedepth = 13))
 
- ###### River-Wide: Nutrients Isolation
-#Only nitrate abiotic
-fit.m1.5 <- stan(file = "HAB_nitrate.stan", data = model.1, chains = 3, iter = 6000,
+#Truly only abiotic variables, no algal abundances involved at all
+fit.m1.5 <- stan(file = "HAB_abiotictrue.stan", data = model.1, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
                                                             stepsize = 0.001,
                                                             max_treedepth = 13))
 
-#Only phosphate abiotic
-fit.m1.6 <- stan(file = "HAB_phosphate.stan", data = model.1, chains = 3, iter = 6000,
-                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
-                                                            stepsize = 0.001,
-                                                            max_treedepth = 13))
-
-#Only ammonium abiotic
-fit.m1.7 <- stan(file = "HAB_ammonium.stan", data = model.1, chains = 3, iter = 6000,
-                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
-                                                            stepsize = 0.001,
-                                                            max_treedepth = 13))
-
-#Only DIN abiotic
-fit.m1.8 <- stan(file = "HAB_DIN.stan", data = model.1, chains = 3, iter = 6000,
-                 warmup = 3000, refresh=100, control = list(adapt_delta = 0.999,
-                                                            stepsize = 0.001,
-                                                            max_treedepth = 13))
  ###### Within-Mat
 # Set values to initialize models
 
@@ -290,29 +277,34 @@ mcmc_intervals(
   as.array(fit.atx.mat),
   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
 
-
+######################
 ######################
 #Save River-Wide output for cleaning and visualizing in data_analysis/model_vs_real_data.R
+######################
 ######################
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.1, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
 #For building the latent state vs predictions plots
-saveRDS(rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta', 
-                                        'Ptheta', 
-                                        'Atheta', 
-                                        # 'DINtheta',
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+fit.m1.1.extract <- rstan::extract(fit.m1.1, pars = c('Alpha', 'Beta', 'n', 'sigma_p', 'sigma_o',
+                                                      'Ntheta', 
+                                                      'Ptheta', 
+                                                      'Atheta', 
+                                                      'Dtheta', 'Ttheta', 'Ctheta', 
+                                                      'Rtheta',
+                                                      'log_lik',
+                                                      'mu'))
+saveRDS(fit.m1.1.extract, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AllVar_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.2, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
-saveRDS(rstan::extract(fit.m1.2, pars = c('Alpha', 'Beta', 'n', 'sigma_p')), 
+fit.m1.2.extract <- rstan::extract(fit.m1.2, pars = c('Alpha', 'Beta', 'n', 'sigma_p', 'sigma_o',
+                                                      'log_lik', 'mu'))
+saveRDS(fit.m1.2.extract, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Biotic_predictions.rds"))
 
 
@@ -320,59 +312,41 @@ saveRDS(rstan::extract(fit.m1.2, pars = c('Alpha', 'Beta', 'n', 'sigma_p')),
 saveRDS(rstan::extract(fit.m1.3, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
-saveRDS(rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta',
-                                        'Ptheta', 
-                                        'Atheta',
-                                        # 'DINtheta', 
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+fit.m1.3.extract <- rstan::extract(fit.m1.3, pars = c('Alpha', 'Beta', 'n', 'sigma_p', 'sigma_o',
+                                                      'Ntheta',
+                                                      'Ptheta', 
+                                                      'Atheta',
+                                                      'Dtheta', 'Ttheta', 'Ctheta', 
+                                                      'Rtheta',
+                                                      'log_lik', 'mu'))
+saveRDS(fit.m1.3.extract, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Abiotic_predictions.rds"))
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.4, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
-saveRDS(rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+fit.m1.4.extract <- rstan::extract(fit.m1.4, pars = c('Alpha', 'Beta', 'n', 'sigma_p', 'sigma_o',
+                                                      'Dtheta', 'Ttheta', 'Ctheta', 
+                                                      'Rtheta',
+                                                      'log_lik', 'mu'))
+saveRDS(fit.m1.4.extract, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_AbioticNonut_predictions.rds"))
-
-####Nutrient Isolation Models####
 
 #For building the observation vs latent state plots
 saveRDS(rstan::extract(fit.m1.5, permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/Riverwide_Nitrate.rds"))
+        file = here::here("data/Outputs for Obs vs Real/Riverwide_TrueAbiotic.rds"))
 #For building the latent state vs predictions plots, and calculating fit indices
-saveRDS(rstan::extract(fit.m1.5, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                          'Ntheta',
-                                          'Dtheta', 'Ttheta', 'Ctheta', 
-                                          'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Nitrate_predictions.rds"))
+fit.m1.5.extract <- rstan::extract(fit.m1.5, pars = c('Alpha', 'n', 'sigma_p', 'sigma_o',
+                                                      'Ntheta',
+                                                      'Ptheta', 
+                                                      'Atheta',
+                                                      'Dtheta', 'Ttheta', 'Ctheta', 
+                                                      'Rtheta',
+                                                      'log_lik', 'mu'))
 
-saveRDS(rstan::extract(fit.m1.6, permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/Riverwide_Phos.rds"))
-saveRDS(rstan::extract(fit.m1.6, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                          'Ptheta',
-                                          'Dtheta', 'Ttheta', 'Ctheta', 
-                                          'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Phos_predictions.rds"))
-
-saveRDS(rstan::extract(fit.m1.7, permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/Riverwide_Ammonium.rds"))
-saveRDS(rstan::extract(fit.m1.7, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                          'Atheta',
-                                          'Dtheta', 'Ttheta', 'Ctheta', 
-                                          'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_Ammonium_predictions.rds"))
-
-saveRDS(rstan::extract(fit.m1.8, permuted=FALSE), 
-        file = here::here("data/Outputs for Obs vs Real/Riverwide_DIN.rds"))
-saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                          'DINtheta',
-                                          'Dtheta', 'Ttheta', 'Ctheta', 
-                                          'Rtheta')), 
-        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_DIN_predictions.rds"))
+saveRDS(fit.m1.5.extract, 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Riverwide_TrueAbiotic_predictions.rds"))
 
 
 ######################
@@ -382,28 +356,49 @@ saveRDS(rstan::extract(fit.m1.8, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
 #TM output
 saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
                                         'Ntheta','Ptheta', 'Atheta',
-                                        # 'DINtheta',
                                         'Dtheta', 'Ttheta', 'Ctheta', 
                                         'Rtheta'), permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
-saveRDS(rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-                                        'Ntheta','Ptheta', 'Atheta',
-                                        # 'DINtheta',
-                                        'Dtheta', 'Ttheta', 'Ctheta', 
-                                        'Rtheta')), 
+
+fit.m2.extract <- rstan::extract(fit.m2, pars = c('Alpha', 'Beta', 'n', 'sigma_p', 'sigma_o',
+                                                  'Ntheta','Ptheta', 'Atheta',
+                                                  'Dtheta', 'Ttheta', 'Ctheta', 
+                                                  'Rtheta',
+                                                  'log_lik', 'mu'))
+saveRDS(fit.m2.extract, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
 
-# #TAC output
-# saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-#                                         'Ntheta','Ptheta', 'Atheta', 
-#                                         'Dtheta', 'Ttheta', 'Ctheta', 
-#                                         'Rtheta'), permuted=FALSE), 
-#         file = here::here("data/Outputs for Obs vs Real/WithinMat_Ana.rds"))
-# saveRDS(rstan::extract(fit.m3, pars = c('Alpha', 'Beta', 'n', 'sigma_p',
-#                                         'Ntheta','Ptheta', 'Atheta', 
-#                                         'Dtheta', 'Ttheta', 'Ctheta', 
-#                                         'Rtheta')), 
-#         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Ana_predictions.rds"))
-
-
 #Code to read saved RDS files: object <- readRDS(here::here("data/file_name.rds"))
+
+#################################################################
+#################################################################
+#Calculate Information Critirion: ELPD and DIC
+#################################################################
+#################################################################
+
+                    ############River-Wide models############
+
+#All Variables
+calcELPD(fit.m1.1)
+calcDIC(fit.m1.1.extract, alltaxatime, positions = 4:7)
+
+#Biotic Only
+calcELPD(fit.m1.2)
+calcDIC(fit.m1.2.extract, alltaxatime, positions = 4:7)
+
+#Abiotic Only
+calcELPD(fit.m1.3)
+calcDIC(fit.m1.3.extract, alltaxatime, positions = 4:7)
+
+#Abiotic No Nutrients
+calcELPD(fit.m1.4)
+calcDIC(fit.m1.4.extract, alltaxatime, positions = 4:7)
+
+#True Abiotic
+calcELPD(fit.m1.5)
+calcDIC(fit.m1.5.extract, alltaxatime, positions = 4:7)
+
+#Within-Mat models
+calcELPD()
+calcDIC(fit.m2.extract, matalltaxaM, positions = 3:5)
+calcDIC

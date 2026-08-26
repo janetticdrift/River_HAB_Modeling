@@ -55,7 +55,7 @@ atx2024 <- read.csv(here::here("data/cyano_atx_24.csv"))
 #Read in Ash Free Dry Mass (AFDM) data for 2024, to normalize anatoxin data
 ashfreedrymass <- read.csv(here::here("data/Ashfree Dry Mass 2024.csv"))
 
-#Clean new percent cover data to match previous years' formatting
+#Clean old percent cover data 
 percoverMiranda <- percover %>% 
   dplyr::filter(site == "SFE-M") %>% 
   dplyr::select(!(10:14)) %>%
@@ -65,6 +65,7 @@ percoverMiranda <- percover %>%
 percoverpivot <- percoverMiranda %>% 
   pivot_longer(green_algae:other_nfixers, names_to = "Species", values_to = "Abundance")
 
+#Clean new percent cover data to match previous years' formatting
 newpercoverMiranda <- newpercover %>% 
   dplyr::mutate(site_reach = case_when(Site == "Eel-4S" ~ "SFE-M-1S",
                                 Site == "Eel-BUG" ~ "SFE-M-2",
@@ -85,8 +86,7 @@ newpercoverpivot <- newpercoverMiranda %>%
   pivot_longer(green_algae:bare_biofilm, names_to = "Species", values_to = "Abundance")
 
 
-#Create dataframe that will have Time Step Number and Week Number columns added next 
-  #within this file
+#Combine 2022 and 2023 percent cover data with 2024 percent cover data
 percoverdata <- rbind(percoverMiranda, newpercoverMiranda)
 
 #Save dataframe of observed percent cover data for plotting modeled vs observed value plots
@@ -238,7 +238,7 @@ micro_indexweek <- rbind(year1_indexmicro, year2_indexmicro, year3_indexmicro) %
 #Tidy water chemistry data
 nut_dat <- read.csv(here::here("data/water_chemistry.csv")) #All years included
 
-#If there is a replacement entry for nitrate or ammonia (usually the minimum 
+#If there is a replacement entry for nitrate or ammonia (the minimum 
 #detection level), use that replacement entry, divided by two, instead
 nut_data <- nut_dat %>% 
   dplyr::mutate(nitrate_mg_N_L = replace_when(nitrate_mg_N_L, !is.na(nitrate_replace) ~ nitrate_replace/2),
@@ -259,8 +259,8 @@ nut_data2[85, "nitrate_mg_N_L"] <- NA
 nut_data2[145, "cond_uS_cm"] <- 237 
 #Add Dissolved Inorganic Nitrates calculations (sum of nitrate + ammonium)
 nut_data3 <- nut_data2 %>% 
-  dplyr::mutate(DIN = nitrate_mg_N_L + ammonium_mg_N_L) %>% 
-  dplyr::relocate(DIN, .after = ammonium_mg_N_L)
+  dplyr::mutate(DIN_mg_N_L = nitrate_mg_N_L + ammonium_mg_N_L) %>% 
+  dplyr::relocate(DIN_mg_N_L, .after = ammonium_mg_N_L)
   
 
 

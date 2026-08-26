@@ -22,13 +22,13 @@ parameters {
   real Beta2;     //Epithemia       
   real Beta3;     //Geitlerinema       
   
-  // real Ntheta; 
-  // real Ptheta; 
-  // real Atheta; 
-  // real Dtheta; 
-  // real Ttheta; 
-  // real Ctheta; 
-  // real Rtheta; 
+  real Ntheta;
+  real Ptheta;
+  real Atheta;
+  real Dtheta;
+  real Ttheta;
+  real Ctheta;
+  real Rtheta;
   
   //Hurdle model coefficients (When do toxins start getting produced?)
   real Phi0;    //Probability intercept of timing of toxins initiating
@@ -44,13 +44,13 @@ transformed parameters {
   beta[3] = Beta2;
   beta[4] = Beta3;
 
-  // beta[5] = Ntheta;
-  // beta[6] = Ptheta;
-  // beta[7] = Atheta;
-  // beta[8] = Dtheta;
-  // beta[9] = Ttheta;
-  // beta[10] = Ctheta;
-  // beta[11] = Rtheta;
+  beta[5] = Ntheta;
+  beta[6] = Ptheta;
+  beta[7] = Atheta;
+  beta[8] = Dtheta;
+  beta[9] = Ttheta;
+  beta[10] = Ctheta;
+  beta[11] = Rtheta;
 
 }
 
@@ -65,13 +65,13 @@ model {
   Beta2 ~ normal(0,1);
   Beta3 ~ normal(0,1);
   
-  // Ntheta ~ normal(0,1);
-  // Ptheta ~ normal(0,1);
-  // Atheta ~ normal(0,1);
-  // Dtheta ~ normal(0,1);
-  // Ttheta ~ normal(0,1);
-  // Ctheta ~ normal(0,1);
-  // Rtheta ~ normal(0,1);
+  Ntheta ~ normal(0,1);
+  Ptheta ~ normal(0,1);
+  Atheta ~ normal(0,1);
+  Dtheta ~ normal(0,1);
+  Ttheta ~ normal(0,1);
+  Ctheta ~ normal(0,1);
+  Rtheta ~ normal(0,1);
   
   //Priors for hurdle model
   Phi0 ~ normal(0,1);

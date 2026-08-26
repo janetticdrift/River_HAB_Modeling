@@ -63,14 +63,14 @@ Rtheta <- x[["Rtheta"]]
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  microscopyTM_latent[, -1][1:time, ]  #Abundances are on the log-scale
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
-  # amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
-  # discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
-  # temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
-  # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
-  # rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
+  microscopyTM_latent[, -1][1:time, ],  #Abundances are on the log-scale
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][1:time],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][1:time],
+  amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][1:time],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][1:time],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][1:time],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][1:time],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][1:time]
 ))
 
 #Inputs
@@ -80,10 +80,9 @@ time <- 13
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3 
-                     # Ntheta, Ptheta, Atheta,
-                     # Dtheta, Ttheta,
-                     # Ctheta, Rtheta
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Ntheta, Ptheta, Atheta,
+                     Dtheta, Ttheta,
+                     Ctheta, Rtheta
 )
 
 for (z in 1:runs) {
@@ -155,14 +154,14 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  microscopyTM_latent[, -1][14:(13+time), ]  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
-  # amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
-  # discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
-  # temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
-  # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
-  # rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
+  microscopyTM_latent[, -1][14:(13+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][14:(13+time)],
+  amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][14:(13+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][14:(13+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][14:(13+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][14:(13+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][14:(13+time)]
 ))
 
 
@@ -236,14 +235,14 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  microscopyTM_latent[, -1][27:(26+time), ]  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
-  # amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
-  # discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
-  # temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
-  # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
-  # rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
+  microscopyTM_latent[, -1][27:(26+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)][27:(26+time)],
+  amon = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)][27:(26+time)],
+  discharge = discharge$stand_discharge[-c(14:15, 29:30)][27:(26+time)],
+  temp = stand_nut$temp_C[-c(14:15, 29:30)][27:(26+time)],
+  cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)][27:(26+time)],
+  rad = swradiation$stand_rad[-c(14:15, 29:30)][27:(26+time)]
 ))
 
 for (z in 1:runs) {
@@ -397,13 +396,13 @@ simulate_toxin_year <- function(
   Phi0 <- x[["Phi0"]]       #Hurdle initiation intercept
   PhiAna <- x[["PhiAna"]]   #Lagged Anabaena effect coefficient
   
-  # Ntheta <- x[["Ntheta"]]   #Nitrate
-  # Ptheta <- x[["Ptheta"]]   #Phosphate
-  # Atheta <- x[["Atheta"]]   #Ammonium
-  # Dtheta <- x[["Dtheta"]]   #Discharge
-  # Ttheta <- x[["Ttheta"]]   #Temperature
-  # Ctheta <- x[["Ctheta"]]   #Conductivity
-  # Rtheta <- x[["Rtheta"]]   #Radiation
+  Ntheta <- x[["Ntheta"]]   #Nitrate
+  Ptheta <- x[["Ptheta"]]   #Phosphate
+  Atheta <- x[["Atheta"]]   #Ammonium
+  Dtheta <- x[["Dtheta"]]   #Discharge
+  Ttheta <- x[["Ttheta"]]   #Temperature
+  Ctheta <- x[["Ctheta"]]   #Conductivity
+  Rtheta <- x[["Rtheta"]]   #Radiation
   
   #Pull number of iterations in the model
   runs <- length(Beta1)
@@ -426,22 +425,20 @@ simulate_toxin_year <- function(
   
   #Build the design matrix for the current year
   X1 <- as.matrix(cbind(intercept = rep(1, time),
-                        percentcover_use  # Abundances are log-transformed
-                        # nitrate = nitrate_use,
-                        # phos = phos_use,
-                        # amon = amon_use,
-                        # discharge = discharge_use,
-                        # temp = temp_use,
-                        # cond = cond_use,
-                        # rad = rad_use
-                        ))
+                        percentcover_use,  # Abundances are log-transformed
+                        nitrate = nitrate_use,
+                        phos = phos_use,
+                        amon = amon_use,
+                        discharge = discharge_use,
+                        temp = temp_use,
+                        cond = cond_use,
+                        rad = rad_use))
   
   #Build the effect coefficient matrix
   
-  beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4 
-                       # Ntheta, Ptheta, Atheta,
-                       # Dtheta, Ttheta, Ctheta, Rtheta
-                       )
+  beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, 
+                       Ntheta, Ptheta, Atheta,
+                       Dtheta, Ttheta, Ctheta, Rtheta)
   
   #Create an empty matrix to store toxin values in
   tox <- matrix(NA, nrow = runs, ncol = time)
@@ -641,13 +638,13 @@ Phi0 <- x[["Phi0"]]
 PhiAna <- x[["PhiAna"]]
 
 #Pull out environmental effects
-# Ntheta <- x[["Ntheta"]]
-# Ptheta <- x[["Ptheta"]]
-# Atheta <- x[["Atheta"]]
-# Dtheta <- x[["Dtheta"]]
-# Ttheta <- x[["Ttheta"]]
-# Ctheta <- x[["Ctheta"]]
-# Rtheta <- x[["Rtheta"]]
+Ntheta <- x[["Ntheta"]]
+Ptheta <- x[["Ptheta"]]
+Atheta <- x[["Atheta"]]
+Dtheta <- x[["Dtheta"]]
+Ttheta <- x[["Ttheta"]]
+Ctheta <- x[["Ctheta"]]
+Rtheta <- x[["Rtheta"]]
 
 #Inputs
 runs <- length(Beta1) # number of model iterations
@@ -656,23 +653,23 @@ time <- 11
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ]  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][1:time],
-  # rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][1:time]
+  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][1:time],
+  rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][1:time]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][1:time]
 ))
 
 tox <- matrix(NA, runs, time)
 
 # Build parameter matrixes
-beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4 
-                     # Ntheta, Ptheta, Atheta,
-                     # Dtheta, Ttheta,
-                     # Ctheta, Rtheta
+beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, Ntheta, Ptheta, Atheta,
+                     Dtheta, Ttheta,
+                     Ctheta, Rtheta
                      )
 
 for (z in 1:runs) {
@@ -743,14 +740,15 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ]  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
-  # rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)]
+  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
+  rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)]
 ))
 
 
@@ -825,14 +823,15 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[, -1][24:(23+time), ]  #Abundances are log-transformed
-  # nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
-  # rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)]
+  percentcover_latent[, -1][24:(23+time), ],  #Abundances are log-transformed
+  nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
+  rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)]
+  # DIN = stand_nut$DIN[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)]
 ))
 
 for (z in 1:runs) {

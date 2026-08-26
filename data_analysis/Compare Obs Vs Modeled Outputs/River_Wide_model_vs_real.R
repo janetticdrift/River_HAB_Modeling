@@ -26,6 +26,7 @@ fit.m4 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariable
 fit.m5 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
 fit.m6 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
 fit.m7 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
+fit.m8 <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_TrueAbiotic.rds"))
 
 #MODEL INCLUDING ALL YEARS--------------------------------------------------------------
 #OBSERVED DATA - calculate average values
@@ -500,4 +501,111 @@ p8 <- ggplot(params2_abioticnonut, aes(x = model_date, y = median)) +
 (p7 / p8) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical") 
+
+#-------------------------------------------------------------------
+
+#Latent states for truly abiotic only model
+#Manually calculate median posteriors for species $ cover, as well as confidence interval
+params1_trueabiotic <- as.data.frame(fit.m8) %>%
+  dplyr::select(matches("n\\[")) %>%
+  dplyr::mutate(across(1:`chain:3.n[4,45]`, exp)) %>%
+  t
+
+#Set up dataframe to extract week/year info from
+yearweek <- alltaxatime %>% 
+  pivot_longer(cols = c(green_algae, microcoleus, anabaena_cylindrospermum,
+                        bare_biofilm, other_nfixers),
+               names_to = "Species", values_to = "median") %>% 
+  dplyr::mutate(time = rep(seq(45), each = length(unique(Species)))) %>% 
+  dplyr::mutate(Species = case_when(Species == "green_algae" ~ "Green Algae",
+                                    Species == "microcoleus" ~ "Microcoleus",
+                                    Species == "anabaena_cylindrospermum" ~ "Anabaena",
+                                    Species == "other_nfixers" ~ "Other N Fixers"))
+
+
+params2_trueabiotic <- as.data.frame(params1_trueabiotic) %>% 
+  rownames_to_column(var="ID") %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE),
+                   se_median = calcSE(c_across(starts_with("V"))),
+                   CIlower = quantile(c_across(starts_with("V")), probs = 0.025),
+                   CIupper = quantile(c_across(starts_with("V")), probs = 0.975)) %>% 
+  dplyr::mutate(Species = case_when(grepl("1,", group) ~ "Green Algae",
+                                    grepl("2,", group) ~ "Microcoleus",
+                                    grepl("3,", group) ~ "Anabaena",
+                                    grepl("4,", group) ~ "Other N Fixers",
+                                    grepl("b", group) ~ 'bare_biofilm')) %>% 
+  dplyr::mutate(time = as.numeric(ifelse(grepl("b", group), str_extract(group, "[0-9]+"),
+                                         str_extract_all(group, "[0-9]+", simplify = T)[,2]))) %>% 
+  left_join(yearweek[,c("uniqueID", "Species", "time")], by = c("Species", "time")) %>% 
+  relocate(uniqueID) %>% 
+  separate(uniqueID, into = c("year", "week"), sep = "_") %>% 
+  dplyr::mutate(week = as.numeric(week), year = as.numeric(year)) %>% 
+  ungroup() %>% 
+  left_join(obs_data_all[,c("year", "week", "Species", "real_week")], by = c("year", "week", "Species")) %>% 
+  arrange(time) %>% 
+  dplyr::mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>% 
+  dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  dplyr::filter(Species != "bare_biofilm") %>% 
+  dplyr::mutate(Species = as.factor(Species))
+
+# Plot 1: Only show Green Algae + Other N Fixers
+p9 <- ggplot(params2_trueabiotic, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
+              alpha = 0.3,
+              data = transform(params2_trueabiotic,
+                               median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA),
+                               CIlower = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIlower, NA),
+                               CIupper = ifelse(Species %in% c("Green Algae", "Other N Fixers"), CIupper, NA))) +
+  # Latent points/lines
+  geom_point(aes(colour = Species), size = 3,
+             data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+  geom_line(aes(colour = Species), size = 2, alpha = 0.7,
+            data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
+  # Observed points/lines
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
+             data = transform(obs_data_all,
+                              obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
+            data = transform(obs_data_all,
+                             obs_mean = ifelse(Species %in% c("Green Algae", "Other N Fixers"), obs_mean, NA))) +
+  scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 65)) +
+  labs(x = "Date", y = "Percent Cover (%)", title = "Observed vs. Latent Abundances: Only Abiotic Interactions - No Nutrients") +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  colScale + filScale + shapScale + theme_bw()
+
+# Plot 2: Only show Anabaena + Microcoleus
+p10 <- ggplot(params2_trueabiotic, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species),
+              alpha = 0.3,
+              data = transform(params2_trueabiotic,
+                               median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA),
+                               CIlower = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIlower, NA),
+                               CIupper = ifelse(Species %in% c("Anabaena", "Microcoleus"), CIupper, NA))) +
+  geom_point(aes(colour = Species), size = 3,
+             data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  geom_line(aes(colour = Species), size = 2, alpha = 0.7,
+            data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
+  geom_point(aes(y = obs_mean, shape = Species), size = 2.5,
+             data = transform(obs_data_all,
+                              obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  geom_line(aes(y = obs_mean, group = Species), size = 0.5,
+            data = transform(obs_data_all,
+                             obs_mean = ifelse(Species %in% c("Anabaena", "Microcoleus"), obs_mean, NA))) +
+  scale_y_continuous(breaks = seq(0, 150, 10)) +
+  coord_cartesian(y = c(0, 25)) +
+  labs(x = "Date", y = "Percent Cover (%)") +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  colScale + filScale + shapScale + theme_bw()
+
+# Combine plots and collect legends
+(p9 / p10) +
+  plot_layout(guides = "collect", axes = "collect") &
+  theme(legend.position = "right", legend.box = "vertical")
 

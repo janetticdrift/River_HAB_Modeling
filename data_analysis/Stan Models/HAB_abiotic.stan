@@ -4,6 +4,8 @@ data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
   vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  vector[uniqueID] is_obs;   //Is this a time step where toxin data was collected?
+  int n_obs;  //How many observed time steps were there?
   
   matrix [uniqueID, Nspecies] N; //Percent cover at year per species
   
@@ -12,7 +14,6 @@ data {
   vector [uniqueID] nitrate; //Vector of nitrate levels, standardized
   vector [uniqueID] phos; //Vector of o phos levels, standardized
   vector [uniqueID] ammonium; //Vector of ammonium levels, standardized
-  // vector [uniqueID] DIN; //Vector of ammonium levels, standardized
   vector [uniqueID] discharge; //Vector of discharge levels, logged
   vector [uniqueID] temp; //Vector of temperatures, Celsius
   vector [uniqueID] cond; //Vector of conductivity, standardized
@@ -75,7 +76,6 @@ model {
        n[s,t] ~ normal(Alpha[s] + Beta[s]*n[s, t-1] + Ntheta[s]*nitrate[t-1] +
                             Ptheta[s]*phos[t-1] + 
                             Atheta[s]*ammonium[t-1] +
-                            // DINtheta[s]*DIN[t-1] +
                             Dtheta[s]*discharge[t-1] + Ttheta[s]*temp[t-1] +
                             Ctheta[s]*cond[t-1] + Rtheta[s]*rad[t-1], sigma_p[s]);
   }
@@ -92,13 +92,31 @@ model {
 }
 
 
-//Bare Biomass calculation
+generated quantities {
+  ///////////////Log-Likelihood///////////////
 
-// generated quantities{
-// vector[uniqueID] b; //100 minus everything else = bare
-// 
-//     for(t in 1:uniqueID){
-//       b[t] = 100 - sum(exp(n[,t]));
-//     }
-// }
+  matrix [n_obs-1, Nspecies] log_lik;   //Matrix storing log-likelihoods for n_obs, number of observed days
+  matrix[Nspecies, uniqueID] mu;         //Matrix storing mu that is used to calculate LL
+  int counter = 1;                   //Set starting counter to 1
+
+  for (t in 2:uniqueID) {
+    for (s in 1:Nspecies) {
+      mu[s,t] = Alpha[s] + Beta[s]*n[s,t-1] + Ntheta[s]*nitrate[t-1] + 
+      Ptheta[s]*phos[t-1] + Atheta[s]*ammonium[t-1] + Dtheta[s]*discharge[t-1] +
+      Ttheta[s]*temp[t-1] + Ctheta[s]*cond[t-1] + Rtheta[s]*rad[t-1];
+  }
+
+  if (is_obs[t] == 1) {
+    for (s in 1:Nspecies) {
+
+      log_lik[counter,s] =
+        normal_lpdf(N[t,s] | mu[s,t], sqrt((sigma_o[s]^2) + sigma_p[s])
+        );
+    }
+
+    counter += 1;
+    }
+  }
+
+}
 

@@ -2,6 +2,8 @@ data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
   int firstdays[uniqueID]; //Days to skip modeling, first day of the year
+  vector[uniqueID] is_obs;   //Is this a time step where toxin data was collected?
+  int n_obs;  //How many observed time steps were there?
   
   matrix [uniqueID, Nspecies] N; //Proportion in assemblage at year per species
   
@@ -68,7 +70,6 @@ transformed parameters{
     }
     n[,t] = Alpha + Beta * n[,t-1] + 
             Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + Atheta*ammonium[t-1] +
-            // DINtheta*DIN[t-1] +
             Dtheta*discharge[t-1] + Ttheta*temp[t-1] +
             Ctheta*cond[t-1] + Rtheta*rad[t-1] + 
             sigma_p .* n_nc[,t];
@@ -126,3 +127,29 @@ model {
   }
 
 }
+
+generated quantities {
+  ///////////////Log-Likelihood///////////////
+
+  matrix [n_obs-1, Nspecies] log_lik;   //Matrix storing log-likelihoods for n_obs, number of observed days
+  matrix[Nspecies, uniqueID] mu;         //Matrix storing mu that is used to calculate LL
+  int counter = 1;                   //Set starting counter to 1
+
+  for (t in 2:uniqueID) {       //Loop through the entire timeseries...
+    mu[,t] = Alpha + Beta*n[,t-1] + 
+    Ntheta*nitrate[t-1] + Ptheta*phos[t-1] + Atheta*ammonium[t-1] + 
+    Dtheta*discharge[t-1] + Ttheta*temp[t-1] + 
+    Ctheta*cond[t-1] + Rtheta*rad[t-1];
+    
+    if (is_obs[t] == 1) {       //... but only run the calculation when there's an observation
+       for (s in 1:Nspecies){
+
+        log_lik[counter,s] = normal_lpdf(N[t,s] | mu[s,t], sqrt((sigma_o[s]^2)+sigma_p[s]));
+      
+      }
+      counter += 1;  //Move to the next observation day in the log-lik vector
+    }
+  }
+
+}
+

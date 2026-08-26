@@ -1,17 +1,19 @@
 #CREATE MODEL FOR RIVER-WIDE DATA
 
-#Gather latent states of percent cover abundances
-rivermodelAll <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_AllVariables.rds"))
-rivermodelBiotic <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Biotic.rds"))
-rivermodelAbiotic <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic.rds"))
-rivermodelAbioticnonut <- readRDS(here::here("data/Outputs for Obs vs Real/Riverwide_Abiotic_nonut.rds"))
+#Gather predicted states of percent cover abundances
+rivermodelAll <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AllVar.rds"))
+rivermodelBiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Biotic.rds"))
+rivermodelAbiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_Abiotic.rds"))
+rivermodelAbioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_AbioticNoNut.rds"))
+rivermodelTrueAbiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Riverwide_Pred_TrueAbiotic.rds"))
 
 #Create a list of all the models
 abundances_list <- list(
   All = rivermodelAll,
   Biotic = rivermodelBiotic,
   Abiotic = rivermodelAbiotic,
-  Abioticnonut = rivermodelAbioticnonut
+  Abioticnonut = rivermodelAbioticnonut,
+  TrueAbiotic = rivermodelTrueAbiotic
 )
 
 #Create an empty list that will get filled by the four unique design matrices
@@ -48,28 +50,28 @@ for (name in names(abundances_list)) {
   #Save cleaned percent cover latent dataframe inside each unique design matrix
   X2TM_list[[name]] <- cbind(
     intercept = 1,
-    River_latent[-c(14:15, 29:30), -1]  #Abundances are log-transformed
-    # nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
-    # phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
-    # ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
-    # discharge = discharge$stand_discharge[-c(14:15, 29:30)],
-    # temp = stand_nut$temp_C[-c(14:15, 29:30)],
-    # cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
-    # rad = swradiation$stand_rad[-c(14:15, 29:30)]
+    River_latent[-c(14:15, 29:30), -1],  #Abundances are log-transformed
+    nitrate = stand_nut$nitrate_mg_N_L[-c(14:15, 29:30)],
+    phos = stand_nut$oPhos_ug_P_L[-c(14:15, 29:30)],
+    ammonium = stand_nut$ammonium_mg_N_L[-c(14:15, 29:30)],
+    discharge = discharge$stand_discharge[-c(14:15, 29:30)],
+    temp = stand_nut$temp_C[-c(14:15, 29:30)],
+    cond = stand_nut$cond_uS_cm[-c(14:15, 29:30)],
+    rad = swradiation$stand_rad[-c(14:15, 29:30)]
     )
   
   #Create a separate design matrix only for the TAC concentrations using "All" variables
   if(name == "All"){
     X2TAC <- cbind(
       intercept = 1,
-      River_latent[-c(1:2, 14:16, 29:33, 41:45), -1]  #Abundances are log-transformed
-      # nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-      # phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
-      # ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
-      # discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
-      # temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
-      # cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
-      # rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
+      River_latent[-c(1:2, 14:16, 29:33, 41:45), -1],  #Abundances are log-transformed
+      nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+      phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)],
+      ammonium = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)],
+      discharge = discharge$stand_discharge[-c(1:2, 14:16, 29:33, 41:45)],
+      temp = stand_nut$temp_C[-c(1:2, 14:16, 29:33, 41:45)],
+      cond = stand_nut$cond_uS_cm[-c(1:2, 14:16, 29:33, 41:45)],
+      rad = swradiation$stand_rad[-c(1:2, 14:16, 29:33, 41:45)]
     )
   }
   

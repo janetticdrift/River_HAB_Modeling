@@ -4,6 +4,8 @@ data {
   int uniqueID; //Total number of weeks down the years
   int Nspecies; //Total number of species
   vector[uniqueID] firstdays; //Days to skip modeling, first day of the year
+  vector[uniqueID] is_obs;   //Is this a time step where toxin data was collected?
+  int n_obs;  //How many observed time steps were there?
   
   matrix [uniqueID, Nspecies] N; //Percent cover at year per species
   
@@ -15,7 +17,7 @@ data {
 parameters {
   
   vector<lower= 0>[Nspecies] sigma_p; //var w/ process model
-  vector<lower= 0>[Nspecies] sigma_o; //var w/ observation model
+  vector<lower= 0>[Nspecies] sigma_o; //SD w/ observation model
 
   vector<lower=0>[Nspecies] Alpha;
   
@@ -75,12 +77,25 @@ model {
   }
 }
 
-//Bare Biomass calculation
+generated quantities {
+  ///////////////Log-Likelihood///////////////
 
-// generated quantities{
-// vector[uniqueID] b; //100 minus everything else = bare
-// 
-//     for(t in 1:uniqueID){
-//       b[t] = 100 - sum(exp(n[,t]));
-//     }
-// }
+  matrix [n_obs-1, Nspecies] log_lik;   //Matrix storing log-likelihoods for n_obs, number of observed days
+  matrix[Nspecies, uniqueID] mu;         //Matrix storing mu that is used to calculate LL
+  int counter = 1;                   //Set starting counter to 1
+
+  for (t in 2:uniqueID) {       //Loop through the entire timeseries...
+    mu[,t] = Alpha + Beta*n[,t-1];
+    
+    if (is_obs[t] == 1) {       //... but only run the calculation when there's an observation
+       for (s in 1:Nspecies){
+
+        log_lik[counter,s] = normal_lpdf(N[t,s] | mu[s,t], sqrt((sigma_o[s]^2)+sigma_p[s]));
+      
+      }
+      counter += 1;  //Move to the next observation day in the log-lik vector
+    }
+  }
+
+}
+

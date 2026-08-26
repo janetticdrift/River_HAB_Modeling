@@ -42,8 +42,9 @@ get_NLDASv20_datarod <- function(start_date, end_date, lat, lon, var)
 }
 
 
+##############################
 #' Compute Box-Cox Transformation for a given lambda
-#'
+##############################
 #' @param x Vector of strictly positive data.
 #' @param lambda Chosen lambda based on profile likelihood plot
 #'
@@ -63,8 +64,9 @@ boxcox_transform <- function(x, lambda){
   
 }
 
-
-#' Calculate ammonium from ammonia
+##############################
+#####Calculate ammonium from ammonia
+##############################
 calculate_NH4 <- function(df) {
   df <- df %>%
     dplyr::mutate(
@@ -74,11 +76,66 @@ calculate_NH4 <- function(df) {
     )
 }
 
-
-#' Calculate standard errors
-#' @param x Vector of data.
-
-calcSE<-function(x){
+##############################
+####Calculate standard errors
+##############################
+calcSE <- function(x){
   x <- x[is.na(x)==F] 
   sd(x)/sqrt(length(x))
+}
+
+##############################
+#####Calculate DIC
+##############################
+calcDIC <- function(fit, observed, positions){
+  posteriors <- fit
+  obs_data <- as.matrix(observed[, positions])
+  is_obs <- observed$is_obs
+          #####
+          #Step 1
+          #####
+          #Calculate average of individual log-likelihoods, second part of pDIC
+  log_lik <- posteriors$log_lik #Isolate log-likelihoods
+  logLik_draws <- apply(log_lik,c(1,2),sum) #sum across species
+  logLik_draws <- apply(logLik_draws,1,sum) #sum acros timesteps
+  logLik_draws <- mean(logLik_draws) ## take the mean Log-likelihood
+  
+  mu <- posteriors$mu[,,-1]     #Isolate the mu term                            
+  meanmu <- apply(mu,c(2,3),mean)    #Take average of the predictions
+  SD <- apply(sqrt(posteriors$sigma_p + 
+                     (posteriors$sigma_o^2)), 2, mean) #combining variance of process and observation models
+          #####
+          #Step 2
+          #####
+          #Average the posteriors of all parameters, recalculate the model, then calculate log-likelihood
+  LogLikelihoodofMean <- matrix(NA,1,44)    #Create empty matrix
+  
+  #Fill in matrix with LLs using averaged posteriors
+  for(t in 1:44){
+    
+    LogLikelihoodofMean[,t]<- sum(dnorm(N[t+1,], meanmu[,t], SD, log=T))
+    
+  }
+  
+  MLL <- sum(LogLikelihoodofMean[,which(is_obs[-1]==1)]) #Only add together the LLs that coincide with observed dates
+  
+  ##############################
+  #Calculate DIC
+  ##############################
+  
+  pDIC <- 2*MLL - logLik_draws
+  dic <- -2*MLL + 2*pDIC
+  
+  print(dic)
+}
+
+##############################
+#####Calculate ELPD
+##############################
+calcELPD <- function(fit) {
+  log_lik <- extract_log_lik(fit, parameter_name = "log_lik")
+  looall <- loo(log_lik)
+  ICsummary <- loo_moment_match(x = fit, loo = looall)
+  
+  print(ICsummary)
 }
