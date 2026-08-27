@@ -9,12 +9,13 @@ library(abind)
   #(percentcover_latent and microscopyTM_latent)
 
                                     ###River-Wide###
-#Percent cover latent states
+#Percent cover predicted states
 percentcover_models <- list(
-  All = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_All.rds")),
-  Biotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Biotic.rds")),
-  Abiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Abiotic.rds")),
-  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Abioticnonut.rds"))
+  All = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_All.rds")),
+  Biotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Biotic.rds")),
+  Abiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Abiotic.rds")),
+  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Abioticnonut.rds")),
+  TrueAbiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_TrueAbiotic.rds"))
   )
 
 #Microcoleus Anatoxin latent states
@@ -22,7 +23,8 @@ River.fit.TM_models <- list(
   All = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_predictions.rds")),
   Biotic =readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_predictions.rds")),
   Abiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_predictions.rds")),
-  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
+  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds")),
+  TrueAbiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_predictions.rds"))
   )
 
 #Anabaena
@@ -354,7 +356,7 @@ saveRDS(predictives_toxins_mats,
 ######Simulate Microcoleus Toxins using percent cover data-----
 
 #Create vector of model names
-model_names <- c("All","Biotic","Abiotic","AbioticNoNut")
+model_names <- c("All","Biotic","Abiotic","AbioticNoNut", "TrueAbiotic")
 #Create empty list to store the completed simulation results for each model
 all_model_results <- list()
 #Create empty list to store the plots for each model
@@ -372,156 +374,26 @@ temp_clean <- stand_nut$temp_C[env_keep]
 cond_clean <- stand_nut$cond_uS_cm[env_keep]
 rad_clean <- swradiation$stand_rad[env_keep]
 
-#Build a function that will simulate then summarize one year of data
-simulate_toxin_year <- function(
-    x,
-    percentcover_latent,
-    year,
-    start_timestep,
-    time,
-    week_offset) {
-  
-  #Pull first two iterations of latent state toxins to initalize the simulation
-  tox_conc <- x[["tox_raw"]][,start_timestep:(start_timestep + 1)]
-  
-  #Extract model coefficients 
-  Beta0 <- x[["Beta0"]]
-  Beta1 <- x[["Beta1"]]   #Green Algae
-  Beta2 <- x[["Beta2"]]   #Microcoleus
-  Beta3 <- x[["Beta3"]]   #Anabaena
-  Beta4 <- x[["Beta4"]]   #Other N Fixers
-  
-  sigma_p <- x[["sigma_p"]]   #Standard deviations
-  
-  Phi0 <- x[["Phi0"]]       #Hurdle initiation intercept
-  PhiAna <- x[["PhiAna"]]   #Lagged Anabaena effect coefficient
-  
-  Ntheta <- x[["Ntheta"]]   #Nitrate
-  Ptheta <- x[["Ptheta"]]   #Phosphate
-  Atheta <- x[["Atheta"]]   #Ammonium
-  Dtheta <- x[["Dtheta"]]   #Discharge
-  Ttheta <- x[["Ttheta"]]   #Temperature
-  Ctheta <- x[["Ctheta"]]   #Conductivity
-  Rtheta <- x[["Rtheta"]]   #Radiation
-  
-  #Pull number of iterations in the model
-  runs <- length(Beta1)
-  
-  #Index the latent states of the algal assemblage models
-  percentcover_clean <- percentcover_latent[env_keep, -1]
-  
-  #Select the appropriate time period for this year
-  year_starttime <- start_timestep:(start_timestep + time - 1)
-  #Index the latent algal abundances by this period
-  percentcover_use <- percentcover_clean[year_starttime,,drop = FALSE]
-  #Index the environmental variables by this period
-  nitrate_use <- nitrate_clean[year_starttime]
-  phos_use <- phos_clean[year_starttime]
-  amon_use <- amon_clean[year_starttime]
-  discharge_use <- discharge_clean[year_starttime]
-  temp_use <- temp_clean[year_starttime]
-  cond_use <- cond_clean[year_starttime]
-  rad_use <- rad_clean[year_starttime]
-  
-  #Build the design matrix for the current year
-  X1 <- as.matrix(cbind(intercept = rep(1, time),
-                        percentcover_use,  # Abundances are log-transformed
-                        nitrate = nitrate_use,
-                        phos = phos_use,
-                        amon = amon_use,
-                        discharge = discharge_use,
-                        temp = temp_use,
-                        cond = cond_use,
-                        rad = rad_use))
-  
-  #Build the effect coefficient matrix
-  
-  beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, 
-                       Ntheta, Ptheta, Atheta,
-                       Dtheta, Ttheta, Ctheta, Rtheta)
-  
-  #Create an empty matrix to store toxin values in
-  tox <- matrix(NA, nrow = runs, ncol = time)
-  
-                                #####Run the Simulations#####
-  
-  for (z in 1:runs) {
-
-    #Set initial toxin concentrations to fill the first two timesteps. As a 
-      #non-autoregressive model, they do not actually inform the simulation.
-    tox[z, 1] <- log(tox_conc[z, 1] + 1e-6)
-    tox[z, 2] <- log(tox_conc[z, 2] + 1e-6)
-    
-    #Extract this iteration's coefficents
-    beta <- beta_matrix[z, ]
-    
-    #Run simulation
-    for (t in 3:time) {
-      
-      #Hurdle: Do toxins initiate?
-      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t - 2, 4])
-          #plogis is an inverse logit function, returning a result as a 0 or 1 outcome
-      
-          #Random draw of if toxins initiate or now
-          toxin_initiate <- rbinom(1, size = 1, prob = phi_t)
-
-      #Process: How many toxins are created?
-      if (toxin_initiate == 1) {
-        
-        #If initiation is yes, run the toxin simulation
-        tox[z, t] <- rnorm(1, mean = beta %*% X1[t - 1, ], sd = sigma_p[z])
-        
-      } else {
-        #If initiaion is no, set value near to zero
-        tox[z, t] <- log(0.0001)
-      }
-    }
-  }
-  
-#Summarize the simulation outcomes, calculating median and upper/lower confidence intervals
-  
-  simsmedian <- as.data.frame(apply(exp(tox)/1000, 2, median)) %>% 
-    dplyr::rename(toxins = 1) %>% 
-    dplyr::mutate(time = 1:time)
-  
-  simslquant <- as.data.frame(apply(exp(tox)/1000, 2, quantile, probs = 0.025)) %>% 
-    dplyr::rename(CIlower = 1) %>% 
-    dplyr::mutate(time = 1:time)
-  
-  simsuquant <- as.data.frame(apply(exp(tox)/1000, 2, quantile, probs = 0.975)) %>% 
-    dplyr::rename(CIupper = 1) %>% 
-    dplyr::mutate(time = 1:time)
-  
-#Merge summary calculations
-  riversims <- dplyr::left_join(simsmedian, simslquant, by = "time") %>% 
-    dplyr::left_join(simsuquant,by = "time") %>% 
-    dplyr::mutate(real_week = time + week_offset, 
-                  year = year) %>% #Only 2022's week indexing needs adding by 25 instead of 26
-    dplyr::mutate(model_date = ceiling_date(ymd(paste(year,"01","01",sep = "-")) +
-                                              (real_week - 1) * 7 - 1, "week", week_start = 7))
-  
-  #Create list of summarized predictions and unsummarized raw values to calculating
-    #model fit indices with later
-  return(list(predictions = riversims,
-              raw = tox))
-  
-}
-
 ################################################
-#Use the function to run simulations for All, Biotic, Abiotic, and Abiotic No Nutrients models
+#Use the simulate_toxin_year function to run simulations for All, Biotic, 
+#Abiotic, Abiotic No Nutrients, and True Abiotic models
 ################################################
 
+#Read in the simulate_toxin_year function
+source(here::here("/data cleaning/Functions.R"))
+
+#Use a for loop to run through the 3 years of simulations for each river-wide model
 for (model in model_names) {
   #Extract the model
   x <- River.fit.TM_models[[model]]
-  #Extract the corresponding latent state of percent cover abundances
-  percentcover_latent <- percentcover_models[[model]]
+  #Extract the corresponding predicted state of percent cover abundances
+  percentcover_predicted <- percentcover_models[[model]]
   #Extract the corresponding latent state of toxins, from Toxins_model_vs_real.R, for plotting
   tox_params2_index <- tox_params2[[model]]
   
   #2022 simulations
   result2022 <- simulate_toxin_year(x = x,
-                                    percentcover_latent = percentcover_latent,
+                                    percentcover_predicted = percentcover_predicted,
                                     year = 2022,
                                     start_timestep = 1,
                                     time = 13,
@@ -529,7 +401,7 @@ for (model in model_names) {
 
   #2023 simulations
   result2023 <- simulate_toxin_year(x = x, 
-                                    percentcover_latent = percentcover_latent,
+                                    percentcover_predicted = percentcover_predicted,
                                     year = 2023,
                                     start_timestep = 14,
                                     time = 13,
@@ -537,7 +409,7 @@ for (model in model_names) {
 
   #2024 simulations
   result2024 <- simulate_toxin_year(x = x,
-                                    percentcover_latent = percentcover_latent,
+                                    percentcover_predicted = percentcover_predicted,
                                     year = 2024,
                                     start_timestep = 27,
                                     time = 15,
@@ -649,11 +521,12 @@ Rtheta <- x[["Rtheta"]]
 #Inputs
 runs <- length(Beta1) # number of model iterations
 time <- 11
+percentcover_predicted <- percentcover_models[["All"]]
 
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ],  #Abundances are log-transformed
+  percentcover_predicted[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
@@ -740,7 +613,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ],  #Abundances are log-transformed
+  percentcover_predicted[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
@@ -823,7 +696,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_latent[, -1][24:(23+time), ],  #Abundances are log-transformed
+  percentcover_predicted[, -1][24:(23+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],

@@ -276,7 +276,7 @@ nutrients_raw <- nut_data3 %>%
 nutrients_raw_clean <- nutrients_raw %>% 
   group_by(field_date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L, na.rm = T),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN, na.rm = T), temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN_mg_N_L = mean(DIN_mg_N_L, na.rm = T), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
   
 
@@ -290,7 +290,7 @@ nutrients <- nutrients_raw %>%
   group_by(year) %>% 
   complete(nesting(site_reach, site, reach), week = seq(min(week), max(week), 1L)) %>% #per year week
   ungroup() %>% 
-  dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN, real_week), 
+  dplyr::mutate(across(c(temp_C, cond_uS_cm, oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN_mg_N_L, real_week), 
                        ~ zoo::na.approx(.x, rule = 2))) %>%  #interpolate env values, and fill in real week NAs
   dplyr::mutate(date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                       (real_week - 1) * 7 - 1, "week", week_start = 7))
@@ -309,23 +309,23 @@ shapiro.test(nutrients$ammonium_mg_N_L) #Test for Normality
 nutrients$ammonium_mg_N_L <- log(nutrients$ammonium_mg_N_L)
 
 #DIN
-shapiro.test(nutrients$DIN) #Test for Normality
-nutrients$DIN <- log(nutrients$DIN)
+shapiro.test(nutrients$DIN_mg_N_L) #Test for Normality
+nutrients$DIN_mg_N_L <- log(nutrients$DIN_mg_N_L)
 
 #Standardize all nutrients to appear on the same scale
 stand_nut <- nutrients %>% 
-  dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN, temp_C, cond_uS_cm), 
+  dplyr::mutate(across(c(oPhos_ug_P_L, nitrate_mg_N_L, ammonium_mg_N_L, DIN_mg_N_L, temp_C, cond_uS_cm), 
                 ~ scale(.x))) %>% 
   group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN_mg_N_L = mean(DIN_mg_N_L), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
 #Average environmental variables by reach 
 nutrients_avg <- nutrients %>% 
   group_by(date, year) %>% 
   dplyr::summarise(oPhos_ug_P_L = mean(oPhos_ug_P_L), nitrate_mg_N_L = mean(nitrate_mg_N_L),
-                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN = mean(DIN), temp_C = mean(temp_C),
+                   ammonium_mg_N_L = mean(ammonium_mg_N_L), DIN_mg_N_L = mean(DIN_mg_N_L), temp_C = mean(temp_C),
                    cond_uS_cm = mean(cond_uS_cm))
 
 #Then calculate the averae water temperature per year

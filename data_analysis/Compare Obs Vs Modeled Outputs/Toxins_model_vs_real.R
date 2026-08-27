@@ -28,6 +28,7 @@ latent.atx.riverTM.all <- readRDS(here::here("data/Outputs for Obs vs Real/Anato
 latent.atx.riverTM.biotic <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Biotic.rds"))
 latent.atx.riverTM.abiotic <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Abiotic.rds"))
 latent.atx.riverTM.abioticnonut <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_AbioticNoNut.rds"))
+latent.atx.riverTM.trueabiotic <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_TrueAbiotic.rds"))
 
 latent.atx.riverTAC <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
 latent.atx.mat <- readRDS(here::here("data/Outputs for Obs vs Real/Anatoxin_Withinmat.rds"))
@@ -65,7 +66,8 @@ models_TM <- list(
   All = latent.atx.riverTM.all,
   Biotic = latent.atx.riverTM.biotic,
   Abiotic = latent.atx.riverTM.abiotic,
-  AbioticNoNut = latent.atx.riverTM.abioticnonut
+  AbioticNoNut = latent.atx.riverTM.abioticnonut,
+  TrueAbiotic = latent.atx.riverTM.trueabiotic
 )
 
 #Create empty list for saving tox_params2

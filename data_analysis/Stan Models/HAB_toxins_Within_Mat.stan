@@ -148,7 +148,7 @@ generated quantities {
         
       } else {
       
-      phi_t = inv_logit(Phi0 + PhiAna * X1[t-2,4]);
+      phi_t = inv_logit(Phi0 + PhiAna*X1[t-2,4]);
       
       }
       

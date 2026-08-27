@@ -172,24 +172,23 @@ anatoxin_data_TAC <- anatoxin_data_TAC1 %>%
 #---------------------------------------------------------------------------------------
 #CREATE MODEL FOR MICROCOLEUS WITHIN-MAT MICROSCOPY DATA
 
-#Gather latent states of microscopy abundances from Within-Mat model
-matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
+#Gather predicted states of microscopy abundances from Within-Mat model
+matmodel_TM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
 
-TM_latent1 <- as.data.frame(matmodel_TM) %>% 
-  dplyr::select(matches("n\\[")) %>% 
+TM_predict1 <- as.data.frame(matmodel_TM) %>% 
   t 
 
-TM_latent <- as.data.frame(TM_latent1) %>% 
+TM_predict <- as.data.frame(TM_predict1) %>% 
   rownames_to_column(var="ID") %>% 
-  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
-  dplyr::select(-chain) %>% 
-  group_by(group) %>% 
-  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE)) %>% 
-  dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Anabaena',
-                                    grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
-                                    grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema')) %>% 
-  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
-  dplyr::select(-group) %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("name", "time")) %>% 
+  dplyr::mutate(time = as.numeric(time)) %>% 
+  group_by(name, time) %>% 
+  dplyr::summarise(median = median(log(c_across(starts_with("V"))), na.rm = TRUE)) %>% 
+  dplyr::mutate(Species = case_when(name == "1" ~ 'Anabaena',
+                                    name == "2" ~ 'Epithemia Diatoms',
+                                    name == "3" ~ 'Geitlerinema')) %>% 
+  ungroup() %>% 
+  dplyr::select(!name) %>% 
   pivot_wider(names_from = Species, values_from = median) %>% 
   arrange(time)
 
@@ -265,6 +264,10 @@ fit.atx.riverTMabiotic <-  stan(file = "HAB_toxins_River_Wide.stan", data = mode
 fit.atx.riverTMabioticnonut <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTM_AbioticNoNut, chains = 3, iter = 6000,
                                warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                                max_treedepth = 15))
+#True Abiotic
+fit.atx.riverTMtrueabiotic <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTM_TrueAbiotic, chains = 3, iter = 6000,
+                                     warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                                     max_treedepth = 15))
 
 
      #Toxins from Anabaena mats
@@ -290,8 +293,10 @@ saveRDS(rstan::extract(fit.atx.riverTMabiotic, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Abiotic.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_AbioticNoNut.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_TrueAbiotic.rds"))
 
-  #Anabaena Mat Anatoxins
+                            ###Anabaena Mat Anatoxins###
 saveRDS(rstan::extract(fit.atx.riverTAC, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_TAC_Riverwide.rds"))
 
@@ -353,6 +358,19 @@ saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, pars = c('Beta0', 'Beta1', '
                                                        'tox',
                                                        'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                             'Phi0',
+                                                             'PhiAna', 
+                                                             'Ntheta',
+                                                             'Ptheta',
+                                                             'Atheta',
+                                                             'Dtheta', 'Ttheta',
+                                                             'Ctheta', 'Rtheta',
+                                                             'sigma_p',
+                                                             'tox_raw',
+                                                             'tox',
+                                                             'log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_predictions.rds"))
 
 
 

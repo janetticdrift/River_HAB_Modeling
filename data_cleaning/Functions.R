@@ -139,3 +139,143 @@ calcELPD <- function(fit) {
   
   print(ICsummary)
 }
+
+##############################
+#####Toxin Simulations for River-Wide TM Mats
+##############################
+#This function simulates then summarizes one year of data at a time
+  #The model output only includes Anabaena(t-2) in the hurdle portion, not the entire model
+
+simulate_toxin_year <- function(
+    x,
+    percentcover_predicted,
+    year,
+    start_timestep,
+    time,
+    week_offset) {
+  
+  #Pull first two iterations of latent state toxins to initalize the simulation
+  tox_conc <- x[["tox_raw"]][,start_timestep:(start_timestep + 1)]
+  
+  #Extract model coefficients 
+  Beta0 <- x[["Beta0"]]
+  Beta1 <- x[["Beta1"]]   #Green Algae
+  Beta2 <- x[["Beta2"]]   #Microcoleus
+  Beta3 <- x[["Beta3"]]   #Anabaena
+  Beta4 <- x[["Beta4"]]   #Other N Fixers
+  
+  sigma_p <- x[["sigma_p"]]   #Standard deviations
+  
+  Phi0 <- x[["Phi0"]]       #Hurdle initiation intercept
+  PhiAna <- x[["PhiAna"]]   #Lagged Anabaena effect coefficient
+  
+  Ntheta <- x[["Ntheta"]]   #Nitrate
+  Ptheta <- x[["Ptheta"]]   #Phosphate
+  Atheta <- x[["Atheta"]]   #Ammonium
+  Dtheta <- x[["Dtheta"]]   #Discharge
+  Ttheta <- x[["Ttheta"]]   #Temperature
+  Ctheta <- x[["Ctheta"]]   #Conductivity
+  Rtheta <- x[["Rtheta"]]   #Radiation
+  
+  #Pull number of iterations in the model
+  runs <- length(Beta1)
+  
+  #Index the latent states of the algal assemblage models
+  percentcover_clean <- percentcover_latent[env_keep, -1]
+  
+  #Select the appropriate time period for this year
+  year_starttime <- start_timestep:(start_timestep + time - 1)
+  #Index the latent algal abundances by this period
+  percentcover_use <- percentcover_clean[year_starttime,,drop = FALSE]
+  #Index the environmental variables by this period
+  nitrate_use <- nitrate_clean[year_starttime]
+  phos_use <- phos_clean[year_starttime]
+  amon_use <- amon_clean[year_starttime]
+  discharge_use <- discharge_clean[year_starttime]
+  temp_use <- temp_clean[year_starttime]
+  cond_use <- cond_clean[year_starttime]
+  rad_use <- rad_clean[year_starttime]
+  
+  #Build the design matrix for the current year
+  X1 <- as.matrix(cbind(intercept = rep(1, time),
+                        percentcover_use,  # Abundances are log-transformed
+                        nitrate = nitrate_use,
+                        phos = phos_use,
+                        amon = amon_use,
+                        discharge = discharge_use,
+                        temp = temp_use,
+                        cond = cond_use,
+                        rad = rad_use))
+  
+  #Build the effect coefficient matrix
+  
+  beta_matrix <- cbind(Beta0, Beta1, Beta2, Beta3, Beta4, 
+                       Ntheta, Ptheta, Atheta,
+                       Dtheta, Ttheta, Ctheta, Rtheta)
+  
+  #Create an empty matrix to store toxin values in
+  tox <- matrix(NA, nrow = runs, ncol = time)
+  
+  #####Run the Simulations#####
+  
+  for (z in 1:runs) {
+    
+    #Set initial toxin concentrations to fill the first two timesteps. As a 
+    #non-autoregressive model, they do not actually inform the simulation.
+    tox[z, 1] <- log(tox_conc[z, 1] + 1e-6)
+    tox[z, 2] <- log(tox_conc[z, 2] + 1e-6)
+    
+    #Extract this iteration's coefficents
+    beta <- beta_matrix[z, ]
+    
+    #Run simulation
+    for (t in 3:time) {
+      
+      #Hurdle: Do toxins initiate?
+      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t - 2, 4])
+      #plogis is an inverse logit function, returning a result as a 0 or 1 outcome
+      
+      #Random draw of if toxins initiate or not
+      toxin_initiate <- rbinom(1, size = 1, prob = phi_t)
+      
+      #Process: How many toxins are created?
+      if (toxin_initiate == 1) {
+        
+        #If initiation is yes, run the toxin simulation
+        tox[z, t] <- rnorm(1, mean = beta %*% X1[t - 1, ], sd = sigma_p[z])
+        
+      } else {
+        #If initiaion is no, set value near to zero
+        tox[z, t] <- log(0.0001)
+      }
+    }
+  }
+  
+  #Summarize the simulation outcomes, calculating median and upper/lower confidence intervals
+  
+  simsmedian <- as.data.frame(apply(exp(tox)/1000, 2, median)) %>% 
+    dplyr::rename(toxins = 1) %>% 
+    dplyr::mutate(time = 1:time)
+  
+  simslquant <- as.data.frame(apply(exp(tox)/1000, 2, quantile, probs = 0.025)) %>% 
+    dplyr::rename(CIlower = 1) %>% 
+    dplyr::mutate(time = 1:time)
+  
+  simsuquant <- as.data.frame(apply(exp(tox)/1000, 2, quantile, probs = 0.975)) %>% 
+    dplyr::rename(CIupper = 1) %>% 
+    dplyr::mutate(time = 1:time)
+  
+  #Merge summary calculations
+  riversims <- dplyr::left_join(simsmedian, simslquant, by = "time") %>% 
+    dplyr::left_join(simsuquant,by = "time") %>% 
+    dplyr::mutate(real_week = time + week_offset, 
+                  year = year) %>% #Only 2022's week indexing needs adding by 25 instead of 26
+    dplyr::mutate(model_date = ceiling_date(ymd(paste(year,"01","01",sep = "-")) +
+                                              (real_week - 1) * 7 - 1, "week", week_start = 7))
+  
+  #Create list of summarized predictions and unsummarized raw values to calculating
+  #model fit indices with later
+  return(list(predictions = riversims,
+              raw = tox))
+  
+}
