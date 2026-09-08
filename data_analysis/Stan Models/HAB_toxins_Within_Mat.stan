@@ -20,7 +20,9 @@ parameters {
   real Beta0;            
   real Beta1;     //Anabaena      
   real Beta2;     //Epithemia       
-  real Beta3;     //Geitlerinema       
+  real Beta3;     //Geitlerinema    
+  
+  real Anatheta;
   
   real Ntheta;
   real Ptheta;
@@ -65,6 +67,8 @@ model {
   Beta2 ~ normal(0,1);
   Beta3 ~ normal(0,1);
   
+  Anatheta ~ normal(0,1);
+  
   Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
   Atheta ~ normal(0,1);
@@ -90,7 +94,7 @@ model {
       continue;
     }
       //Latent toxin magnitudes are predicted by algal abundances t-1 and env drivers t-1
-    tox[t] ~ normal(X1[t-1,]*beta, sigma_p);
+    tox[t] ~ normal(X1[t-1,]*beta + X1[t-2,2]*Anatheta, sigma_p);
   }
   
   //Observation model (Hurdle)
@@ -109,7 +113,7 @@ model {
           
         } else { //If the time step was not on the first or second day of the year, use the Anabaena t-2 lag
         
-        phi_t =  inv_logit(Phi0 + PhiAna * X1[t-2,4]);  //This is the timestep-specific probability that toxins initiate (Intercept + lagged Anabaena)
+        phi_t =  inv_logit(Phi0 + PhiAna * X1[t-2,2]);  //This is the timestep-specific probability that toxins initiate (Intercept + lagged Anabaena)
          
         }                     
       if(Toxins[t] == 0){  //And if that observed timestep does NOT observe any toxins...

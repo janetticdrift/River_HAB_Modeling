@@ -173,22 +173,23 @@ anatoxin_data_TAC <- anatoxin_data_TAC1 %>%
 #CREATE MODEL FOR MICROCOLEUS WITHIN-MAT MICROSCOPY DATA
 
 #Gather predicted states of microscopy abundances from Within-Mat model
-matmodel_TM <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
+matmodel_TM <- readRDS(here::here("data/Outputs for Obs vs Real/WithinMat_Micro.rds"))
 
-TM_predict1 <- as.data.frame(matmodel_TM) %>% 
+TM_latent1 <- as.data.frame(matmodel_TM) %>% 
+  dplyr::select(matches("n\\[")) %>% 
   t 
 
-TM_predict <- as.data.frame(TM_predict1) %>% 
+TM_latent <- as.data.frame(TM_latent1) %>% 
   rownames_to_column(var="ID") %>% 
-  tidyr::separate_wider_delim(ID, ".", names = c("name", "time")) %>% 
-  dplyr::mutate(time = as.numeric(time)) %>% 
-  group_by(name, time) %>% 
-  dplyr::summarise(median = median(log(c_across(starts_with("V"))), na.rm = TRUE)) %>% 
-  dplyr::mutate(Species = case_when(name == "1" ~ 'Anabaena',
-                                    name == "2" ~ 'Epithemia Diatoms',
-                                    name == "3" ~ 'Geitlerinema')) %>% 
-  ungroup() %>% 
-  dplyr::select(!name) %>% 
+  tidyr::separate_wider_delim(ID, ".", names = c("chain", "group")) %>% 
+  dplyr::select(-chain) %>% 
+  group_by(group) %>% 
+  dplyr::summarise(median = median(c_across(starts_with("V")), na.rm = TRUE)) %>% 
+  dplyr::mutate(Species = case_when(grepl("[1,", group, fixed=TRUE) ~ 'Anabaena',
+                                    grepl("[2,", group, fixed=TRUE) ~ 'Epithemia Diatoms',
+                                    grepl("[3,", group, fixed=TRUE) ~ 'Geitlerinema')) %>% 
+  mutate(time = as.numeric(str_extract_all(group, "[0-9]+", simplify = T)[,2])) %>% 
+  dplyr::select(-group) %>% 
   pivot_wider(names_from = Species, values_from = median) %>% 
   arrange(time)
 
@@ -307,6 +308,7 @@ saveRDS(rstan::extract(fit.atx.mat, permuted=FALSE),
 #For building the latent state vs predictions plots
                               ###River-Wide###
 saveRDS(rstan::extract(fit.atx.riverTMall, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                    'Anatheta',
                                               'Phi0',
                                               'PhiAna', 
                                               'Ntheta',
@@ -320,6 +322,7 @@ saveRDS(rstan::extract(fit.atx.riverTMall, pars = c('Beta0', 'Beta1', 'Beta2', '
                                               'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMbiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                       'Anatheta',
                                                     'Phi0',
                                                     'PhiAna', 
                                                     'Ntheta',
@@ -333,6 +336,7 @@ saveRDS(rstan::extract(fit.atx.riverTMbiotic, pars = c('Beta0', 'Beta1', 'Beta2'
                                                     'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMabiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                        'Anatheta',
                                                        'Phi0',
                                                        'PhiAna', 
                                                        'Ntheta',
@@ -346,6 +350,7 @@ saveRDS(rstan::extract(fit.atx.riverTMabiotic, pars = c('Beta0', 'Beta1', 'Beta2
                                                        'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                             'Anatheta',
                                                        'Phi0',
                                                        'PhiAna', 
                                                        'Ntheta',
@@ -359,6 +364,7 @@ saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, pars = c('Beta0', 'Beta1', '
                                                        'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                            'Anatheta',
                                                              'Phi0',
                                                              'PhiAna', 
                                                              'Ntheta',
@@ -375,6 +381,7 @@ saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, pars = c('Beta0', 'Beta1', 'B
 
 
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                  'Anatheta',
                                                  'Phi0',
                                                  'PhiAna', 
                                                  'Ntheta',
@@ -390,6 +397,7 @@ saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Be
 
                                       ###Within-Mat###
 saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
+                                             'Anatheta',
                                              'Phi0',
                                              'PhiAna',
                                              'Ntheta',
@@ -411,36 +419,36 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
 # library(rstantools)
 # 
 # #Can check posterior graphs in shinystan
-shinystan::launch_shinystan(as.shinystan(fit.atx.riverTMall))
+#shinystan::launch_shinystan(as.shinystan(fit.atx.riverTMall))
 # 
 #Model Checks: Within-Mat
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Ntheta", "Ptheta", "Atheta"))
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Beta1", "Beta2", "Beta3") )
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("phi") )
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Ntheta", "Ptheta", "Atheta"))
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Beta1", "Beta2", "Beta3") )
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("phi") )
 #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
 # #Model Checks: River-Wide
-mcmc_intervals(
-  as.array(fit.atx.riverTMall),
-  pars = c("Ntheta", "Ptheta", "Atheta"))
-mcmc_intervals(
-  as.array(fit.atx.riverTMall),
-  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
-mcmc_intervals(
-  as.array(fit.atx.riverTMall),
-  pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
-mcmc_intervals(
-  as.array(fit.atx.riverTMall),
-  pars = c("PhiAna") )
+# mcmc_intervals(
+#   as.array(fit.atx.riverTMall),
+#   pars = c("Ntheta", "Ptheta", "Atheta"))
+# mcmc_intervals(
+#   as.array(fit.atx.riverTMall),
+#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+# mcmc_intervals(
+#   as.array(fit.atx.riverTMall),
+#   pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
+# mcmc_intervals(
+#   as.array(fit.atx.riverTMall),
+#   pars = c("PhiAna") )
 
 # Model Checks: WAIC
 #Extract log-likelihoods
@@ -464,7 +472,8 @@ lag_df <- data.frame(time = TM_latent$time,
 
 #Cross-Correlation
 ccf(lag_df$Anabaena_mat, lag_df$ATX, lag.max = 5)
-ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5)
+lagplot <- ccf(lag_df$Anabaena_river, lag_df$ATX, lag.max = 5, main = "", ylab = "Cross-Correlation",
+    xlab = "Number of Lagged Weeks")
 ccf(lag_df$Microcoleus_river, lag_df$ATX, lag.max = 5)
  ccf(lag_df$nitrate, lag_df$ATX, lag.max = 5)
 

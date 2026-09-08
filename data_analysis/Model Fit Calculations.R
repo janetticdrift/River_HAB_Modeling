@@ -47,7 +47,7 @@ y_geit <- obs_mat_data$Geitlerinema             #3
 y_obs_mat <- rbind(y_ana, y_epi, y_geit) #Dimensions: Species, time
 
 #Read in LATENT states of Within-Mat: TM
-#TMfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
+TMfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
 
 #Read in SIMULATED states of Within-Mat
 TM.pred <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/WithinMat_Pred_TM.rds"))
@@ -131,15 +131,14 @@ model_list <- list(
   ),
 
   #Within Mat Abundance Model
-  # list(
-  #   model = "TMfit",
-  #   category = "Within-Mat",
-  #   y_obs = y_obs_mat,
-  #   post = TMfit[["n"]],
-  #   pred = TM.pred,
-  #   species = mat_species
-  # )
-
+  list(
+    model = "TMfit",
+    category = "Within-Mat",
+    y_obs = y_obs_mat,
+    post = TMfit[["n"]],
+    pred = TM.pred,
+    species = mat_species
+  ),
   #River-Wide Microcoleus Toxin Models
   list(
     model = "toxriverfitTM.all",
@@ -393,7 +392,7 @@ shapScale <- scale_shape_manual(
   values = myshap)
 
 #Plot River-Wide Algae Metrics
-ggplot(subset(clean.model.indices, metric %in% "r2"), 
+metricplot <- ggplot(subset(clean.model.indices, metric %in% "r2"), 
        aes(x = value, y = species, shape = category, color = model)) +
   facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = -0.6), #position_dodge separates species apart
@@ -409,16 +408,3 @@ ggplot(subset(clean.model.indices, metric %in% "r2"),
        color = "Model")
 
 
-# ggplot(subset(subset(clean.model.indices, category %in% "River-Wide"), metric == "Bayesian R2"), aes(x = value, y = species, shape = model, color = model)) +
-#   geom_point(position = position_dodge(width = 0.6), #position_dodge seps species apart
-#              size = 3) +
-#   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
-#                  position = position_dodge(width = 0.6)) +
-#   scale_y_discrete(limits = rev(levels(clean.model.indices$species)[1:4])) +
-#   colScale + shapScale +
-#   theme_bw() +
-#   labs(title = "Bayesian R2",
-#        x = "Metric value",
-#        y = "Model",
-#        shape = "Species",
-#        color = "Species")

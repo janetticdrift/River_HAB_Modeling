@@ -17,15 +17,18 @@ source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/River_Wide_model
 #Create a color palette
 mycols <- c("brown", "darkolivegreen4", "darkcyan", "darkorange")
 mypal <- palette(mycols)
+mypal <- palette(mycols)
 names(mypal) <- c("Anabaena", "Green Algae", "Microcoleus", 
                  "Other N Fixers")
-colScale <- scale_color_manual(name = "Taxa", values = mypal 
-                               # breaks = c("Microcoleus",
-                               #            "Anabaena")
+colScale.complete <- scale_color_manual(name = "Taxa", values = mypal)
+colScale.breaks <- scale_color_manual(name = "Taxa", values = mypal, 
+                               breaks = c("Microcoleus",
+                                          "Anabaena")
                                )
-filScale <- scale_fill_manual(name = "Taxa", values = mypal 
-                              # breaks = c("Microcoleus",
-                              #            "Anabaena")
+filScale.complete <- scale_fill_manual(name = "Taxa", values = mypal)
+filScale.breaks <- scale_fill_manual(name = "Taxa", values = mypal, 
+                              breaks = c("Microcoleus",
+                                         "Anabaena")
                               )
 linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
@@ -66,9 +69,6 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-# DINtheta <- x[["DINtheta"]][,]
-# DIN <- stand_nut$DIN[1:time]
-
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
 
@@ -93,7 +93,6 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -107,7 +106,6 @@ for(z in 1:runs){
                                nTheta*nitrate[t-1]+
                                pTheta*phos[t-1] + 
                                aTheta*amon[t-1] + 
-                               # DINTheta*DIN[t-1] +
                                dTheta*dis[t-1] +
                                tTheta*temp[t-1] + cTheta*cond[t-1] + rTheta*rad[t-1],
                              Sigma = sigma)
@@ -374,10 +372,13 @@ p1 <- ggplot(simsall, aes(x = model_date, y = median)) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_all, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,72)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances") +
-  colScale + filScale + linScale + theme_bw()
+  scale_y_continuous(breaks = seq(0, 600, 20)) +
+  coord_cartesian(ylim = c(0,65)) +
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale.complete + filScale.complete + linScale + labs(tag = "A") + theme_bw() +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)),
+        plot.margin = margin(1, 1, 0, 1))
 
 # Plot 2: Only show Anabaena + Microcoleus
 p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
@@ -398,18 +399,17 @@ p2 <- ggplot(simsall, aes(x = model_date, y = median)) +
             data = transform(params2_all, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
-  labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  linScale + theme_bw() +
+  theme(plot.margin = margin(0, 1, 0, 1))
+
+p2.complete <- p2 + colScale.complete + filScale.complete + theme(strip.text = element_blank())
+p2.breaks <- p2 + colScale.breaks + filScale.breaks
   
 
 # Combine plots and collect legends
   # See colScale code on line 22 to add/remove taxa from the Taxa list, using the breaks function
-(p1 / p2) +
-  plot_layout(guides = "collect", axes = "collect") &
-  theme(legend.position = "right", legend.box = "vertical")
-
-#Combine Microcoleus/Anabaena plot with environmental variables plot
-(p2 / envplot) +
+RWplot.all <- (p1 / p2.complete) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 
@@ -482,7 +482,17 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2022-10-15"), 
+                                        by = "1 week")) %>%
+  dplyr::mutate(year = 2022) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 
@@ -544,7 +554,14 @@ sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   #dplyr::mutate(real_week = time + 25, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2023-10-15"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = 2023) %>% 
+  ungroup()
 
 
 
@@ -627,10 +644,13 @@ p3 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_biotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
+  scale_y_continuous(breaks = seq(0, 600, 20)) +
   coord_cartesian(ylim = c(0,59)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Biotic Interactions") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale.complete + filScale.complete + linScale + labs(tag = "B") + theme_bw() +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)),
+        plot.margin = margin(1, 1, 0, 1))
 
 # Plot 2: Only show Anabaena + Microcoleus
 p4 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
@@ -651,12 +671,18 @@ p4 <- ggplot(simsbiotic, aes(x = model_date, y = median)) +
             data = transform(params2_biotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
-  labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  linScale + theme_bw() +
+  theme(plot.margin = margin(0, 1, 0, 1))
+
+p4.complete <- p4 + colScale.complete + filScale.complete + theme(strip.text = element_blank())
+
+p4.breaks <- p4 + colScale.breaks + filScale.breaks + theme(strip.text = element_blank())
+
 
 
 # Combine plots and collect legends
-(p3 / p4) +
+RWplot.biotic <- (p3 / p4.complete) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 
@@ -772,7 +798,17 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2022-10-15"), 
+                                        by = "1 week")) %>%
+  dplyr::mutate(year = 2022) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 #
@@ -866,7 +902,14 @@ sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2023-10-15"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = 2023) %>% 
+  ungroup()
 
 
 #
@@ -986,10 +1029,13 @@ p5 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_abiotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,75)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions") +
-  colScale + filScale + linScale + theme_bw()
+  scale_y_continuous(breaks = seq(0, 600, 20)) +
+  coord_cartesian(ylim = c(0,65)) +
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale.complete + filScale.complete + linScale + labs(tag = "C") + theme_bw() +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)),
+        plot.margin = margin(1, 1, 0, 1))
 
 # Plot 2: Only show Anabaena + Microcoleus
 p6 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
@@ -1010,12 +1056,17 @@ p6 <- ggplot(simsabiotic, aes(x = model_date, y = median)) +
             data = transform(params2_abiotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
-  labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale + filScale + linScale + theme_bw() +
+  theme(plot.margin = margin(0, 1, 0, 1))
+
+p6.complete <- p6 + colScale.complete + filScale.complete + theme(strip.text = element_blank())
+
+p6.breaks <- p6 + colScale.breaks + filScale.breaks + theme(strip.text = element_blank())
 
 
 # Combine plots and collect legends
-(p5 / p6) +
+RWplot.abiotic <- (p5 / p6) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 
@@ -1109,7 +1160,17 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 25, year = 2022) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2022-10-15"), 
+                                        by = "1 week")) %>%
+  dplyr::mutate(year = 2022) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 #
@@ -1189,7 +1250,14 @@ sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   mutate(real_week = time + 24, year = 2023) %>% 
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2023-10-15"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = 2023) %>% 
+  ungroup()
 
 
 #
@@ -1294,10 +1362,13 @@ p7 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_abioticnonut, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
+  scale_y_continuous(breaks = seq(0, 600, 20)) +
   coord_cartesian(ylim = c(0,69)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Only Abiotic Interactions Minus Nutrients") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale.complete + filScale.complete + linScale + labs(tag = "D") + theme_bw() +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)),
+        plot.margin = margin(1, 1, 0, 1))
 
 # Plot 2: Only show Anabaena + Microcoleus
 p8 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
@@ -1318,12 +1389,16 @@ p8 <- ggplot(simsabioticnonut, aes(x = model_date, y = median)) +
             data = transform(params2_abioticnonut, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
-  labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  linScale + theme_bw() +
+  theme(plot.margin = margin(0, 1, 0, 1))
 
+p8.complete <- p8 + colScale.complete + filScale.complete + theme(strip.text = element_blank())
+
+p8.breaks <- p8 + colScale.breaks + filScale.breaks
 
 # Combine plots and collect legends
-(p7 / p8) +
+RWplot.abioticnonut <- (p7 / p8.complete) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 
@@ -1432,7 +1507,17 @@ sims2022 <- left_join(sims2022median, sims2022lquant, by=c("Species", "time")) %
   left_join(., sims2022uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 25, year = 2022) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-19"), 
+                                        to = min(model_date), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2022-10-15"), 
+                                        by = "1 week")) %>%
+  dplyr::mutate(year = 2022) %>% 
+  dplyr::arrange(model_date) %>% 
+  ungroup()
 
 
 #
@@ -1525,7 +1610,14 @@ sims2023 <- left_join(sims2023median, sims2023lquant, by=c("Species", "time")) %
   left_join(., sims2023uquant, by=c("Species", "time")) %>% 
   dplyr::mutate(real_week = time + 24, year = 2023) %>% 
   dplyr::mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                            (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                            (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  group_by(Species) %>% 
+  tidyr::complete(model_date = seq.Date(from = min(model_date), 
+                                        to = as.Date("2023-10-15"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = 2023) %>% 
+  ungroup()
 
 
 #
@@ -1644,10 +1736,13 @@ p9 <- ggplot(simstrueabiotic, aes(x = model_date, y = median)) +
   # Latent points/lines
   geom_line(aes(linetype = "Latent", colour = Species), linewidth = 2,
             data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Green Algae", "Other N Fixers"), median, NA))) +
-  scale_y_continuous(breaks = seq(0, 600, 10)) +
-  coord_cartesian(ylim = c(0,75)) +
-  labs(x = "Date", y = "Percent Cover (%)", title = "Latent vs. Predicted Abundances: Truly Abiotic Interactions") +
-  colScale + filScale + linScale + theme_bw()
+  scale_y_continuous(breaks = seq(0, 600, 20)) +
+  coord_cartesian(ylim = c(0,65)) +
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale.complete + filScale.complete + linScale + labs(tag = "E") + theme_bw() +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)),
+        plot.margin = margin(1, 1, 0, 1))
 
 # Plot 2: Only show Anabaena + Microcoleus
 p10 <- ggplot(simstrueabiotic, aes(x = model_date, y = median)) +
@@ -1668,12 +1763,16 @@ p10 <- ggplot(simstrueabiotic, aes(x = model_date, y = median)) +
             data = transform(params2_trueabiotic, median = ifelse(Species %in% c("Anabaena", "Microcoleus"), median, NA))) +
   scale_y_continuous(breaks = seq(0, 600, 5)) +
   coord_cartesian(ylim = c(0,16)) +
-  labs(x = "Date", y = "Percent Cover (%)") +
-  colScale + filScale + linScale + theme_bw()
+  labs(x = "", y = "Percent Cover (%)") +
+  colScale + filScale + linScale + theme_bw() +
+  theme(plot.margin = margin(0, 1, 0, 1))
+
+p10.complete <- p10 + colScale.complete + filScale.complete + theme(strip.text = element_blank())
+p10.breaks <- p10 + colScale.breaks + filScale.breaks 
 
 
 # Combine plots and collect legends
-(p9 / p10) +
+RWplot.trueabiotic <- (p9 / p10) +
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "right", legend.box = "vertical")
 

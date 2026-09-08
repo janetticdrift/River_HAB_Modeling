@@ -132,6 +132,7 @@ calcDIC <- function(fit, observed, positions){
 ##############################
 #####Calculate ELPD
 ##############################
+library(loo)
 calcELPD <- function(fit) {
   log_lik <- extract_log_lik(fit, parameter_name = "log_lik")
   looall <- loo(log_lik)
@@ -148,7 +149,7 @@ calcELPD <- function(fit) {
 
 simulate_toxin_year <- function(
     x,
-    percentcover_predicted,
+    percentcover_latent,
     year,
     start_timestep,
     time,
@@ -168,6 +169,8 @@ simulate_toxin_year <- function(
   
   Phi0 <- x[["Phi0"]]       #Hurdle initiation intercept
   PhiAna <- x[["PhiAna"]]   #Lagged Anabaena effect coefficient
+  
+  Anatheta <- x[["Anatheta"]]
   
   Ntheta <- x[["Ntheta"]]   #Nitrate
   Ptheta <- x[["Ptheta"]]   #Phosphate
@@ -232,7 +235,7 @@ simulate_toxin_year <- function(
     for (t in 3:time) {
       
       #Hurdle: Do toxins initiate?
-      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t - 2, 4])
+      phi_t <- plogis(Phi0[z] + PhiAna[z]*X1[t-2, 4])
       #plogis is an inverse logit function, returning a result as a 0 or 1 outcome
       
       #Random draw of if toxins initiate or not
@@ -242,7 +245,7 @@ simulate_toxin_year <- function(
       if (toxin_initiate == 1) {
         
         #If initiation is yes, run the toxin simulation
-        tox[z, t] <- rnorm(1, mean = beta %*% X1[t - 1, ], sd = sigma_p[z])
+        tox[z, t] <- rnorm(1, mean = beta %*% X1[t-1, ] + Anatheta[z]*X1[t-2,4], sd = sigma_p[z])
         
       } else {
         #If initiaion is no, set value near to zero

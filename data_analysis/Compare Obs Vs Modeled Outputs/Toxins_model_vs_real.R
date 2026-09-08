@@ -46,6 +46,7 @@ obs_data_toxinsTM <- toxinsTM %>%
                 model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_afdm_g" ~ "Total Anatoxins",
+                                     Congener == "ATX_all_ug_g" ~ "Sum Anatoxins",
                                     Congener == "ATXa_ug_g" ~ "Anatoxin-a",
                                     Congener == "HTXa_ug_g" ~ "Homoanatoxin-a",
                                     Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
@@ -108,7 +109,21 @@ for (model in names(models_TM)) {
     arrange(time) %>% 
     mutate(real_week = ifelse(is.na(real_week),zoo::na.locf(real_week) + 1, real_week)) %>%
     mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                       (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                       (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+    dplyr::mutate(Congener = as.factor(Congener)) %>% 
+    group_by(Congener) %>% 
+    tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-26"), 
+                                          to = as.Date("2022-10-10"), 
+                                          by = "1 week")) %>%  #Expand the date ranges, so that they all match
+    tidyr::complete(model_date = seq.Date(from = as.Date("2023-06-25"), 
+                                          to = as.Date("2023-10-10"), 
+                                          by = "1 week")) %>%
+    tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-23"), 
+                                          to = as.Date("2024-10-10"), 
+                                          by = "1 week")) %>%
+    ungroup %>% 
+    arrange(model_date) %>% 
+    dplyr::mutate(year = year(model_date))
   
   #Save cleaned and summarized River-Wide toxin model latent states
   output_file <- here::here(paste0("data/Outputs for Sims and Model Fits/Latent States/", "Tox_LatentStates_Riverwide_TM_", model, ".rds"))
@@ -132,6 +147,7 @@ obs_data_toxinsTAC <- toxinsTAC %>%
                 model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
                                             (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
   dplyr::mutate(Congener = case_when(Congener == "ATX_all_ug_afdm_g" ~ "Total Anatoxins",
+                                     Congener == "ATX_all_ug_g" ~ "Sum Anatoxins",
                                      Congener == "ATXa_ug_g" ~ "Anatoxin-a",
                                      Congener == "HTXa_ug_g" ~ "Homoanatoxin-a",
                                      Congener == "dhATXa_ug_g" ~ "Dihydroanatoxin-a")) %>% 
@@ -176,7 +192,21 @@ tox_params2_riverTAC <- as.data.frame(tox_params_riverTAC) %>%
   arrange(time) %>% 
   mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  dplyr::mutate(Congener = as.factor(Congener)) %>% 
+  group_by(Congener) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-07-10"), 
+                                        to = as.Date("2022-09-25"), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = as.Date("2023-07-09"), 
+                                        to = as.Date("2023-09-24"), 
+                                        by = "1 week")) %>%
+  tidyr::complete(model_date = seq.Date(from = as.Date("2024-07-07"), 
+                                        to = as.Date("2024-09-24"), 
+                                        by = "1 week")) %>%
+  ungroup %>% 
+  arrange(model_date) %>% 
+  dplyr::mutate(year = year(model_date))
 
 #Save cleaned and summarized River-Wide toxin model latent states for visualizing 
 #predictive toxin simulations
@@ -212,7 +242,21 @@ tox_params2_mat <- as.data.frame(tox_params_mat) %>%
   mutate(real_week = ifelse(is.na(real_week), zoo::na.locf(real_week)+1, real_week)) %>%
   mutate(real_week = ifelse(year == 2024, time, real_week)) %>% #manually fill in multiple skipped weeks, luckily real week = timestep in this year
   mutate(model_date = ceiling_date(ymd(paste(year, "01", "01", sep = "-")) + 
-                                     (real_week - 1) * 7 - 1, "week", week_start = 7))
+                                     (real_week - 1) * 7 - 1, "week", week_start = 7)) %>% 
+  dplyr::mutate(Congener = as.factor(Congener)) %>% 
+  group_by(Congener) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-26"), 
+                                        to = as.Date("2022-10-13"), 
+                                        by = "1 week")) %>%  #Expand the date ranges, so that they all match
+  tidyr::complete(model_date = seq.Date(from = as.Date("2023-06-25"), 
+                                        to = as.Date("2023-10-13"), 
+                                        by = "1 week")) %>%
+  tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-23"), 
+                                        to = as.Date("2024-10-13"), 
+                                        by = "1 week")) %>%
+  ungroup %>% 
+  arrange(model_date) %>% 
+  dplyr::mutate(year = year(model_date))
 
 saveRDS(tox_params2_mat, 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Tox_LatentStates.rds"))
@@ -224,7 +268,7 @@ saveRDS(tox_params2_mat,
 #FIGURES--------------------------------------------------------------------------------
   
 #River-Wide TM
-ggplot(tox_params2_riverTM, aes(x = model_date, y = median)) +
+obs.v.real_TOX_RW_TM_all <- ggplot(tox_params2$All, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
               alpha = 0.2) +
@@ -238,16 +282,104 @@ ggplot(tox_params2_riverTM, aes(x = model_date, y = median)) +
   geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 80)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Micro Mat Tox Concentrations: River-Wide") +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  theme_bw()
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
+
+obs.v.real_TOX_RW_TM_biotic <- ggplot(tox_params2$Biotic, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
+  # Latent points/lines
+  geom_point(aes(colour = Congener), size = 3) +
+  geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
+  # Observed points/lines
+  geom_point(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+             aes(x = model_date, y = obs_mean, shape = Congener),
+             size = 2.5) +
+  geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+            aes(x = model_date, y = obs_mean, group = Congener),
+            size = 0.5) +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
+
+obs.v.real_TOX_RW_TM_abiotic <- ggplot(tox_params2$Abiotic, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
+  # Latent points/lines
+  geom_point(aes(colour = Congener), size = 3) +
+  geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
+  # Observed points/lines
+  geom_point(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+             aes(x = model_date, y = obs_mean, shape = Congener),
+             size = 2.5) +
+  geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+            aes(x = model_date, y = obs_mean, group = Congener),
+            size = 0.5) +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
+
+obs.v.real_TOX_RW_TM_abioticnonut <- ggplot(tox_params2$AbioticNoNut, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
+  # Latent points/lines
+  geom_point(aes(colour = Congener), size = 3) +
+  geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
+  # Observed points/lines
+  geom_point(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+             aes(x = model_date, y = obs_mean, shape = Congener),
+             size = 2.5) +
+  geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+            aes(x = model_date, y = obs_mean, group = Congener),
+            size = 0.5) +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
+
+obs.v.real_TOX_RW_TM_trueabiotic <- ggplot(tox_params2$TrueAbiotic, aes(x = model_date, y = median)) +
+  facet_wrap(~year, scales = "free_x") +
+  geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
+              alpha = 0.2) +
+  # Latent points/lines
+  geom_point(aes(colour = Congener), size = 3) +
+  geom_line(aes(colour = Congener), size = 2, alpha = 0.7) +
+  # Observed points/lines
+  geom_point(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+             aes(x = model_date, y = obs_mean, shape = Congener),
+             size = 2.5) +
+  geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
+            aes(x = model_date, y = obs_mean, group = Congener),
+            size = 0.5) +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
+  scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
+  scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
+  labs(color = "Latent", fill = "Latent", shape = "Observed") +
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
 
 #River-Wide TAC
-ggplot(tox_params2_riverTAC, aes(x = model_date, y = median)) +
+obs.v.real_TOX_RW_TAC <- ggplot(tox_params2_riverTAC, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
               alpha = 0.2) +
@@ -261,16 +393,17 @@ ggplot(tox_params2_riverTAC, aes(x = model_date, y = median)) +
   geom_line(data = subset(obs_data_toxinsTAC, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 230, 10)) +
-  coord_cartesian(y = c(0, 230)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Ana Mat Tox Concentrations: River-Wide") +
+  scale_y_continuous(breaks = seq(0, 200, 20)) +
+  coord_cartesian(y = c(0, 200)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  theme_bw()
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
 
 #Within-Mat
-ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
+obs.v.real_TOX_WM_TM <- ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Congener), 
               alpha = 0.2) +
@@ -284,12 +417,12 @@ ggplot(tox_params2_mat, aes(x = model_date, y = median)) +
   geom_line(data = subset(obs_data_toxinsTM, Congener %in% c("Total Anatoxins")), 
             aes(x = model_date, y = obs_mean, group = Congener),
             size = 0.5) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
-  coord_cartesian(y = c(0, 80)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Observed vs. Latent Concentrations using Within-Mat") +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  coord_cartesian(y = c(0, 85)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
   scale_colour_manual(values = c("Total Anatoxins" = "#791c55")) +
   scale_fill_manual(values = c("Total Anatoxins" = "#791c55")) +
   labs(color = "Latent", fill = "Latent", shape = "Observed") +
-  theme_bw()
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
 
 

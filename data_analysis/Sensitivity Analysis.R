@@ -188,18 +188,18 @@ any(is.na(eq_abund$w_star))
 #Create an object that renames the environmental variables from their abbreviations
 env_labels <- c(
   'N' = 'Nitrate',
-  'P' = 'Phosphate',
+  'P' = 'o-Phosphate',
   'A' = 'Ammonium',
   'D' = 'Discharge',
   'Tt' = 'Temperature',
   'C' = 'Conductivity',
-  'R' = 'Light'
+  'R' = 'Solar Radiation'
 )
 
 #########  
 #Boxplots
 ######### 
-  #Species2: Microcoleus
+  #Species2: Microcoleus: Only nutrient variables
 micro_eq <- ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include" 
                           & env %in% c("N", "P", "A")), 
        aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
@@ -212,7 +212,18 @@ micro_eq <- ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "includ
   scale_fill_viridis_c(option="magma", begin = 0.45, end = .80)+
   theme(legend.position = "none")
 
-#Species2: Anabaena
+  #Species2: Microcoleus: All variables
+micro_total_eq <- ggplot(subset(eq_abund, species %in% "2" & Interactions %in% "include"), 
+                   aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels)) + #scales = "free_y", gives each facet its own y axis
+  geom_boxplot(outliers = F) + 
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
+  scale_x_discrete(breaks = c(-2, 0, 2)) +
+  theme_classic() +
+  scale_fill_viridis_c(option="magma", begin = 0.45, end = .80)+
+  theme(legend.position = "none")
+
+#Species3: Anabaena: Only environmental variables
 ana_eq <- ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"
               & env %in% c("N", "P", "A")), 
        aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
@@ -225,7 +236,20 @@ ana_eq <- ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"
   scale_fill_viridis_c(option="viridis", begin = 0.5, end = .90)+
   theme(legend.position = "none")
 
-(micro_eq /ana_eq)
+  #Specie3: Anabaena: All variables
+ana_total_eq <- ggplot(subset(eq_abund, species %in% "3" & Interactions %in% "include"), 
+                 aes(x = factor(env_peturb), y = w_star, fill = env_peturb)) +
+  facet_wrap(~env, labeller = labeller(env = env_labels)) + #scales = "free_y",
+  geom_boxplot(outliers = F) + 
+  labs(x = "Standard Deviations", y = "Equilibrium Abundance") +
+  scale_x_discrete(breaks = c(-2, 0, 2)) +
+  theme_classic() +
+  scale_fill_viridis_c(option="viridis", begin = 0.5, end = .90)+
+  theme(legend.position = "none")
+
+(micro_eq /ana_eq) +
+  plot_annotation(tag_levels = 'A') +
+  plot_layout(guides = "collect", axis_titles = "collect_x")
 
 ######### 
 #Median plot 

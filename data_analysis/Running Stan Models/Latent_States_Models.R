@@ -247,10 +247,6 @@ init_fun_A <- function() list(
 fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, iter = 6000,
                 warmup = 3000, refresh=100, init = init_fun_M, control = list(adapt_delta = 0.999,
                                                                               max_treedepth = 15))
-#  #Averaged, TAC
-# fit.m3 <-  stan(file = "HAB_mat_community.stan", data = model.3, chains = 3, iter = 6000,
-#                 warmup = 3000, refresh=100, init = init_fun_A, control = list(adapt_delta = 0.999,
-#                                                                               max_treedepth = 15))
 
 #-------------------------------------------------------------------------------------------------
 # #Model checks and evaluation
@@ -260,22 +256,22 @@ fit.m2 <-  stan(file = "HAB_mat_community.stan", data = model.2, chains = 3, ite
 # library(rstantools)
 # 
 # #Can check posterior graphs in shinystan
- shinystan::launch_shinystan(fit.m1.1)
+# shinystan::launch_shinystan(fit.m1.1)
 # print(fit.m1.1, par = "Ntheta")
 
-#Model Checks: Within-Mat
-mcmc_intervals(
-  as.array(fit.m1.1),
-  pars = c("Ntheta[3]", "Ptheta[3]", "Atheta[3]"))
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("Beta1", "Beta2", "Beta3") )
-mcmc_intervals(
-  as.array(fit.atx.mat),
-  pars = c("BetaAna", "BetaEpi", "BetaGeit") )
+# #Model Checks: Within-Mat
+# mcmc_intervals(
+#   as.array(fit.m1.1),
+#   pars = c("Ntheta[3]", "Ptheta[3]", "Atheta[3]"))
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("Beta1", "Beta2", "Beta3") )
+# mcmc_intervals(
+#   as.array(fit.atx.mat),
+#   pars = c("BetaAna", "BetaEpi", "BetaGeit") )
 
 ######################
 ######################
@@ -379,26 +375,25 @@ saveRDS(fit.m2.extract,
                     ############River-Wide models############
 
 #All Variables
-calcELPD(fit.m1.1)
+m1.1.elpd <- calcELPD(fit.m1.1)
 calcDIC(fit.m1.1.extract, alltaxatime, positions = 4:7)
 
 #Biotic Only
-calcELPD(fit.m1.2)
+m1.2.elpd <- calcELPD(fit.m1.2)
 calcDIC(fit.m1.2.extract, alltaxatime, positions = 4:7)
 
 #Abiotic Only
-calcELPD(fit.m1.3)
+m1.3.elpd <- calcELPD(fit.m1.3)
 calcDIC(fit.m1.3.extract, alltaxatime, positions = 4:7)
 
 #Abiotic No Nutrients
-calcELPD(fit.m1.4)
+m1.4.elpd <- calcELPD(fit.m1.4)
 calcDIC(fit.m1.4.extract, alltaxatime, positions = 4:7)
 
 #True Abiotic
-calcELPD(fit.m1.5)
+m1.5.elpd <- calcELPD(fit.m1.5)
 calcDIC(fit.m1.5.extract, alltaxatime, positions = 4:7)
 
 #Within-Mat models
-calcELPD()
+m2.elpd <- calcELPD(fit.m2)
 calcDIC(fit.m2.extract, matalltaxaM, positions = 3:5)
-calcDIC

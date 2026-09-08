@@ -560,7 +560,7 @@ envplot <- ggplot(nitrate.ammonium, aes(x = fake_date)) +
                      values = c("Nitrate" = "#813B9A",
                                 "Phosphate" = "#1a7531")) +
   labs(x = "Date") +
-  theme_bw()
+  theme_bw() + theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
 
 #############################################################################################
                                 #Tidy Anatxoin Concentration data.

@@ -28,6 +28,10 @@ water_chemistry_data <- nutrients_raw %>%
                   nitrate_mg_N_L, oPhos_ug_P_L, ammonium_mg_N_L, DIN_mg_N_L,
                   temp_C, cond_uS_cm, pH, DO_mg_L)
 
+#Save file to EDI Files folder
+saveRDS(water_chemistry_data, 
+        file = here::here("data/EDI FIles/water_chemistry.rds"))
+
 
 ###########################
 #Benthic Algae Percent Cover
@@ -37,6 +41,10 @@ percent_cover_data <- percoverdata %>%
   dplyr::relocate(other_nfixers, .before = bare_biofilm) %>% 
   dplyr::select(!year) %>% 
   dplyr::arrange(field_date)
+
+#Save file to EDI Files folder
+saveRDS(percent_cover_data, 
+        file = here::here("data/EDI FIles/benthic_percent_cover.rds"))
 
 ###########################
 #Mat Microscopy Analysis
@@ -57,6 +65,10 @@ microscopy_data <- microscopy1 %>%
                                         mat_sampled == "TAC" ~ "Anabaena"))
 
 
+#Save file to EDI Files folder
+saveRDS(microscopy_data, 
+        file = here::here("data/EDI FIles/microscopy.rds"))
+
 
 ###########################
 #Anatoxin Concentrations
@@ -69,6 +81,10 @@ anatoxin_data <- toxindf %>%
   dplyr::relocate(site, .after = site_reach) %>% 
   dplyr::rename(mat_sampled = sample_type) %>% 
   dplyr::mutate(per_org_matter = ifelse(per_org_matter>1, 1, per_org_matter))
+
+#Save file to EDI Files folder
+saveRDS(anatoxin_data, 
+        file = here::here("data/EDI FIles/anatoxin_concentrations.rds"))
 
 ###########################
 #qPCR Gene Copies

@@ -9,13 +9,13 @@ library(abind)
   #(percentcover_latent and microscopyTM_latent)
 
                                     ###River-Wide###
-#Percent cover predicted states
+#Percent cover latent states
 percentcover_models <- list(
-  All = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_All.rds")),
-  Biotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Biotic.rds")),
-  Abiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Abiotic.rds")),
-  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_Abioticnonut.rds")),
-  TrueAbiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/River_predict_TrueAbiotic.rds"))
+  All = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_All.rds")),
+  Biotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Biotic.rds")),
+  Abiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Abiotic.rds")),
+  AbioticNoNut = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_Abioticnonut.rds")),
+  TrueAbiotic = readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/River_latent_TrueAbiotic.rds"))
   )
 
 #Microcoleus Anatoxin latent states
@@ -52,6 +52,8 @@ sigma_p <- x[["sigma_p"]]
 
 Phi0 <- x[["Phi0"]]
 PhiAna <- x[["PhiAna"]]
+
+Anatheta <- x[["Anatheta"]]
 
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]]
@@ -104,7 +106,7 @@ for (z in 1:runs) {
     if(t <=2){ #Avoid indexing error with using Anabaena t-2 lag
       phi_t <- plogis(Phi0[z]) #plogis is the same inverse logit function as in Stan, just named differently
     } else {
-      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
+      phi_t <- plogis(Phi0[z] + PhiAna[z]*X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
     }
     
     #----------
@@ -114,7 +116,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,2], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -184,7 +186,7 @@ for (z in 1:runs) {
     if(t <=2){ #Avoid indexing error with using Anabaena t-2 lag
       phi_t <- plogis(Phi0[z]) #plogis is the same inverse logit function as in Stan, just named differently
     } else {
-      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
+      phi_t <- plogis(Phi0[z] + PhiAna[z]*X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
     }
     
     #----------
@@ -194,7 +196,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,2], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -264,7 +266,7 @@ for (z in 1:runs) {
     if(t <=2){ #Avoid indexing error with using Anabaena t-2 lag
       phi_t <- plogis(Phi0[z]) #plogis is the same inverse logit function as in Stan, just named differently
     } else {
-      phi_t <- plogis(Phi0[z] + PhiAna[z] * X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
+      phi_t <- plogis(Phi0[z] + PhiAna[z]*X1[t-2,2])  #Use the Ana t-2 lag to predict initiation timing
     }
     
     #----------
@@ -274,7 +276,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,2], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -309,7 +311,20 @@ matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>%
             by = "model_date") %>% 
   dplyr::rename(Predicted = toxins, Latent = median) %>% 
   pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",
-               values_to = "toxins")
+               values_to = "toxins") %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-26"), 
+                                        to = as.Date("2022-10-13"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  tidyr::complete(model_date = seq.Date(from = as.Date("2023-06-25"), 
+                                        to = as.Date("2023-10-13"), 
+                                        by = "1 week")) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-23"), 
+                                        to = as.Date("2024-10-13"), 
+                                        by = "1 week")) %>% 
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = year(model_date)) %>% 
+  dplyr::mutate(StateType = ifelse(is.na(StateType), "Predicted", StateType)) %>% 
+  ungroup()
 
 ###Create plot of TM microscopy predictions vs latent states
 
@@ -325,7 +340,7 @@ linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-ggplot(matsimsallyears, aes(x = model_date, y = toxins, color = StateType,
+WMToxplot <- ggplot(matsimsallyears, aes(x = model_date, y = toxins, color = StateType,
                                 fill = StateType, linetype = StateType)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(data = filter(matsimsallyears, StateType == "Predicted"), 
@@ -335,9 +350,9 @@ ggplot(matsimsallyears, aes(x = model_date, y = toxins, color = StateType,
   geom_line(data = filter(matsimsallyears, StateType == "Predicted"), size = 1.5) +
   # Latent points/lines
   geom_line(data = filter(matsimsallyears, StateType == "Latent"), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
   coord_cartesian(ylim = c(0,80)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "Within-Mat: Latent vs. Predicted Toxin Concentrations from Microcoleus Mats") +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
   matcolScale + filScale + linScale + theme_bw()
 
 
@@ -380,20 +395,20 @@ rad_clean <- swradiation$stand_rad[env_keep]
 ################################################
 
 #Read in the simulate_toxin_year function
-source(here::here("/data cleaning/Functions.R"))
+source(here::here("data_cleaning/Functions.R"))
 
 #Use a for loop to run through the 3 years of simulations for each river-wide model
 for (model in model_names) {
   #Extract the model
   x <- River.fit.TM_models[[model]]
   #Extract the corresponding predicted state of percent cover abundances
-  percentcover_predicted <- percentcover_models[[model]]
+  percentcover_latent <- percentcover_models[[model]]
   #Extract the corresponding latent state of toxins, from Toxins_model_vs_real.R, for plotting
   tox_params2_index <- tox_params2[[model]]
   
   #2022 simulations
   result2022 <- simulate_toxin_year(x = x,
-                                    percentcover_predicted = percentcover_predicted,
+                                    percentcover_latent = percentcover_latent,
                                     year = 2022,
                                     start_timestep = 1,
                                     time = 13,
@@ -401,7 +416,7 @@ for (model in model_names) {
 
   #2023 simulations
   result2023 <- simulate_toxin_year(x = x, 
-                                    percentcover_predicted = percentcover_predicted,
+                                    percentcover_latent = percentcover_latent,
                                     year = 2023,
                                     start_timestep = 14,
                                     time = 13,
@@ -409,7 +424,7 @@ for (model in model_names) {
 
   #2024 simulations
   result2024 <- simulate_toxin_year(x = x,
-                                    percentcover_predicted = percentcover_predicted,
+                                    percentcover_latent = percentcover_latent,
                                     year = 2024,
                                     start_timestep = 27,
                                     time = 15,
@@ -432,7 +447,20 @@ for (model in model_names) {
     dplyr::left_join(tox_params2_index %>% 
                        dplyr::select(model_date, median), by = "model_date") %>% 
     dplyr::rename(Predicted = toxins, Latent = median) %>% 
-    tidyr::pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",values_to = "toxins")
+    tidyr::pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",values_to = "toxins") %>% 
+    tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-26"), 
+                                          to = as.Date("2022-10-13"), 
+                                          by = "1 week")) %>%  #Expand the date range, so that all years match
+    tidyr::complete(model_date = seq.Date(from = as.Date("2023-06-25"), 
+                                          to = as.Date("2023-10-13"), 
+                                          by = "1 week")) %>% 
+    tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-23"), 
+                                          to = as.Date("2024-10-13"), 
+                                          by = "1 week")) %>% 
+    dplyr::arrange(model_date) %>% 
+    dplyr::mutate(year = year(model_date)) %>% 
+    dplyr::mutate(StateType = ifelse(is.na(StateType), "Predicted", StateType)) %>% 
+    ungroup()
   
   #Store raw results in an empty list
   all_model_results[[model]] <- list(simulations = riverTMsimsallyears,
@@ -465,13 +493,12 @@ for (model in model_names) {
               linewidth = 1.5) +
     #Latent state line
     geom_line(data = filter(riverTMsimsallyears, StateType == "Latent"), linewidth = 2) +
-    scale_y_continuous(breaks = seq(0, 100, 10)) +
+    scale_y_continuous(breaks = seq(0, 100, 20)) +
     coord_cartesian(ylim = c(0, 80)) +
     #Unique title per plot
-    labs(x = "Date", y = "Anatoxin Concentration (ug/g)", 
-         title = paste0("River-Wide TM Mats: Latent vs. Predicted Toxin Concentrations - ",
-                        model," Model")) +
-    riverTMcolScale + filScale + linScale + theme_bw()
+    labs(x = "", y = "Anatoxin Concentration (ug/g)") +
+    riverTMcolScale + filScale + linScale + theme_bw() +
+    theme(strip.text = element_text(margin = margin(t = 1, r = 2, b = 1, l = 2)))
   
   #Display figure
   print(p)
@@ -509,6 +536,8 @@ sigma_p <- x[["sigma_p"]]
 Phi0 <- x[["Phi0"]]
 PhiAna <- x[["PhiAna"]]
 
+Anatheta <- x[["Anatheta"]]
+
 #Pull out environmental effects
 Ntheta <- x[["Ntheta"]]
 Ptheta <- x[["Ptheta"]]
@@ -521,12 +550,12 @@ Rtheta <- x[["Rtheta"]]
 #Inputs
 runs <- length(Beta1) # number of model iterations
 time <- 11
-percentcover_predicted <- percentcover_models[["All"]]
+percentcover_latent <- percentcover_models[["All"]]
 
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_predicted[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ],  #Abundances are log-transformed
+  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][1:time, ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][1:time],
@@ -572,7 +601,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,4], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -613,7 +642,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_predicted[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ],  #Abundances are log-transformed
+  percentcover_latent[-c(1:2, 14:16, 29:33, 41:45), -1][12:(11+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][12:(11+time)],
@@ -652,7 +681,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,4], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -696,7 +725,7 @@ tox <- matrix(NA, runs, time)
 #Create design matrix
 X1 <- as.matrix(cbind(
   intercept = rep(1, time),
-  percentcover_predicted[, -1][24:(23+time), ],  #Abundances are log-transformed
+  percentcover_latent[, -1][24:(23+time), ],  #Abundances are log-transformed
   nitrate = stand_nut$nitrate_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   phos = stand_nut$oPhos_ug_P_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
   amon = stand_nut$ammonium_mg_N_L[-c(1:2, 14:16, 29:33, 41:45)][24:(23+time)],
@@ -734,7 +763,7 @@ for (z in 1:runs) {
     toxin_initiate <- rbinom(1, size = 1, prob = phi_t) #Draw a random probability of toxin initiationg from the phi_t probability
     
     if(toxin_initiate == 1){ #If toxin production did initiate...
-      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ], sd = sigma_p[z])
+      tox[z,t] <- rnorm(1, mean = beta%*%X1[t-1, ] + Anatheta[z]*X1[t-2,4], sd = sigma_p[z])
     } else {
       tox[z,t] <- log(0.0001) #If toxin production did not initiate...
     }
@@ -767,7 +796,20 @@ riverTACsimsallyears <- rbind(riversims2022, riversims2023, riversims2024) %>%
             by = "model_date") %>% 
   dplyr::rename(Predicted = toxins, Latent = median) %>% 
   pivot_longer(cols = c(Predicted, Latent), names_to = "StateType",
-               values_to = "toxins")
+               values_to = "toxins") %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2022-06-26"), 
+                                        to = as.Date("2022-10-13"), 
+                                        by = "1 week")) %>%  #Expand the date range, so that all years match
+  tidyr::complete(model_date = seq.Date(from = as.Date("2023-06-25"), 
+                                        to = as.Date("2023-10-13"), 
+                                        by = "1 week")) %>% 
+  tidyr::complete(model_date = seq.Date(from = as.Date("2024-06-23"), 
+                                        to = as.Date("2024-10-13"), 
+                                        by = "1 week")) %>% 
+  dplyr::arrange(model_date) %>% 
+  dplyr::mutate(year = year(model_date)) %>% 
+  dplyr::mutate(StateType = ifelse(is.na(StateType), "Predicted", StateType)) %>% 
+  ungroup()
 
 ###Create plot of River-wide predictions vs latent states
 
@@ -783,7 +825,7 @@ linScale <- scale_linetype_manual(name = "State Type",
                                   values = c("Latent" = "11",
                                              "Predicted" = "solid"))
 
-ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins, color = StateType,
+RWToxplot.TAC <- ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins, color = StateType,
                                  fill = StateType, linetype = StateType)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(data = filter(riverTACsimsallyears, StateType == "Predicted"), 
@@ -793,9 +835,9 @@ ggplot(riverTACsimsallyears, aes(x = model_date, y = toxins, color = StateType,
   geom_line(data = filter(riverTACsimsallyears, StateType == "Predicted"), size = 1.5) +
   # Latent points/lines
   geom_line(data = filter(riverTACsimsallyears, StateType == "Latent"), linewidth = 2) +
-  scale_y_continuous(breaks = seq(0, 150, 10)) +
-  coord_cartesian(ylim = c(0,150)) +
-  labs(x = "Date", y = "Anatoxin Concentration (ug/g)", title = "River-Wide: Latent vs. Predicted Toxin Concentrations from Anabaena Mats") +
+  scale_y_continuous(breaks = seq(0, 160, 20)) +
+  coord_cartesian(ylim = c(0,170)) +
+  labs(x = "", y = "Anatoxin Concentration (ug/g)") +
   riverTACcolScale + filScale + linScale + theme_bw()
 
 

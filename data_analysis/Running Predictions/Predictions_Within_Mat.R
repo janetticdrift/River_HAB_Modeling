@@ -14,8 +14,8 @@ source(here::here("data_analysis/Compare Obs Vs Modeled Outputs/Within_Mat_model
 mycols <- c("brown", "#00538A", "#F6926A")
 mypal <- palette(mycols)
 names(mypal) <- c("Anabaena", "Epithemia Diatoms", "Geitlerinema")
-colScale <- scale_color_manual(values = mypal)
-filScale <- scale_fill_manual(values = mypal)
+colScale <- scale_color_manual(name = "Taxa", values = mypal)
+filScale <- scale_fill_manual(name = "Taxa", values = mypal)
   
 #Read in latent states and effect coefficients
 M.fit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/WithinMat_Micro_predictions.rds"))
@@ -42,9 +42,6 @@ phos <- stand_nut$oPhos_ug_P_L[1:time]
 Atheta <- x[["Atheta"]][,]
 amon <- stand_nut$ammonium_mg_N_L[1:time]
 
-# DINtheta <- x[["DINtheta"]][,]
-# DIN <- stand_nut$DIN[1:time]
-
 Dtheta <- x[["Dtheta"]][,]
 dis <- discharge$stand_discharge[1:time]
 
@@ -69,7 +66,6 @@ for(z in 1:runs){
   nTheta <- Ntheta[z,]
   pTheta <- Ptheta[z,]
   aTheta <- Atheta[z,]
-  # DINTheta <- DINtheta[z,]
   dTheta <- Dtheta[z,]
   tTheta <- Ttheta[z,]
   cTheta <- Ctheta[z,]
@@ -291,7 +287,7 @@ matsimsallyears <- rbind(matsims2022, matsims2023, matsims2024) %>%
   dplyr::rename(median = Abundance)
 
 ###Create plot of TM microscopy predictions vs latent states
-ggplot(matsimsallyears, aes(x = model_date, y = median)) +
+WMplot.all <- ggplot(matsimsallyears, aes(x = model_date, y = median)) +
   facet_wrap(~year, scales = "free_x") +
   geom_ribbon(aes(ymin = `CIlower`, ymax = `CIupper`, fill = Species), alpha = 0.3) +
   # Predicted points/lines

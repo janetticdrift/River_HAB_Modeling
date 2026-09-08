@@ -31,6 +31,8 @@ parameters {
   real Ctheta;
   real Rtheta;
   
+  real Anatheta;
+  
   //Hurdle model coefficients (When do toxins start getting produced?)
   real Phi0;    //Probability intercept of timing of toxins initiating
   real PhiAna;  //Effect of t-2 Anabaena lag on timing of toxins initiating
@@ -67,6 +69,8 @@ model {
   Beta3 ~ normal(0,1);
   Beta4 ~ normal(0,1);
   
+  Anatheta ~ normal(0,1);
+  
   Ntheta ~ normal(0,1);
   Ptheta ~ normal(0,1);
   Atheta ~ normal(0,1);
@@ -91,8 +95,8 @@ model {
       tox[t] ~ normal(0, sigma_p); 
       continue;
     }
-      //Latent toxin magnitudes are predicted by algal abundances t-1 and env drivers t-1
-    tox[t] ~ normal(X2[t-1,]*beta, sigma_p);
+      //Latent toxin magnitudes are predicted by algal abundances t-1 and env drivers t-1 and longer lagged Anabanena
+    tox[t] ~ normal(X2[t-1,]*beta + X2[t-2,4]*Anatheta, sigma_p);
   }
   
   //Observation model (Hurdle)
@@ -111,7 +115,7 @@ model {
           
         } else { //If the time step was not on the first or second day of the year, use the Anabaena t-2 lag
         
-        phi_t =  inv_logit(Phi0 + PhiAna * X2[t-2,4]);  //This is the timestep-specific probability that toxins initiate (Intercept + lagged Anabaena)
+        phi_t =  inv_logit(Phi0 + PhiAna*X2[t-2,4]);  //This is the timestep-specific probability that toxins initiate (Intercept + lagged Anabaena)
          
         }                     
       if(Toxins[t] == 0){  //And if that observed timestep does NOT observe any toxins...
@@ -150,7 +154,7 @@ generated quantities {
         
       } else {
       
-      phi_t = inv_logit(Phi0 + PhiAna * X2[t-2,4]);
+      phi_t = inv_logit(Phi0 + PhiAna*X2[t-2,4]);
       
       }
       
