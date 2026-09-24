@@ -246,7 +246,7 @@ init_fun_atx <- function() list(
 
 #Estimate anatoxins using river-wide assemblages
     #Toxins from Microcoleus mats
-#All Variables
+#Full Model
 fit.atx.riverTMall <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTM_All, chains = 3, iter = 6000,
                        warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                        max_treedepth = 15))
@@ -271,12 +271,42 @@ fit.atx.riverTMtrueabiotic <-  stan(file = "HAB_toxins_River_Wide.stan", data = 
                                                                                                      max_treedepth = 15))
 
 
-     #Toxins from Anabaena mats
+
+
+
+
+#No Anabaena t-2; Full Model
+fit.atx.riverTMallnolag <-  stan(file = "HAB_toxins_River_Wide_nolag.stan", data = model.atx.riverTM_All, chains = 3, iter = 6000,
+                                    warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                                    max_treedepth = 15))
+#No Anabaena t-2; Biotic Model
+fit.atx.riverTMbionolag <-  stan(file = "HAB_toxins_River_Wide_nolag.stan", data = model.atx.riverTM_Biotic, chains = 3, iter = 6000,
+                              warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                              max_treedepth = 15))
+#No Anabaena t-2; Abiotic Model
+fit.atx.riverTMabionolag <-  stan(file = "HAB_toxins_River_Wide_nolag.stan", data = model.atx.riverTM_Abiotic, chains = 3, iter = 6000,
+                              warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                              max_treedepth = 15))
+#No Anabaena t-2; Abiotic Model
+fit.atx.riverTMabiononutnolag <-  stan(file = "HAB_toxins_River_Wide_nolag.stan", data = model.atx.riverTM_AbioticNoNut, chains = 3, iter = 6000,
+                                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                                  max_treedepth = 15))
+#No Anabaena t-2; Abiotic Model
+fit.atx.riverTMtrueabionolag <-  stan(file = "HAB_toxins_River_Wide_nolag.stan", data = model.atx.riverTM_TrueAbiotic, chains = 3, iter = 6000,
+                                       warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
+                                                                                                       max_treedepth = 15))
+
+
+
+
+
+
+#Toxins from Anabaena mats
 fit.atx.riverTAC <-  stan(file = "HAB_toxins_River_Wide.stan", data = model.atx.riverTAC_All, chains = 3, iter = 6000,
                        warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                                                        max_treedepth = 15))
 
-#Estimate anatoxins using TM microscopy assemblages
+#TM microscopy assemblages
 fit.atx.mat <-  stan(file = "HAB_toxins_Within_Mat.stan", data = model.atx.matTM, chains = 3, iter = 6000,
                  warmup = 3000, refresh=100, init = init_fun_atx, control = list(adapt_delta = 0.999,
                                                             max_treedepth = 15))
@@ -296,6 +326,17 @@ saveRDS(rstan::extract(fit.atx.riverTMabioticnonut, permuted=FALSE),
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_AbioticNoNut.rds"))
 saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, permuted=FALSE), 
         file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_TrueAbiotic.rds"))
+
+saveRDS(rstan::extract(fit.atx.riverTMallnolag, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_All_NoLag.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMbionolag, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Biotic_NoLag.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMabionolag, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_Abiotic_NoLag.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMabiononutnolag, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_AbioticNoNut_NoLag.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMtrueabionolag, permuted=FALSE), 
+        file = here::here("data/Outputs for Obs vs Real/Anatoxin_TM_Riverwide_TrueAbiotic_NoLag.rds"))
 
                             ###Anabaena Mat Anatoxins###
 saveRDS(rstan::extract(fit.atx.riverTAC, permuted=FALSE), 
@@ -378,12 +419,33 @@ saveRDS(rstan::extract(fit.atx.riverTMtrueabiotic, pars = c('Beta0', 'Beta1', 'B
                                                              'log_lik')), 
         file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_predictions.rds"))
 
+saveRDS(rstan::extract(fit.atx.riverTMallnolag, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                            'Phi0','Ntheta','Ptheta','Atheta','Dtheta', 'Ttheta',
+                                                            'Ctheta', 'Rtheta','sigma_p','tox_raw','tox','log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_NoLag_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMbionolag, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                         'Phi0','Ntheta','Ptheta','Atheta','Dtheta', 'Ttheta',
+                                                         'Ctheta', 'Rtheta','sigma_p','tox_raw','tox','log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_NoLag_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMabionolag, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                         'Phi0','Ntheta','Ptheta','Atheta','Dtheta', 'Ttheta',
+                                                         'Ctheta', 'Rtheta','sigma_p','tox_raw','tox','log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_NoLag_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMabiononutnolag, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                         'Phi0','Ntheta','Ptheta','Atheta','Dtheta', 'Ttheta',
+                                                         'Ctheta', 'Rtheta','sigma_p','tox_raw','tox','log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_NoLag_predictions.rds"))
+saveRDS(rstan::extract(fit.atx.riverTMtrueabionolag, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
+                                                         'Phi0','Ntheta','Ptheta','Atheta','Dtheta', 'Ttheta',
+                                                         'Ctheta', 'Rtheta','sigma_p','tox_raw','tox','log_lik')), 
+        file = here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_NoLag_predictions.rds"))
+
 
 
 saveRDS(rstan::extract(fit.atx.riverTAC, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3', 'Beta4',
                                                   'Anatheta',
                                                  'Phi0',
-                                                 'PhiAna', 
+                                                 'PhiAna',
                                                  'Ntheta',
                                                  'Ptheta',
                                                  'Atheta',
@@ -436,19 +498,16 @@ saveRDS(rstan::extract(fit.atx.mat, pars = c('Beta0', 'Beta1', 'Beta2', 'Beta3',
 #   pars = c("phi") )
 #When used waic(), "24 (58.5%) p_waic estimates greater than 0.4. We recommend trying loo instead."
 
-# #Model Checks: River-Wide
-# mcmc_intervals(
-#   as.array(fit.atx.riverTMall),
-#   pars = c("Ntheta", "Ptheta", "Atheta"))
-# mcmc_intervals(
-#   as.array(fit.atx.riverTMall),
-#   pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
-# mcmc_intervals(
-#   as.array(fit.atx.riverTMall),
-#   pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
-# mcmc_intervals(
-#   as.array(fit.atx.riverTMall),
-#   pars = c("PhiAna") )
+#Model Checks: River-Wide
+mcmc_intervals(
+  as.array(fit.atx.riverTMabiononutnolag),
+  pars = c("Ntheta", "Ptheta", "Atheta"))
+mcmc_intervals(
+  as.array(fit.atx.riverTMabiononutnolag),
+  pars = c("Dtheta", "Ttheta", "Ctheta", "Rtheta"))
+mcmc_intervals(
+  as.array(fit.atx.riverTMallnolag),
+  pars = c("Beta1", "Beta2", "Beta3", "Beta4") )
 
 # Model Checks: WAIC
 #Extract log-likelihoods

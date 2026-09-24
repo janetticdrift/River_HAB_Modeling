@@ -2,6 +2,7 @@
 library(ggplot2)
 library(ggpubr)
 library(tidyverse)
+library(khroma)
 
 #Must read in atx 
 
@@ -64,6 +65,12 @@ toxriverfitTM.abiotic <- readRDS(here::here("data/Outputs for Sims and Model Fit
 toxriverfitTM.abioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_predictions.rds"))
 toxriverfitTM.trueabiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_predictions.rds"))
 
+toxriverfitTM.allnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_All_nolag_predictions.rds"))
+toxriverfitTM.bioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Biotic_nolag_predictions.rds"))
+toxriverfitTM.abioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_Abiotic_nolag_predictions.rds"))
+toxriverfitTM.abioticnonutnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_AbioticNoNut_nolag_predictions.rds"))
+toxriverfitTM.trueabioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TM_River_TrueAbiotic_nolag_predictions.rds"))
+
 toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_TAC_River_predictions.rds"))
 toxmatfit <- readRDS(here::here("data/Outputs for Sims and Model Fits/Latent States/Anatoxin_Mat_predictions.rds"))
 
@@ -73,6 +80,12 @@ pred.toxriverfitTM.biotic <- readRDS(here::here("data/Outputs for Sims and Model
 pred.toxriverfitTM.abiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_Abiotic.rds"))
 pred.toxriverfitTM.abioticnonut <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_AbioticNoNut.rds"))
 pred.toxriverfitTM.trueabiotic <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_Pred_RiverWide_TrueAbiotic.rds"))
+
+pred.toxriverfitTM.allnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_NoLag_Pred_RiverWide_All.rds"))
+pred.toxriverfitTM.bioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_NoLag_Pred_RiverWide_Biotic.rds"))
+pred.toxriverfitTM.abioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_NoLag_Pred_RiverWide_Abiotic.rds"))
+pred.toxriverfitTM.abioticnonutnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_NoLag_Pred_RiverWide_AbioticNoNut.rds"))
+pred.toxriverfitTM.trueabioticnolag <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TM_NoLag_Pred_RiverWide_TrueAbiotic.rds"))
 
 
 pred.toxriverfitTAC <- readRDS(here::here("data/Outputs for Sims and Model Fits/Predicted States/Toxins_TAC_Pred_RiverWide.rds"))
@@ -93,7 +106,6 @@ model_list <- list(
     category = "River-Wide",       #Whether it used percent cover or microscopy data
     y_obs = y_obs_river,           #Reading in observed values
     post = allfit[["n"]],          #Reading in latent states
-    #log_lik = allfit[["log_lik"]], #Reading in the log likelihoods
     pred = pred.allfit,            #Reading in simulated/predicted values
     species = river_species        #List of species names used in this model
   ),
@@ -183,6 +195,53 @@ model_list <- list(
     post = toxriverfitTM.trueabiotic[["tox_raw"]],
     log_lik = toxriverfitTM.trueabiotic[["log_lik"]],
     pred = pred.toxriverfitTM.trueabiotic,
+    species = tox_congener
+  ),
+  
+  #River-Wide Microcoleus Toxin Models Without Anabaena Lag
+  list(
+    model = "toxriverfitTM.allnolag",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.allnolag[["tox_raw"]],
+    log_lik = toxriverfitTM.allnolag[["log_lik"]],
+    pred = pred.toxriverfitTM.allnolag,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.bioticnolag",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.bioticnolag[["tox_raw"]],
+    log_lik = toxriverfitTM.bioticnolag[["log_lik"]],
+    pred = pred.toxriverfitTM.bioticnolag,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.abioticnolag",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.abioticnolag[["tox_raw"]],
+    log_lik = toxriverfitTM.abioticnolag[["log_lik"]],
+    pred = pred.toxriverfitTM.abioticnolag,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.abioticnonutnolag",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.abioticnonutnolag[["tox_raw"]],
+    log_lik = toxriverfitTM.abioticnonutnolag[["log_lik"]],
+    pred = pred.toxriverfitTM.abioticnonutnolag,
+    species = tox_congener
+  ),
+  list(
+    model = "toxriverfitTM.trueabioticnolag",
+    category = "River-Wide",
+    y_obs = y_obs_tox_TM$ATX_all_ug_afdm_g,
+    post = toxriverfitTM.trueabioticnolag[["tox_raw"]],
+    log_lik = toxriverfitTM.trueabioticnolag[["log_lik"]],
+    pred = pred.toxriverfitTM.trueabioticnolag,
     species = tox_congener
   ),
 
@@ -338,73 +397,89 @@ clean.model.indices <- model.indices %>%
                                     species == "green" ~ "Green Algae",
                                     species == "micro" ~ "Microcoleus",
                                     species == "nfix" ~ "Other N Fixers",
-                                    species == "Anatoxin" ~ "Anatoxin")) %>% 
-  dplyr::mutate(model = case_when(model == "allfit" ~ "All Variables",
-                                    model == "bioticfit" ~ "Biotic Only",
-                                    model == "abioticfit" ~ "Abiotic Only",
-                                    model == "abioticnonutfit" ~ "Abiotic Minus Nutrients",
-                                    model == "abiotictrue" ~ "True Abiotic",
-                                    model == "TMfit" ~ "All Variables",
-                                  model == "toxriverfitTM.all" ~ "All Variables",
-                                  model == "toxriverfitTM.biotic" ~ "Biotic Only",
-                                  model == "toxriverfitTM.abiotic" ~ "Abiotic Only",
-                                  model == "toxriverfitTM.abioticnonut" ~ "Abiotic Minus Nutrients",
-                                  model == "toxriverfitTM.trueabiotic" ~ "True Abiotic",
-                                  model == "toxriverfitTAC" ~ "TAC Toxins: All Variables",
-                                  model == "toxmatfit" ~ "All Variables")) %>% 
-   dplyr::filter(species %in% c("Anabaena", "Microcoleus", "Anatoxin"))
+                                    species == "Anatoxin" ~ "Anatoxin")) 
 
-subset.index <- clean.model.indices %>% 
-  dplyr::filter(model %in% "Abiotic Only" & species %in% "Anabaena") %>% 
-  dplyr::filter(!metric %in% "RMSE")
 
-morecleanindices <- clean.model.indices %>% 
-  group_by(model, category, metric) %>% 
-  dplyr::summarise(meanvalue = mean(value))
+percover.model.indices <- clean.model.indices %>% 
+  #dplyr::filter(species %in% c("Anabaena", "Microcoleus"))  %>% 
+  dplyr::filter(species %in% c("Anabaena", "Geitlerinema", "Epithemia Diatoms"))  %>% 
+  dplyr::mutate(model = case_when(model == "allfit" ~ "Full Model",
+                                    model == "bioticfit" ~ "Density Dependence",
+                                    model == "abioticfit" ~ "S-L Abiotic",
+                                    model == "abioticnonutfit" ~ "S-L Nutrient Exclusion",
+                                    model == "abiotictrue" ~ "Environmental",
+                                    model == "TMfit" ~ "Full Model")) %>% 
+  # dplyr::mutate(species = case_when(species == "Microcoleus" ~ "Microcoleus (% Cover)",
+  #                                   species == "Anabaena" ~ "Anabaena (% Cover)")) %>% 
+  dplyr::mutate(model = factor(model, levels = c("Full Model", "Density Dependence", 
+                                          "S-L Abiotic", 
+                                          "S-L Nutrient Exclusion", "Environmental")))
 
-clean.model.indices$model <- factor(  #Manually order model name 
-  clean.model.indices$model,
-  levels = c("All Variables", "Biotic Only", 
-             "Abiotic Only", 
-             "Abiotic Minus Nutrients", "True Abiotic",
-             "TAC Toxins: All Variables")
-)
-clean.model.indices$species <- factor(  #Manually order species name 
-  clean.model.indices$species,
-  levels = c("Anatoxin", "Anabaena", "Microcoleus")
-)
+tox.model.indices <- clean.model.indices %>% 
+  dplyr::filter(species %in% c("Anatoxin")) %>% 
+  dplyr::mutate(lag_group = if_else(str_detect(model, "nolag"),
+                                    "No Anabaena t-2 Lag",
+                                    "Anabaena t-2 Lag"),
+                lag_group = factor(lag_group, levels = c("No Anabaena t-2 Lag", 
+                                                         "Anabaena t-2 Lag"))) %>% 
+  dplyr::mutate(model = case_when(model == "toxriverfitTM.all" ~ "Full Model",
+                                  model == "toxriverfitTM.biotic" ~ "Density Dependence",
+                                  model == "toxriverfitTM.abiotic" ~ "S-L Abiotic",
+                                  model == "toxriverfitTM.abioticnonut" ~ "S-L Nutrient Exclusion",
+                                  model == "toxriverfitTM.trueabiotic" ~ "Environmental",
+                                  model == "toxriverfitTM.allnolag" ~ "Full Model",
+                                  model == "toxriverfitTM.bioticnolag" ~ "Density Dependence",
+                                  model == "toxriverfitTM.abioticnolag" ~ "S-L Abiotic",
+                                  model == "toxriverfitTM.abioticnonutnolag" ~ "S-L Nutrient Exclusion",
+                                  model == "toxriverfitTM.trueabioticnolag" ~ "Environmental",
+                                  model == "toxriverfitTAC" ~ "TAC Full Model",
+                                  model == "toxmatfit" ~ "Full Model")) %>% 
+  dplyr::mutate(model = factor(model, levels = c("Full Model", "Density Dependence", 
+                                                 "S-L Abiotic", 
+                                                 "S-L Nutrient Exclusion", "Environmental",
+                                                 "TAC Full Model"))) 
+  #dplyr::filter(!model %in% "TAC Full Model")
 
-#Create a color palette
-mycols <- c(
-  "All Variables" = "#0558b8",
-  "Biotic Only" = "#13628b",
-  "Abiotic Only" = "#009da6",
-  "Abiotic Minus Nutrients" = "#35d49b",
-  "True Abiotic" = "#b9fa47",
-  "TAC Toxins: All Variables" = "#0558b8"
-)
-colScale <- scale_color_manual(
-  name = "Model",
-  values = mycols)
-myshap <- c("River-Wide" = 16, "Within-Mat" = 17)
-shapScale <- scale_shape_manual(
-  name = "Data Source",
-  values = myshap)
+
+
+# #Checking summarizations
+# subset.index <- clean.model.indices %>% 
+#   dplyr::filter(model %in% "S-L Abiotic" & species %in% "Anabaena") %>% 
+#   dplyr::filter(!metric %in% "RMSE")
+# 
+# morecleanindices <- clean.model.indices %>% 
+#   group_by(model, category, metric) %>% 
+#   dplyr::summarise(meanvalue = mean(value))
+
 
 #Plot River-Wide Algae Metrics
-metricplot <- ggplot(subset(clean.model.indices, metric %in% "r2"), 
-       aes(x = value, y = species, shape = category, color = model)) +
-  facet_wrap(~ metric, scales = "free_x") +
+percover.metricplot <- ggplot(subset(percover.model.indices, metric %in% "r2" & category %in% "Within-Mat"), 
+       aes(x = value, y = species, color = model)) +
+  #facet_wrap(~ metric, scales = "free_x") +
   geom_point(position = position_dodge(width = -0.6), #position_dodge separates species apart
              size = 3) +
   geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2,
                  position = position_dodge(width = -0.6)) +
-  colScale + shapScale +
+  scale_colour_bright()+
   theme_bw() +
-  labs(x = "Metric Value",
+  labs(x = expression(R^2),
        y = "",
-       title = "Goodness-of-Fit",
-       shape = "Model",
        color = "Model")
 
+#Plot Anatoxin Metrics
+
+tox.metricplot <- ggplot(subset(tox.model.indices, metric %in% "r2" & category %in% "River-Wide"), aes(x = value, y = model, color = model, shape = lag_group)) +
+  geom_line(aes(group = model),
+            color = "grey75", linewidth = 0.7) +
+  # geom_errorbar(aes(xmin = lwr, xmax = upr,
+  #     color = model),orientation = "y",height = 0.15,linewidth = 0.8) +
+  geom_point( size = 3) +
+  scale_colour_bright()+
+  scale_shape_manual(values = c("No Anabaena t-2 Lag" = 16, "Anabaena t-2 Lag" = 17)) +
+  scale_y_discrete(limits = rev) +
+  guides(color = "none") +
+  labs(x = expression(R^2), 
+       y = "",
+       shape = NULL) +
+  theme_bw()
 

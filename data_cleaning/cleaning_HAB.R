@@ -504,7 +504,7 @@ PAR2022 <- PAR %>%
   dplyr::filter(between(date, "2022-06-26", "2022-09-18")) %>% 
   dplyr::filter(row_number() %% 7 == 1)
 PAR2023 <- PAR %>% 
-  dplyr::filter(between(date, "2023-06-20", "2023-09-26")) %>% 
+  dplyr::filter(between(date, "2023-06-18", "2023-09-24")) %>% 
   dplyr::filter(row_number() %% 7 == 1)
 PAR2024 <- PAR %>% 
   dplyr::filter(between(date, "2024-06-19", "2024-10-10")) %>% 

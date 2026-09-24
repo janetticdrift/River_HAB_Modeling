@@ -178,9 +178,9 @@ CD
 EF
 "
 
-SupFigure7 <- wrap_plots(obs.v.real_TOX_RW_TM_all,obs.v.real_TOX_RW_TM_biotic,
-                         obs.v.real_TOX_RW_TM_abiotic,obs.v.real_TOX_RW_TM_abioticnonut,
-                         obs.v.real_TOX_RW_TM_trueabiotic,
+SupFigure7 <- wrap_plots(obs.v.real.plots$TOX_RW_TM_All,obs.v.real.plots$TOX_RW_TM_Biotic,
+                         obs.v.real.plots$TOX_RW_TM_Abiotic,obs.v.real.plots$TOX_RW_TM_AbioticNoNut,
+                         obs.v.real.plots$TOX_RW_TM_TrueAbiotic,
                          guide_area(),   # collected legend
                          design = design) +
   plot_annotation(tag_levels = "A") +
@@ -191,21 +191,29 @@ pdf(file = "Figures/SupFigure7.pdf", width = 10, height = 6)
 (SupFigure7)
 dev.off()
 
-obs.v.real_TOX_RW_TM_all
-obs.v.real_TOX_RW_TM_biotic
-obs.v.real_TOX_RW_TM_abiotic
-obs.v.real_TOX_RW_TM_abioticnonut
-obs.v.real_TOX_RW_TM_trueabiotic
+SupFigure8 <- wrap_plots(obs.v.real.nolag.plots$TOX_RW_TM_All,obs.v.real.nolag.plots$TOX_RW_TM_Biotic,
+                         obs.v.real.nolag.plots$TOX_RW_TM_Abiotic,obs.v.real.nolag.plots$TOX_RW_TM_AbioticNoNut,
+                         obs.v.real.nolag.plots$TOX_RW_TM_TrueAbiotic,
+                         guide_area(),   # collected legend
+                         design = design) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect", axes = "collect_y") &
+  theme(legend.position = "right", legend.box = "horizontal")
+
+pdf(file = "Figures/SupFigure.pdf", width = 10, height = 6)
+(SupFigure8)
+dev.off()
+
 
 obs.v.real_TOX_RW_TAC
 
-pdf(file = "Figures/SupFigure8.pdf", width = 10, height = 6)
+pdf(file = "Figures/SupFigure9.pdf", width = 10, height = 6)
 (obs.v.real_TOX_RW_TAC)
 dev.off()
 
 obs.v.real_TOX_WM_TM
 
-pdf(file = "Figures/SupFigure9.pdf", width = 10, height = 6)
+pdf(file = "Figures/SupFigure10.pdf", width = 10, height = 6)
 (obs.v.real_TOX_WM_TM)
 dev.off()
 
@@ -222,16 +230,35 @@ Figure4 <- (all_model_plots$All / all_model_plots$Biotic / all_model_plots$Abiot
   plot_layout(guides = "collect", axes = "collect") &
   theme(legend.position = "bottom", legend.box = "horizontal")
 
+#OR#
+
+Figure4 <- (all_model_plots$All / envplot / nolag_model_plots$All) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect", axes = "collect") &
+  theme(legend.position = "bottom", legend.box = "horizontal")
+
 pdf(file = "Figures/Figure4.pdf", width = 10, height = 5)
 (Figure4)
 dev.off()
 
 #Supplement
-all_model_plots$All
-all_model_plots$Biotic
-all_model_plots$Abiotic
-all_model_plots$AbioticNoNut
-all_model_plots$TrueAbiotic
+SupFigure10 <- wrap_plots(all_model_plots$All,all_model_plots$Biotic,
+                         all_model_plots$Abiotic,all_model_plots$AbioticNoNut,
+                         all_model_plots$TrueAbiotic,
+                         guide_area(),   # collected legend
+                         design = design) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect", axes = "collect_y") &
+  theme(legend.position = "right", legend.box = "horizontal")
+
+SupFigure11 <- wrap_plots(nolag_model_plots$All,nolag_model_plots$Biotic,
+                          nolag_model_plots$Abiotic,nolag_model_plots$AbioticNoNut,
+                          nolag_model_plots$TrueAbiotic,
+                          guide_area(),   # collected legend
+                          design = design) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect", axes = "collect_y") &
+  theme(legend.position = "right", legend.box = "horizontal")
 
 RWToxplot.TAC
 WMToxplot
@@ -245,6 +272,9 @@ source(here::here("data_analysis/Model Fit Calculations.R"))
 
 #----------Relevant figures----------#
 
-metricplot
+Figure5 <- (percover.metricplot | tox.metricplot) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect", axes = "collect") &
+  theme(legend.position = "bottom", legend.box = "horizontal")
 
 

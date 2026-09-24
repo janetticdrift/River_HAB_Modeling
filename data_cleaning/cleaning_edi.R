@@ -12,7 +12,7 @@
 source(here::here("data_cleaning/cleaning_HAB.R"))
 
 ###########################
-#Water Chemistry
+#Water Quality
 ###########################
 #In cleaning_HAB.R:
   #1) Values that were below the minimum detection value were replaced with 
@@ -28,9 +28,21 @@ water_chemistry_data <- nutrients_raw %>%
                   nitrate_mg_N_L, oPhos_ug_P_L, ammonium_mg_N_L, DIN_mg_N_L,
                   temp_C, cond_uS_cm, pH, DO_mg_L)
 
-#Save file to EDI Files folder
-saveRDS(water_chemistry_data, 
-        file = here::here("data/EDI FIles/water_chemistry.rds"))
+water_hydromet_data <- discharge %>% 
+  dplyr::select(!c(year, fake_date, log_discharge, stand_discharge)) %>% 
+  dplyr::mutate(site = "SFE_M") %>% 
+  dplyr::relocate(site, .after = "date") %>% 
+  dplyr::rename(discharge_cfs = discharge) %>% 
+  left_join(swradiation_raw, by = "date") %>% 
+  dplyr::select(!c(year, fake_date)) %>% 
+  dplyr::rename(radiation_SW_W_m_2 = radiation)
+
+#Save files to EDI Files folder
+write.csv(water_chemistry_data, 
+        file = here::here("data/EDI Files/water_chemistry.csv"), row.names = FALSE)
+
+write.csv(water_hydromet_data, 
+          file = here::here("data/EDI Files/water_hydromet.csv"), row.names = FALSE)
 
 
 ###########################
@@ -43,8 +55,8 @@ percent_cover_data <- percoverdata %>%
   dplyr::arrange(field_date)
 
 #Save file to EDI Files folder
-saveRDS(percent_cover_data, 
-        file = here::here("data/EDI FIles/benthic_percent_cover.rds"))
+write.csv(percent_cover_data, 
+        file = here::here("data/EDI Files/benthic_percent_cover.csv"), row.names = FALSE)
 
 ###########################
 #Mat Microscopy Analysis
@@ -66,8 +78,8 @@ microscopy_data <- microscopy1 %>%
 
 
 #Save file to EDI Files folder
-saveRDS(microscopy_data, 
-        file = here::here("data/EDI FIles/microscopy.rds"))
+write.csv(microscopy_data, 
+        file = here::here("data/EDI Files/microscopy.csv"), row.names = FALSE)
 
 
 ###########################
@@ -83,11 +95,11 @@ anatoxin_data <- toxindf %>%
   dplyr::mutate(per_org_matter = ifelse(per_org_matter>1, 1, per_org_matter))
 
 #Save file to EDI Files folder
-saveRDS(anatoxin_data, 
-        file = here::here("data/EDI FIles/anatoxin_concentrations.rds"))
+write.csv(anatoxin_data, 
+        file = here::here("data/EDI Files/anatoxin_concentrations.csv"), row.names = FALSE)
 
 ###########################
 #qPCR Gene Copies
 ###########################
 
-genecopy <- read.csv(here::here("data/qPCR_2024.csv"))
+# genecopy <- read.csv(here::here("data/qPCR_2024.csv"))
